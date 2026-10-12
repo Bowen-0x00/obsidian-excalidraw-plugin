@@ -1,3 +1,4 @@
+
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { execFileSync } from 'node:child_process';
 import zlib from 'node:zlib';
@@ -15,6 +16,7 @@ import { minify } from 'uglify-js';
 import json from '@rollup/plugin-json';
 import { parseEnv } from 'node:util';
 import { buildReactRuntime } from './scripts/buildReactRuntime.mjs';
+import { getYmjrComponentRoot } from "./scripts/ymjrComponent.mjs"; //ymjr
 
 function compressDeflateBase64(code) {
   // Compress using Node's native zlib at maximum compression
@@ -127,10 +129,16 @@ function compressLanguageFile(lang) {
   return compressDeflateBase64(minifyCode(`x = ${content};`));
 }
 
+//ymjr -- Load the pinned sibling fork, never the generic UMD package.
+const excalidrawObsidianDist = path.join(
+  getYmjrComponentRoot(),
+  "packages/excalidraw/dist/obsidian",
+);
 const excalidrawSource = isLib ? "" : fs.readFileSync(
-  isProd
-    ? "./node_modules/@zsviczian/excalidraw/dist/obsidian/excalidraw.production.min.js"
-    : "./node_modules/@zsviczian/excalidraw/dist/obsidian/excalidraw.development.js",
+  path.join(
+    excalidrawObsidianDist,
+    isProd ? "excalidraw.production.min.js" : "excalidraw.development.js",
+  ),
   "utf8",
 );
 const excalidraw_pkg = isLib
@@ -152,9 +160,13 @@ const reactPackagesCompressed = isLib
 const pako_pkg = isLib ? "" : fs.readFileSync("./node_modules/pako/dist/pako_inflate.min.js", "utf8");
 
 if (!isLib) {
-  const excalidraw_styles = isProd
-    ? fs.readFileSync("./node_modules/@zsviczian/excalidraw/dist/obsidian/excalidraw.production.min.css", "utf8")
-    : fs.readFileSync("./node_modules/@zsviczian/excalidraw/dist/obsidian/excalidraw.development.css", "utf8");
+  const excalidraw_styles = fs.readFileSync(
+    path.join(
+      excalidrawObsidianDist,
+      isProd ? "excalidraw.production.min.css" : "excalidraw.development.css",
+    ),
+    "utf8",
+  );
   const plugin_styles = fs.readFileSync("./styles.css", "utf8");
   const styles = excalidraw_styles + plugin_styles;
   cssnano()
@@ -170,7 +182,8 @@ if (!isLib) {
     });
 }
 
-const manifestStr = isLib ? "" : fs.readFileSync("manifest-beta.json", "utf-8");
+//ymjr -- Runtime and release metadata must use the same custom manifest.
+const manifestStr = isLib ? "" : fs.readFileSync("manifest.json", "utf-8");
 const manifest = isLib ? {} : JSON.parse(manifestStr);
 const startupScriptBase64 = isLib
   ? ""
@@ -359,7 +372,11 @@ const getRollupPlugins = (tsconfig, ...plugins) => [
     __PLUGIN_REPOSITORY_REF__: JSON.stringify(pluginRepository.ref),
   }),
   commonjs(),
-  nodeResolve({ browser: true, preferBuiltins: false }),
+  nodeResolve({
+    browser: true,
+    preferBuiltins: false,
+    preserveSymlinks: true, //ymjr -- Keep the installed package's resolution boundary.
+  }),
 ].concat(plugins);
 
 const BUILD_CONFIG = {

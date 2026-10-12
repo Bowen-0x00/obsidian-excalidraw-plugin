@@ -1,4 +1,17 @@
-# Excalidraw
+# Excalidraw-ymjr source
+
+<!-- ymjr: keep the established release repository separate from this source fork. -->
+This repository contains the source for the ymjr customization of the [Obsidian Excalidraw plugin](https://github.com/zsviczian/obsidian-excalidraw-plugin).
+
+- **Install and update:** continue using [`Bowen-0x00/obsidian-excalidraw-plugin-ymjr`](https://github.com/Bowen-0x00/obsidian-excalidraw-plugin-ymjr) in BRAT. Do not switch an existing installation to this source fork.
+- **Plugin source:** the `ymjr` branch of [`Bowen-0x00/obsidian-excalidraw-plugin`](https://github.com/Bowen-0x00/obsidian-excalidraw-plugin/tree/ymjr).
+- **Component source:** [`Bowen-0x00/excalidraw`](https://github.com/Bowen-0x00/excalidraw/tree/ymjr), pinned by [`ymjr-component.json`](ymjr-component.json).
+- **Build and release instructions:** [Building Excalidraw-ymjr](docs/ymjr-build.md).
+- **Custom feature inventory:** [ymjr customizations](docs/ymjr-customizations.md).
+
+The plugin ID remains `obsidian-excalidraw-plugin-ymjr`. Generated `dist/`, `lib/`, and dependency files are not source changes. Release assets stay in the established distribution repository; each release should link both exact source commits.
+
+The upstream documentation and attribution below are retained.
 
 【English | [简体中文](./docs/zh-cn/README.md)】
 

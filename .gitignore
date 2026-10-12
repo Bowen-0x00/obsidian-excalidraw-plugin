@@ -28,3 +28,8 @@ yarn.lock
 Obsidian
 
 repository.zip
+
+# ymjr -- Keep private prompts, local archives, and generated diagnostics out of source.
+/prompt
+*.7z
+/excalidraw_unpacked.js

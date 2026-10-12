@@ -1,17 +1,21 @@
 {
+    //ymjr -- Preserve the maintainer's editor preferences without changing source on save.
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "typescript.tsserver.log": "off",
     "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": true
+        "editor.defaultFormatter": "vscode.typescript-language-features",
+        "editor.formatOnSave": false
     },
     "[typescriptreact]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": true
+        "editor.formatOnSave": false
     },
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+  "source.fixAll.eslint": "never",
+  "source.fixAll": "never",
+  "source.organizeImports": "never"
+
     },
     "editor.tabSize": 2,
     "editor.insertSpaces": true,

@@ -1,15 +1,13 @@
 {
+  "extends": "./tsconfig.json", //ymjr -- Share the pinned component type mappings.
   "compilerOptions": {
     "sourceMap": false,
     "module": "es2020",
-    "target": "es2022", //min es2017 because script engine requires for async execution and min es2018 for named capture groups
+    "target": "es2022", 
     "allowJs": false,
-    "noImplicitAny": true,
+    "noImplicitAny": false, //ymjr -- Preserve the legacy development compiler setting.
     "moduleResolution": "node",
     "types": ["node"],
-    "paths": {
-      "src/*": ["./src/*"]
-    },
     "esModuleInterop": true,
     "importHelpers": true,
     "resolveJsonModule": true,
@@ -21,10 +19,12 @@
     ],
     "jsx": "react",
     "inlineSourceMap": true,
+    "baseUrl": "." //ymjr -- Resolve source aliases relative to this checkout.
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx", "src/Dialogs/OpenDrawing.ts",
-    "src/types/types.d.ts",
+    "**/*.tsx", 
+    "src/Dialogs/OpenDrawing.ts",
+    "src/types/types.d.ts"
   ]
 }
