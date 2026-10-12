@@ -84,7 +84,7 @@ export declare class ExcalidrawAutomate {
             type: RoundnessType;
             value?: number;
         };
-        fontFamily: number;
+        fontFamily: number | string; //ymjr -- Named custom font families.
         fontSize: number;
         textAlign: string;
         verticalAlign: string;
@@ -126,6 +126,8 @@ export declare class ExcalidrawAutomate {
      * @returns
      */
     setStrokeSharpness(val: number): "round" | "sharp";
+    /** Returns the registered family string for a built-in ID or custom family. */
+    getFontFamily(val: number | string): string; //ymjr
     /**
      * @param val //1: Virgil, 2:Helvetica, 3:Cascadia
      * @returns
@@ -744,7 +746,7 @@ export declare class ExcalidrawAutomate {
 }
 export declare function initExcalidrawAutomate(plugin: ExcalidrawPlugin): Promise<ExcalidrawAutomate>;
 export declare function destroyExcalidrawAutomate(): void;
-export declare function _measureText(newText: string, fontSize: number, fontFamily: number, lineHeight: number): {
+export declare function _measureText(newText: string, fontSize: number, fontFamily: number | string, lineHeight: number): {
     w: number;
     h: number;
     baseline: number;

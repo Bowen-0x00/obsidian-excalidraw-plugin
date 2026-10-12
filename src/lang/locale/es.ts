@@ -328,6 +328,15 @@ export default {
   MASK_FILE_NOTICE:
     "Este es un archivo de máscara. Se usa para recortar y enmascarar partes de la imagen. Mantén presionado el aviso para abrir el video de ayuda.",
   INSTALL_SCRIPT_BUTTON: "Instalar o actualizar scripts de Excalidraw",
+  INSTALL_SCRIPT_BUTTON_CUSTOM:
+    "Instalar o actualizar scripts de Excalidraw (origen personalizado)", //ymjr
+  CHECKING_SCRIPT: "Comprobando el script…",
+  INSTALL_SCRIPT: "Instalar script",
+  UPTODATE_SCRIPT: "El script está actualizado",
+  UPDATE_SCRIPT: "Actualizar script",
+  UNABLETOCHECK_SCRIPT: "No se pudo comprobar el script",
+  SCRIPT_INSTALL_PROMPT_OPEN_ERROR:
+    "No se pudo abrir el repositorio de scripts.",
   OPEN_AS_MD: "Abrir como Markdown",
   EXPORT_IMAGE: `Exportar imagen`,
   OPEN_LINK:

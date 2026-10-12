@@ -300,6 +300,13 @@ export default {
   TRAY_SWITCH_TO_MD_ARIA: "切换至 Markdown 视图模式",
   MASK_FILE_NOTICE: "这是一个蒙版图像。长按本提示观看帮助视频。",
   INSTALL_SCRIPT_BUTTON: "安装或更新 Excalidraw 脚本",
+  INSTALL_SCRIPT_BUTTON_CUSTOM:
+    "安装或更新 Excalidraw 脚本（自定义地址）", //ymjr
+  CHECKING_SCRIPT: "正在检查脚本…",
+  INSTALL_SCRIPT: "安装脚本",
+  UPTODATE_SCRIPT: "脚本已是最新版本",
+  UPDATE_SCRIPT: "更新脚本",
+  UNABLETOCHECK_SCRIPT: "无法检查脚本",
   OPEN_AS_MD: "打开为 Markdown",
   EXPORT_IMAGE: `导出为图片`,
   SHOW_TAB_TITLEBAR_BUTTONS: "显示标签页标题栏按钮",
@@ -1760,7 +1767,10 @@ Obsidian 的 Excalidraw 插件远不只是画图工具。由于它与 Obsidian �
     "可在以下位置重新启用：设置 → Excalidraw → 基本 → 警告插件更新不完整",
   VERSION_MISMATCH_REDOWNLOAD: "重新下载插件",
   VERSION_MISMATCH_IGNORE: "忽略",
-
+  LATEX_EDITOR_MODE_NAME: "LaTeX 公式编辑器模式",
+  LATEX_EDITOR_MODE_DESC: "选择编辑 LaTeX 公式时的交互方式。“侧边栏原生”模式会在侧边栏创建临时文件，从而支持 LaTeX Suite、Vim 模式等 Obsidian 插件。",
+  LATEX_RESIZE_MODE_NAME: "LaTeX 默认缩放模式",
+  LATEX_RESIZE_MODE_DESC: "决定新插入的 LaTeX 公式如何计算初始大小。",
   //InlineLinkSuggester.ts
   INLINE_HINT: "输入 [[ 以搜索并插入链接",
 

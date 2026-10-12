@@ -17,6 +17,7 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 
 <div class="ex-coffee-div"><a href="${URLs.KO_FI_COM_ZSOLT}"><img src="${URLs.CDN_KO_FI_COM_CDN_KOFI3_PNG}" border="0" alt="Buy Me a Coffee at ko-fi.com"  height=45></a></div>
 `,
+//ymjr -- Preserve release documentation for custom hooks and toolbar scrolling.
 "2.28.0": `
 ## New
 - The Community Script Store now has a searchable card-based library, a focused update section with **Update all**, and a compact top area for Excalidraw Mastery, support, and creating your own scripts. Script details now support reinstalling, opening local files in a new tab, uninstalling, and moving managed scripts between groups under the **Downloaded** folder. Update detection keeps the existing \`directory-info.json\` modified-time contract, ignores private copies outside **Downloaded**, and handles duplicate managed copies consistently. [#2944](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2944)
@@ -27,6 +28,7 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 - Right click panning (without enabling a specific "Miro-style" setting) is now supported. [#12110](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12110)
 
 ## Fixed / Refactored
+- The Library button stays visible at the top of the right-hand toolbar when many scripts are pinned. The remaining buttons scroll within the drawing pane.
 - Lasso tool was not available in the More Tools menu in Tray Mode [#2937](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2937)
 - \`.excalidraw\` drawings with embedded binary images now render those images when opened into an already-used Excalidraw tab. [#2929](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2929)
 - Descriptions in settings no longer disappear when you revisit a settings page from search results. [#2935](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2935)
@@ -36,6 +38,11 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 - Selection rectangles in popout windows are no longer positioned incorrectly when displays use different DPI settings. [#2940](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2940)
 
 ## New/Fixed in Excalidraw Automate
+- Custom-font scripting declarations now accept registered family names as well as numeric IDs. Rendering behavior is unchanged:
+\`\`\`ts
+style.fontFamily: number | string;
+getFontFamily(val: number | string): string;
+\`\`\`
 - Added three view-lifecycle helpers for integrations that use a view-local Excalidraw Automate instance or render generated/transient scene state:
 \`\`\`ts
 clearViewDirty(): void;
@@ -50,6 +57,11 @@ deregisterThisAsViewEA(): boolean;
 addStickyNote(topX: number, topY: number, text: string, formatting?: {width?: number; height?: number; fontSize?: number; fontFamily?: number; textAlign?: "left" | "center" | "right"; textVerticalAlign?: "top" | "middle" | "bottom";}, id?: string): string;
 \`\`\`
 - Unbound arrows created with Excalidraw Automate's \`addArrow()\` no longer contain incomplete binding data that could cause an error when selected.
+<!-- ymjr -->
+- \`onLinkClickHook\` now receives optional resolved-link context after the existing arguments:
+\`\`\`ts
+onLinkClickHook: (element: ExcalidrawElement, linkText: string, event: MouseEvent, view: ExcalidrawView, ea: ExcalidrawAutomate, subpath?: string, file?: TFile, keys?: ModifierKeys) => boolean;
+\`\`\`
 - Updated the [ea-script-template](${URLs.GITHUB_COM}/zsviczian/ea-script-template). Read [EA Script prompting with AI is magical](${URLs.COMMUNITY_SKETCH_YOUR_MIND_COM}/t/10977)
 
 `,

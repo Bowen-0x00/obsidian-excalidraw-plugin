@@ -37,7 +37,8 @@ export type ExcalidrawLine = Mutable<ExcalidrawLineElement>;
 export type ExcalidrawGenericElement =
   | ExcalidrawRectangle
   | ExcalidrawEllipse
-  | ExcalidrawLine;
+  | ExcalidrawLine
+  | ExcalidrawText;
 
 /**
  * Reimplements the fork's `pointFrom<LocalPoint>(x, y)` locally instead of
@@ -49,6 +50,22 @@ export type ExcalidrawGenericElement =
  * second copy of fork code into the plugin build.
  */
 const toLocalPoint = ([x, y]: Point): LocalPoint => [x, y] as LocalPoint;
+
+//ymjr
+export type ExcalidrawText = ExcalidrawElementBase & {
+  type: "text";
+  fontSize: number;
+  fontFamily: number | string;
+  text: string;
+  rawText: string;
+  baseline: number;
+  textAlign: string;
+  verticalAlign: string;
+  containerId: ExcalidrawGenericElement["id"] | null;
+  originalText: string;
+  lineHeight: number;
+};
+//ymjr
 
 export function createExElement(): ExcalidrawElementBase {
   return {
@@ -112,3 +129,23 @@ export function createExLine(points: readonly Point[] = []): ExcalidrawLine {
     endArrowhead: null,
   };
 }
+
+//ymjr
+export function createExText(args: {fontSize: number;
+  fontFamily: number | string;
+  text: string;
+  rawText: string;
+  baseline: number;
+  textAlign: string;
+  verticalAlign: string;
+  containerId: ExcalidrawGenericElement["id"] | null;
+  originalText: string;
+  lineHeight: number
+}): ExcalidrawText {
+  return {
+    ...createExElement(),
+    type: "text",
+    ...args
+  };
+}
+//ymjr

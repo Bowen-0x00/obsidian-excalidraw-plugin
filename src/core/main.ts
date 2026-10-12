@@ -13,6 +13,7 @@ import {
   Notice,
   TAbstractFile,
   FrontMatterCache,
+  request,
 } from "obsidian";
 import {
   VIEW_TYPE_EXCALIDRAW,
@@ -31,6 +32,8 @@ import {
   LOCALE,
   setExcalidrawPlugin,
   DEVICE,
+  SCRIPT_INSTALL_CODEBLOCK,
+  SCRIPT_INSTALL_FOLDER,
   setRootElementSize,
 } from "../constants/constants";
 import { ExcalidrawSettingTab } from "./settings";
@@ -42,6 +45,7 @@ import {
   createOrOverwriteFile,
   fileShouldDefaultAsExcalidraw,
   getDrawingFilename,
+  getIMGFilename,
   getNewUniqueFilepath,
 } from "../utils/fileUtils";
 import {
@@ -129,6 +133,14 @@ import {
   type PreparedAutoexportRequest,
 } from "./managers/AutoexportCoordinator";
 import { errorlog } from "../utils/coreUtils";
+import { URLs } from "../constants/safeUrls";
+import {
+  hideElement,
+  setButtonBgColor,
+  setStyle,
+  showElement,
+} from "../utils/styleUtils";
+import type { RemoteDirectoryInfo } from "../types/githubTypes";
 
 declare const PLUGIN_VERSION: string;
 declare const INITIAL_TIMESTAMP: number;
@@ -204,6 +216,8 @@ export default class ExcalidrawPlugin extends Plugin {
   public markdownImagesMaster: Map<FileId, MarkdownImageData> = null;
   public mermaidsMaster: Map<FileId, string> = null; //fileId, mermaidText
   public scriptEngine: ScriptEngine;
+  //ymjr
+  public customScriptStore: string | false = false;
   private stylesManager: StylesManager;
   public editorHandler: EditorHandler;
   //if set, the next time this file is opened it will be opened as markdown
@@ -458,6 +472,8 @@ export default class ExcalidrawPlugin extends Plugin {
     try {
       //Licat: Are you registering your post processors in onLayoutReady? You should register them in onload instead
       this.addMarkdownPostProcessor();
+      //ymjr
+      this.registerInstallCodeblockProcessor();
     } catch (e) {
       new Notice("Error adding Markdown post processor", 6000);
       console.error("Error adding Markdown post processor", e);
@@ -721,6 +737,251 @@ export default class ExcalidrawPlugin extends Plugin {
     return false;
   }
 
+  //ymjr
+  private registerInstallCodeblockProcessor() {
+    const codeblockProcessor = async (source: string, el: HTMLElement) => {
+      //Button next to the "List of available scripts" at the top
+      //In try/catch block because this approach is very error prone, depends on
+      //MarkdownRenderer() and index.md structure, in case these are not as
+      //expected this code will break
+      let button2: HTMLButtonElement = null;
+      try {
+        const link: HTMLElement = el.parentElement.querySelector(
+          `a[href="#${el.previousElementSibling.getAttribute(
+            "data-heading",
+          )}"]`,
+        );
+        setStyle(link, { paddingRight: "10px" });
+        button2 = link.parentElement.createEl("button", null, (b) => {
+          b.setText(t("UPDATE_SCRIPT"));
+          b.addClass("mod-muted");
+          setButtonBgColor(b, "success");
+          hideElement(b);
+        });
+      } catch (e: unknown) {
+        errorlog({
+          where: "this.registerInstallCodeblockProcessor",
+          source,
+          error: e,
+        });
+      }
+
+      source = source.trim();
+      const button = el.createEl("button");
+        const setButtonText = (
+          text: "CHECKING" | "INSTALL" | "UPTODATE" | "UPDATE" | "ERROR",
+        ) => {
+          if (button2) {
+            hideElement(button2);
+          }
+          switch (text) {
+            case "CHECKING":
+              button.setText(t("CHECKING_SCRIPT"));
+              setButtonBgColor(button, "normal");
+              break;
+            case "INSTALL":
+              button.setText(t("INSTALL_SCRIPT"));
+              setButtonBgColor(button, "accent");
+              break;
+            case "UPTODATE":
+              button.setText(t("UPTODATE_SCRIPT"));
+              setButtonBgColor(button, "normal");
+              break;
+            case "UPDATE":
+              button.setText(t("UPDATE_SCRIPT"));
+              setButtonBgColor(button, "success");
+              if (button2) {
+                showElement(button2);
+              }
+              break;
+            case "ERROR":
+              button.setText(t("UNABLETOCHECK_SCRIPT"));
+              setButtonBgColor(button, "normal");
+              break;
+          }
+        };
+        button.addClass("mod-muted");
+        let decodedURI = source;
+        try {
+          decodedURI = decodeURI(source);
+        } catch (e: unknown) {
+          errorlog({
+            where:
+              "ExcalidrawPlugin.registerInstallCodeblockProcessor.codeblockProcessor.onClick",
+            source,
+            error: e,
+          });
+        }
+        const fname = decodedURI.substring(decodedURI.lastIndexOf("/") + 1);
+
+        //ymjr
+        const folder = this.customScriptStore
+          ? `${this.settings.scriptFolderPath}/Downloaded(Custom)`
+          : `${this.settings.scriptFolderPath}/${SCRIPT_INSTALL_FOLDER}`;
+
+        const downloaded = this.app.vault
+          .getFiles()
+          .filter((f) => f.path.startsWith(folder) && f.name === fname)
+          .sort((a, b) => (a.path > b.path ? 1 : -1));
+        let scriptFile = downloaded[0];
+        const scriptPath = scriptFile?.path ?? `${folder}/${fname}`;
+        const svgPath = getIMGFilename(scriptPath, "svg");
+
+        // Use the upstream getFileByPath API.
+        let svgFile = this.app.vault.getFileByPath(svgPath);
+        setButtonText(scriptFile ? "CHECKING" : "INSTALL");
+        button.onclick = async () => {
+          const download = async (
+            url: string,
+            file: TFile | null,
+            localPath: string,
+          ): Promise<TFile | null> => {
+            const data = await request({ url });
+            if (!data || data.startsWith("404: Not Found")) {
+              return null;
+            }
+            return await createOrOverwriteFile(
+              this.app,
+              file?.path ?? localPath,
+              data,
+            );
+          };
+
+          try {
+            scriptFile = await download(source, scriptFile, scriptPath);
+            if (!scriptFile) {
+              setButtonText("ERROR");
+              throw new Error("File not found");
+            }
+
+            // Missing icons are valid for custom stores.
+            try {
+              svgFile = await download(
+                getIMGFilename(source, "svg"),
+                svgFile,
+                svgPath,
+              );
+            } catch {
+              svgFile = null;
+            }
+
+            setButtonText("UPTODATE");
+            if (Object.keys(this.scriptEngine.scriptIconMap).length === 0) {
+              void this.scriptEngine.loadScripts();
+            }
+            const restartSidepanelTabIfActive = async () => {
+              if (!this.scriptEngine || !(scriptFile instanceof TFile)) {
+                return;
+              }
+              const scriptName = this.scriptEngine.getScriptName(scriptFile);
+              const spView = ExcalidrawSidepanelView.getExisting(false);
+              if (
+                !spView ||
+                !scriptName ||
+                !spView.getTabByScript(scriptName)
+              ) {
+                return;
+              }
+              try {
+                await spView.restartTabForScript(scriptName);
+              } catch (error: unknown) {
+                errorlog({
+                  where:
+                    "ExcalidrawPlugin.registerInstallCodeblockProcessor.restartSidepanelTab",
+                  error,
+                  scriptName,
+                });
+              }
+            };
+            await restartSidepanelTabIfActive();
+            new Notice(`Installed: ${scriptFile.basename}`);
+          } catch (e: unknown) {
+            new Notice(`Error installing script: ${fname}`);
+            errorlog({
+              where:
+                "ExcalidrawPlugin.registerInstallCodeblockProcessor.codeblockProcessor.onClick",
+              error: e,
+            });
+          }
+        };
+        if (button2) {
+          button2.onclick = button.onclick;
+        }
+
+        //check modified date on github
+        if (!scriptFile || !(scriptFile instanceof TFile)) {
+          return;
+        }
+
+        const files = new Map<string, number>();
+        const scriptStoreUrl = this.settings.scriptStoreUrl;
+        const lastSlashIndex = scriptStoreUrl?.lastIndexOf("/") ?? -1;
+        const updatedUrl =
+          lastSlashIndex !== -1
+            ? `${scriptStoreUrl.substring(0, lastSlashIndex + 1)}directory-info.json`
+            : scriptStoreUrl;
+        //ymjr
+        const url = this.customScriptStore
+          ? updatedUrl
+          : URLs.RAW_GITHUBUSERCONTENT_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_MASTER_EA_SCRIPTS_DIRECTORY_INFO_JSON;
+        const directoryInfo = JSON.parse(
+          await request({ url }),
+        ) as RemoteDirectoryInfo[];
+        directoryInfo.forEach((file) => files.set(file.fname, file.mtime));
+
+        const checkModifyDate = (
+          gitFilename: string,
+          file: TFile,
+        ): "ERROR" | "UPDATE" | "UPTODATE" => {
+          if (files.size === 0 || !files.has(gitFilename)) {
+            return "ERROR";
+          }
+          const mtime = files.get(gitFilename);
+          if (!file || mtime > file.stat.mtime) {
+            return "UPDATE";
+          }
+          return "UPTODATE";
+        };
+
+        const scriptButtonText = checkModifyDate(fname, scriptFile);
+        const svgButtonText = checkModifyDate(
+          getIMGFilename(fname, "svg"),
+          !svgFile || !(svgFile instanceof TFile) ? null : svgFile,
+        );
+
+        setButtonText(
+          scriptButtonText === "UPTODATE" && svgButtonText === "UPTODATE"
+            ? "UPTODATE"
+            : scriptButtonText === "UPTODATE" && svgButtonText === "ERROR"
+              ? "UPTODATE"
+              : scriptButtonText === "ERROR"
+                ? "ERROR"
+                : scriptButtonText === "UPDATE" || svgButtonText === "UPDATE"
+                  ? "UPDATE"
+                  : "UPTODATE",
+        );
+    };
+
+    this.registerMarkdownCodeBlockProcessor(
+      SCRIPT_INSTALL_CODEBLOCK,
+      async (source, el) => {
+        // Follow upstream strict async await logic
+        el.addEventListener(RERENDER_EVENT, (event) => {
+          event.stopPropagation();
+          el.empty();
+          void codeblockProcessor(source, el).catch((error: unknown) => {
+            errorlog({
+              where:
+                "ExcalidrawPlugin.registerInstallCodeblockProcessor.rerender",
+              source,
+              error,
+            });
+          });
+        });
+        await codeblockProcessor(source, el);
+      },
+    );
+  }
   /**
    * Displays a transcluded .excalidraw image in markdown preview mode
    */

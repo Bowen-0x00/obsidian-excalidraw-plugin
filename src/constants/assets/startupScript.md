@@ -44,15 +44,19 @@
  * You can use this callback in case you want to do something additional when the onLinkClick event occurs.
  * This callback must return a boolean value.
  * In case you want to prevent the excalidraw onLinkClick action you must return false, it will stop the native excalidraw onLinkClick management flow.
+ * ymjr
  *   onLinkClickHook:(
  *     element: ExcalidrawElement,
  *     linkText: string,
  *     event: MouseEvent,
  *     view: ExcalidrawView,
- *     ea: ExcalidrawAutomate
+ *     ea: ExcalidrawAutomate,
+ *     subpath?: string,
+ *     file?: TFile,
+ *     keys?: ModifierKeys
  *   ) => boolean = null;
  */
-//ea.onLinkClickHook = (element,linkText,event, view, ea) => {};
+//ea.onLinkClickHook = (element, linkText, event, view, ea, subpath, file, keys) => {};
    
 /**
  * If set, this callback is triggered, when Excalidraw receives an onDrop event. 

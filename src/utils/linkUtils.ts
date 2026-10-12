@@ -34,11 +34,14 @@ export function getLinkParts(filename: string, file?: TFile): LinkParts {
     original: filename,
     path: file && parts[1] === "" ? file.path : parts[1],
     isBlockRef,
+    //ymjr
     ref: parts[3]?.match(/^page=\d*$/i)
       ? parts[3]
-      : isBlockRef
-        ? cleanBlockRef(parts[3])
-        : cleanSectionHeading(parts[3]),
+      : parts[3]?.match(/group=\w+$/i)
+        ? parts[3]
+        : isBlockRef
+          ? cleanBlockRef(parts[3])
+          : cleanSectionHeading(parts[3]),
     width: parts[4] ? parseInt(parts[4]) : undefined,
     height: parts[5] ? parseInt(parts[5]) : undefined,
     page,

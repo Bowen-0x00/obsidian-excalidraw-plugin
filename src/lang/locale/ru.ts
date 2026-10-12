@@ -317,6 +317,15 @@ export default {
   MASK_FILE_NOTICE:
     "Это файл маски. Он используется для кадрирования изображений и маскирования частей изображения. Нажмите и удерживайте уведомление, чтобы открытьe help video.",
   INSTALL_SCRIPT_BUTTON: "Установка или обновление скриптов Excalidraw",
+  INSTALL_SCRIPT_BUTTON_CUSTOM:
+    "Установить или обновить скрипты Excalidraw (другой источник)", //ymjr
+  CHECKING_SCRIPT: "Проверка скрипта…",
+  INSTALL_SCRIPT: "Установить скрипт",
+  UPTODATE_SCRIPT: "Скрипт актуален",
+  UPDATE_SCRIPT: "Обновить скрипт",
+  UNABLETOCHECK_SCRIPT: "Не удалось проверить скрипт",
+  SCRIPT_INSTALL_PROMPT_OPEN_ERROR:
+    "Не удалось открыть репозиторий скриптов.",
   OPEN_AS_MD: "Открыть как Markdown",
   EXPORT_IMAGE: `Экспорт изображения`,
   OPEN_LINK:

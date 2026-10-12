@@ -36,6 +36,8 @@ export interface ViewExcalidrawExtensionRendererDependencies {
   useDefaultExcalidrawFrame: typeof import("../../utils/customEmbeddableUtils").useDefaultExcalidrawFrame;
   openUIModeSettings: () => void;
   openScriptInstallPrompt: () => void;
+  //ymjr
+  openCustomScriptInstallPrompt: () => void;
   openExportImageDialog: () => void;
 }
 
@@ -374,6 +376,16 @@ export class ViewExcalidrawExtensionRenderer {
         },
         children: t("TRAY_SAVE"),
       }),
+      //ymjr
+      this.view.plugin.settings.scriptStoreUrl
+        ? React.createElement(MainMenu.Item, {
+            icon: ICONS.scriptEngine,
+            "aria-label": t("INSTALL_SCRIPT_BUTTON_CUSTOM"),
+            onSelect: () =>
+              this.dependencies.openCustomScriptInstallPrompt(),
+            children: t("INSTALL_SCRIPT_BUTTON_CUSTOM"),
+          })
+        : null,
       React.createElement(MainMenu.Item, {
         icon: ICONS.scriptEngine,
         "aria-label": t("TRAY_SCRIPT_LIBRARY_ARIA"),

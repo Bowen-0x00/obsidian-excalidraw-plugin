@@ -101,6 +101,7 @@ export let {
   getCommonBoundingBox,
   getMaximumGroups,
   measureText,
+  getTextHeight, //ymjr
   getLineHeight,
   wrapText,
   getFontString,
@@ -115,6 +116,7 @@ export let {
   getContainerElement,
   refreshTextDimensions,
   getCSSFontDefinition,
+  isSafari, //ymjr
   loadSceneFonts,
   loadMermaid,
   syncInvalidIndices,
@@ -246,7 +248,8 @@ export const ROUNDNESS = {
 } as const;
 export const THEME_FILTER = "invert(93%) hue-rotate(180deg) saturate(1.25)";
 export const URLFETCHTIMEOUT = 3000;
-export const PLUGIN_ID = "obsidian-excalidraw-plugin";
+export const PLUGIN_ID = "obsidian-excalidraw-plugin-ymjr"; //ymjr
+export const SCRIPT_INSTALL_CODEBLOCK = "excalidraw-script-install"; //ymjr
 export const SCRIPT_INSTALL_FOLDER = "Downloaded";
 export const fileid = customAlphabet("1234567890abcdef", 40);
 export const REG_LINKINDEX_INVALIDCHARS = /[<>:"\\|?*#]/g;

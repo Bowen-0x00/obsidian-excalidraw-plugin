@@ -163,6 +163,7 @@ export interface ExcalidrawSettings {
   experimantalFourthFont: string;
   addDummyTextElement: boolean;
   zoteroCompatibility: boolean;
+  multiFontsFolder: string; //ymjr
   fieldSuggester: boolean;
   enableOnloadScripts: boolean;
   enableCommandLinks: boolean;
@@ -230,7 +231,10 @@ export interface ExcalidrawSettings {
     DECAY_TIME: number;
     DECAY_LENGTH: number;
     COLOR: string;
+    STROKE_COLOR: string; //ymjr
+    FILL_COLOR: string; //ymjr
   };
+  savingFileName: string; //ymjr
   embeddableMarkdownDefaults: EmbeddableMDCustomProps;
   markdownNodeOneClickEditing: boolean;
   canvasImmersiveEmbed: boolean;
@@ -257,6 +261,17 @@ export interface ExcalidrawSettings {
   rank: Rank;
   modifierKeyOverrides: { modifiers: Modifier[]; key: string }[];
   showSplashscreen: boolean;
+  exportSVGFont: boolean; //ymjr
+  showAllArrowOption: boolean; //ymjr
+  classifyLibrary: boolean; //ymjr
+  exportMD2PngInSVG: boolean; //ymjr
+  mindmapHandle: boolean; //ymjr
+  scriptStoreUrl: string; //ymjr
+  strokeWidthSliderMin: number; //ymjr
+  strokeWidthSliderMax: number; //ymjr
+  strokeWidthSliderStep: number; //ymjr
+  latexEditorMode: "native" | "legacy" | "modal"; //ymjr
+  latexResizeMode: "fontsize" | "lastEl"; //ymjr
   pdfSettings: PDFExportSettings;
   disableContextMenu: boolean;
 }
@@ -606,6 +621,7 @@ export const DEFAULT_SETTINGS: ExcalidrawSettings = {
   experimantalFourthFont: "Virgil",
   addDummyTextElement: false,
   zoteroCompatibility: false,
+  multiFontsFolder: "", //ymjr
   fieldSuggester: true,
   enableOnloadScripts: false,
   enableCommandLinks: false,
@@ -701,7 +717,11 @@ export const DEFAULT_SETTINGS: ExcalidrawSettings = {
     DECAY_LENGTH: 50,
     DECAY_TIME: 1000,
     COLOR: "#ff0000",
+    STROKE_COLOR: "#D61463", //ymjr
+    FILL_COLOR: "#F2916E", //ymjr
   },
+  savingFileName:
+    '`${this.file.basename}_image_${window.moment().format("YYYYMMDDHHmmss_SSS")}`', //ymjr
   embeddableMarkdownDefaults: {
     useObsidianDefaults: false,
     backgroundMatchCanvas: false,
@@ -1023,6 +1043,18 @@ export const DEFAULT_SETTINGS: ExcalidrawSettings = {
     { modifiers: ["Mod"], key: "G" },
   ],
   showSplashscreen: true,
+  exportSVGFont: true, //ymjr
+  showAllArrowOption: false, //ymjr
+  classifyLibrary: true, //ymjr
+  exportMD2PngInSVG: false, //ymjr
+  mindmapHandle: true, //ymjr
+  scriptStoreUrl:
+    "https://raw.giteeusercontent.com/Bowen-0x00/obsidian-excalidraw-scripts/raw/main/Scripts/index.md", //ymjr
+  strokeWidthSliderMin: 0, //ymjr
+  strokeWidthSliderMax: 100, //ymjr
+  strokeWidthSliderStep: 1, //ymjr
+  latexEditorMode: "native", //ymjr
+  latexResizeMode: "fontsize", //ymjr
   pdfSettings: {
     pageSize: "A4",
     pageOrientation: "portrait",

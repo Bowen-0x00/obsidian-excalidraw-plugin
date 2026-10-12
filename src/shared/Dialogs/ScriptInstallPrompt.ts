@@ -1,4 +1,6 @@
 import {
+  type Component,
+  MarkdownRenderer,
   Modal,
   Notice,
   normalizePath,
@@ -28,6 +30,7 @@ import {
   type ScriptLibraryPluginContext,
 } from "../../utils/scriptLibraryUtils";
 import { errorlog } from "../../utils/utils";
+import { ContentSearcher } from "../components/ContentSearcher";
 
 const CATALOG_URL =
   URLs.RAW_GITHUBUSERCONTENT_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_MASTER_EA_SCRIPTS_SCRIPT_STORE_JSON;
@@ -95,6 +98,12 @@ const getScriptIconUrl = (entry: ScriptStoreEntry): string =>
 const getScriptSourceUrl = (entry: ScriptStoreEntry): string =>
   getPluginRepositoryBlobUrl(`ea-scripts/${entry.file}`);
 
+//ymjr
+type ScriptInstallPluginContext = ScriptLibraryPluginContext &
+  Component & {
+    customScriptStore?: string | false;
+  };
+
 export class ScriptInstallPrompt extends Modal {
   private contentDiv: HTMLDivElement;
   private catalog: ScriptStoreCatalog | null = null;
@@ -104,7 +113,11 @@ export class ScriptInstallPrompt extends Modal {
   private searchQuery = "";
   private storeView: StoreView = "all";
 
-  constructor(private plugin: ScriptLibraryPluginContext) {
+  //ymjr
+  constructor(
+    private plugin: ScriptInstallPluginContext,
+    private readonly customStoreUrl?: string,
+  ) {
     super(plugin.app);
   }
 
@@ -121,8 +134,45 @@ export class ScriptInstallPrompt extends Modal {
     this.contentDiv = this.contentEl.createDiv({
       cls: "excalidraw-script-store__content",
     });
+    //ymjr
+    if (this.customStoreUrl) {
+      this.plugin.customScriptStore = this.customStoreUrl;
+      void this.loadCustomStore();
+      return;
+    }
+    this.plugin.customScriptStore = false;
     this.renderLoading();
     void this.loadStore();
+  }
+
+  //ymjr
+  private async loadCustomStore(): Promise<void> {
+    try {
+      new ContentSearcher(this.contentDiv);
+      const source = await request({ url: this.customStoreUrl });
+      if (!source) {
+        throw new Error("Custom script store returned no content");
+      }
+      await MarkdownRenderer.render(
+        this.plugin.app,
+        source,
+        this.contentDiv,
+        "",
+        this.plugin,
+      );
+      this.contentDiv
+        .querySelectorAll("h1[data-heading],h2[data-heading],h3[data-heading]")
+        .forEach((element) => {
+          element.setAttribute("id", element.getAttribute("data-heading"));
+        });
+      this.contentDiv.querySelectorAll("a.internal-link").forEach((element) => {
+        element.removeAttribute("target");
+      });
+    } catch (error: unknown) {
+      errorlog({ where: "ScriptInstallPrompt.loadCustomStore", error });
+      new Notice(t("SCRIPT_INSTALL_PROMPT_OPEN_ERROR"));
+      this.close();
+    }
   }
 
   private renderLoading(): void {

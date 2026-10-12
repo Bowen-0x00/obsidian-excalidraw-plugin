@@ -609,6 +609,20 @@ export class ExcalidrawData {
         el.autoResize = true;
       }
 
+      //ymjr: Normalize string fontFamily from legacy elements
+      const legacyTextElement = el as unknown as {
+        fontFamily: number | string;
+      };
+      if (
+        el.type === "text" &&
+        typeof legacyTextElement.fontFamily === "string"
+      ) {
+        legacyTextElement.fontFamily = legacyTextElement.fontFamily.replace(
+          /^"+|"+$/g,
+          "",
+        );
+      }
+
       if (el.type === "text" && !Object.hasOwn(el ?? {}, "lineHeight")) {
         el.lineHeight = getLineHeight(el.fontFamily) as number & {
           _brand: "unitlessLineHeight";
@@ -1106,7 +1120,7 @@ export class ExcalidrawData {
       res = data.matchAll(REG_FILEID_EQUATION);
       while (!(parts = res.next()).done) {
         this.setEquation(parts.value[1] as FileId, {
-          latex: parts.value[2],
+          latex: parts.value[2]/*ymjr*/.trim()/*ymjr*/,
           isLoaded: false,
         });
       }
@@ -1710,6 +1724,21 @@ export class ExcalidrawData {
       }
     }
     //outString += this.equations.size > 0 || this.files.size > 0 ? "\n" : "";
+    /*ymjr*/
+    outString += "\n## Tags\n";
+    const tagElements = this.scene.elements.filter((el: ExcalidrawElement) => el?.customData?.tags);
+    const tagSet = new Set<string>();
+    for (const el of tagElements) {
+      for (const tag of el.customData.tags) {
+        if (tag) {
+          tagSet.add(tag)
+        }
+      }
+    }
+    for (const tag of tagSet) {
+      outString += `#${tag}\n\n`;
+    }
+    /*ymjr*/
 
     const sceneJSONstring = JSON.stringify(
       {
@@ -1764,7 +1793,29 @@ export class ExcalidrawData {
     let fname = name;
 
     if (!fname) {
-      fname = `Pasted Image ${window.moment().format("YYYYMMDDHHmmss_SSS")}`;
+      /*ymjr++>> Safe template parsing replacing eval */
+      const filenameSetting =
+        this.plugin.settings.savingFileName ||
+        '`${this.file.basename}_image_${window.moment().format("YYYYMMDDHHmmss_SSS")}`';
+
+      // Remove optional wrapping backticks.
+      let template = filenameSetting.replace(/^`|`$/g, "");
+
+      template = template.replace(
+        /\${this\.file\.basename}/g,
+        this.file.basename || "Untitled",
+      );
+      template = template.replace(
+        /\${(?:window\.)?moment\(\)\.format\((['"`])(.*?)\1\)}/g,
+        (_match: string, _quote: string, format: string) =>
+          window.moment().format(format),
+      );
+
+      fname = template;
+      if (!fname) {
+        fname = `Pasted Image ${window.moment().format("YYYYMMDDHHmmss_SSS")}`;
+      }
+      /*ymjr++<<*/
 
       switch (mimeType) {
         case "image/png":

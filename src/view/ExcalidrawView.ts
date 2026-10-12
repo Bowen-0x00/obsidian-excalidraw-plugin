@@ -11,6 +11,7 @@ import {
   requireApiVersion,
   HoverParent,
   HoverPopover,
+  debounce, //ymjr
 } from "obsidian";
 import {
   ExcalidrawElement,
@@ -283,6 +284,7 @@ import { updateElementIdsInScene } from "src/utils/excalidrawSceneUtils";
 import { FileData } from "src/types/embeddedFileLoaderTypes";
 import { UIMode } from "src/shared/Dialogs/UIModeSettingComponent";
 import { UIModeSettings } from "src/shared/Dialogs/UIModeSettings";
+import { LatexEditModal } from "src/utils/LatexEditModal"; //ymjr
 import { copyLinkToSelectedElementToClipboard } from "src/shared/Dialogs/copyLinkToSelectedElement";
 import { getPDFCropRect } from "src/utils/PDFUtils";
 import {
@@ -708,6 +710,12 @@ export default class ExcalidrawView
           uiModes.open();
         },
         openScriptInstallPrompt: () => this.actionOpenScriptInstallPrompt(),
+        //ymjr
+        openCustomScriptInstallPrompt: () =>
+          new ScriptInstallPrompt(
+            this.plugin,
+            this.plugin.settings.scriptStoreUrl,
+          ).open(),
         openExportImageDialog: () => this.actionOpenExportImageDialog(),
       },
     );
@@ -1468,20 +1476,24 @@ export default class ExcalidrawView
   }
 
   async openLaTeXEditor(eqId: string) {
+    //ymjr++ >> Merge upstream: sync elements and force save to solve sync issues in specific scenarios
     if (await this.excalidrawData.syncElements(this.getScene())) {
       //https://github.com/zsviczian/obsidian-excalidraw-plugin/issues/1994
       await this.forceSave(true, false);
     }
+    //ymjr++ <<
+
     const el = this.getViewElements().find(
       (el: ExcalidrawElement) => el.id === eqId && el.type === "image",
     ) as ExcalidrawImageElement;
+
     if (!el) {
       return;
     }
 
     const fileId = el.fileId;
-
     let equation = this.excalidrawData.getEquation(fileId)?.latex;
+
     if (!equation) {
       await this.save(false);
       equation = this.excalidrawData.getEquation(fileId)?.latex;
@@ -1490,38 +1502,208 @@ export default class ExcalidrawView
       }
     }
 
-    LaTexPrompt.Prompt(this.plugin, this.app, t("ENTER_LATEX"), equation).then(
-      (formula: string) => {
-        void (async () => {
-          if (!formula || formula === equation) {
-            return;
+    //ymjr
+    const saveEquation = async (formula: string) => {
+      if (!formula || formula === equation) {
+        return;
+      }
+
+      this.excalidrawData.setEquation(fileId, {
+        latex: formula,
+        isLoaded: false,
+      });
+
+      const ea = getEA(this);
+      ea.copyViewElementsToEAforEditing([el]);
+      ea.addAppendUpdateCustomData(el.id, { latex: formula });
+
+      const dataURL = await ea.tex2dataURL(equation);
+      if (dataURL && dataURL.size.height > 0 && dataURL.size.width > 0) {
+        ea.addAppendUpdateCustomData(el.id, {
+          latexscale: {
+            scaleX: el.width / dataURL.size.width,
+            scaleY: el.height / dataURL.size.height,
+          },
+        });
+      }
+      await ea.addElementsToView(false, false, false, false);
+      await this.save(false);
+      await updateEquation(formula, fileId, this, (files, view) => {
+        void addFiles(files, view);
+      });
+      this.setDirty();
+      equation = formula;
+    };
+
+    //ymjr
+    const mode = this.plugin.settings.latexEditorMode;
+
+    switch (mode) {
+      case "native": {
+        const tempFileName = "Excalidraw-LaTeX-Edit.md";
+        let file = this.app.vault.getAbstractFileByPath(tempFileName);
+        const wrappedEquation = `$$\n${equation}\n$$`;
+
+        if (!file) {
+          file = await this.app.vault.create(tempFileName, wrappedEquation);
+        } else if (file instanceof TFile) {
+          await this.app.vault.modify(file, wrappedEquation);
+        }
+
+        let leaf: WorkspaceLeaf;
+        // @ts-ignore -- optional Hover Editor plugin API is not published.
+        const hoverEditorPlugin =
+          this.app.plugins.plugins["obsidian-hover-editor"];
+        const STORAGE_KEY = "excalidraw-latex-pos";
+
+        if (hoverEditorPlugin) {
+          // @ts-ignore -- optional Hover Editor plugin API is not published.
+          leaf = hoverEditorPlugin.spawnPopover();
+
+          const savedPos = localStorage.getItem(STORAGE_KEY);
+          if (savedPos) {
+            const pos = JSON.parse(savedPos);
+            setTimeout(() => {
+              // @ts-ignore -- optional Hover Editor plugin API is not published.
+              const popover = hoverEditorPlugin.activePopovers?.find(
+                (p: { leaf: WorkspaceLeaf }) => p.leaf === leaf,
+              );
+              const popoverEl = popover
+                ? popover.hoverEl
+                : leaf.containerEl.closest(".popover");
+
+              if (popoverEl) {
+                popoverEl.style.top = pos.top;
+                popoverEl.style.left = pos.left;
+                popoverEl.style.width = pos.width;
+                popoverEl.style.height = pos.height;
+
+                popoverEl.style.transform = "none";
+
+                popoverEl.style.setProperty("top", pos.top, "important");
+                popoverEl.style.setProperty("left", pos.left, "important");
+              }
+            }, 500);
           }
-          this.excalidrawData.setEquation(fileId, {
-            latex: formula,
-            isLoaded: false,
-          });
-          const ea = getEA(this);
-          ea.copyViewElementsToEAforEditing([el]);
-          ea.addAppendUpdateCustomData(el.id, { latex: formula });
-          const dataurl = await ea.tex2dataURL(equation);
-          if (dataurl && dataurl.size.height > 0 && dataurl.size.width > 0) {
-            ea.addAppendUpdateCustomData(el.id, {
-              latexscale: {
-                scaleX: el.width / dataurl.size.width,
-                scaleY: el.height / dataurl.size.height,
-              },
+        } else {
+          leaf = this.app.workspace.getLeaf("split", "vertical");
+        }
+
+        await leaf.openFile(file as TFile);
+
+        const view = leaf.view as MarkdownView;
+        if (view) {
+          // @ts-ignore
+          if (!hoverEditorPlugin) {
+            leaf.setPinned(true);
+          }
+
+          const headerEl = view.containerEl.querySelector(
+            ".view-header",
+          ) as HTMLElement;
+          if (headerEl) {
+            setStyle(headerEl, { display: "none" });
+          }
+
+          view.editor.focus();
+          const lineCount = view.editor.lineCount();
+          if (lineCount >= 2) {
+            view.editor.setCursor({
+              line: 1,
+              ch: view.editor.getLine(1).length,
             });
           }
-          await ea.addElementsToView(false, false, false, false);
-          await this.save(false);
-          await updateEquation(formula, fileId, this, (files, view) => {
-            void addFiles(files, view);
-          });
-          this.setDirty();
-        })();
-      },
-      () => {},
-    );
+        }
+
+        const debouncedUpdate = debounce(
+          async (changedFile: TFile) => {
+            if (changedFile.path === tempFileName) {
+              const content = await this.app.vault.read(changedFile);
+              let cleanFormula = content
+                .replace(/^\$\$[\s\n]*/, "")
+                .replace(/[\s\n]*\$\$$/, "")
+                .trim();
+
+              if (!cleanFormula && content.trim().length > 0) {
+                cleanFormula = content.trim();
+              }
+
+              await saveEquation(cleanFormula);
+            }
+          },
+          500,
+          true,
+        );
+
+        const eventRef = this.app.vault.on("modify", debouncedUpdate);
+
+        const checkInterval = window.setInterval(() => {
+          if (!view || !view.file || view.file.path !== tempFileName) {
+            this.app.vault.offref(eventRef);
+            window.clearInterval(checkInterval);
+            return;
+          }
+
+          if (hoverEditorPlugin) {
+            // @ts-ignore
+            const popoverEl = leaf.containerEl.closest(
+              ".popover",
+            ) as HTMLElement;
+            if (popoverEl) {
+              const rect = popoverEl.getBoundingClientRect();
+              if (rect.width > 50 && rect.height > 50) {
+                const posData = {
+                  top: popoverEl.style.top,
+                  left: popoverEl.style.left,
+                  width: popoverEl.style.width,
+                  height: popoverEl.style.height,
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(posData));
+              }
+            }
+          }
+        }, 500);
+
+        break;
+      }
+
+      case "legacy": {
+        const isLatexSuitAvailable =
+          !!this.app.plugins.plugins["obsidian-latex-suite"];
+
+        if (isLatexSuitAvailable) {
+          void LaTexPrompt.Prompt(
+            this.plugin,
+            this.app,
+            t("ENTER_LATEX"),
+            equation,
+          ).then(saveEquation);
+        } else {
+          void GenericInputPrompt.Prompt(
+            this,
+            this.plugin,
+            this.app,
+            t("ENTER_LATEX"),
+            undefined,
+            equation,
+            undefined,
+            3,
+          ).then(saveEquation);
+        }
+        break;
+      }
+
+      case "modal":
+      default: {
+        new LatexEditModal(
+          this.app,
+          this.plugin,
+          equation,
+          (formula) => void saveEquation(formula),
+        ).open();
+        break;
+      }
+    }
   }
 
   async openEmbeddedLinkEditor(imgId: string) {
@@ -1674,12 +1856,23 @@ export default class ExcalidrawView
   }
 
   /** Invokes the link-click hook through the navigation manager. */
+  //ymjr
   handleLinkHookCall(
     element: ExcalidrawElement,
     link: string,
     event: MouseEvent | null,
+    subpath?: string,
+    file?: TFile,
+    keys?: ModifierKeys,
   ): boolean {
-    return this.linkNavigationManager.handleLinkHookCall(element, link, event);
+    return this.linkNavigationManager.handleLinkHookCall(
+      element,
+      link,
+      event,
+      subpath,
+      file,
+      keys,
+    );
   }
 
   private getLinkTextForElement(
@@ -1979,6 +2172,21 @@ export default class ExcalidrawView
         this.semaphores.wheelTimeout = null;
       }, 1000);
     };
+
+    //ymjr
+    if (this.plugin.settings.scriptStoreUrl) {
+      this.addAction(
+        SCRIPTENGINE_ICON_NAME,
+        t("INSTALL_SCRIPT_BUTTON_CUSTOM"),
+        () => {
+          new ScriptInstallPrompt(
+            this.plugin,
+            this.plugin.settings.scriptStoreUrl,
+          ).open();
+        },
+      );
+    }
+    //ymjr
 
     this.registerDomEvent(this.containerEl, "wheel", wheelEvent, {
       passive: false,
@@ -3441,6 +3649,7 @@ export default class ExcalidrawView
             appState: AppState;
           },
         );
+        await this.plugin.scriptEngine.runAutorunScripts(this); //ymjr
         this.isLoaded = true;
         migrationLoadSucceeded = true;
         if (migrationHandoffPersistenceFailed) {
@@ -4282,6 +4491,13 @@ export default class ExcalidrawView
     void this.initializeToolsIconPanelAfterLoading();
     const uiMode = calculateUIModeValue(this.plugin.settings);
     this.setUIMode(uiMode);
+    //ymjr: notify EA_Core script dispatcher
+    const core = (window as any).EA_Core;
+    if (core) {
+      const isIntercepted = core.dispatchSync("onAfterLoadScene", {
+        view: this
+      });
+    }
   }
 
   public setDirty(): void {
@@ -4764,6 +4980,22 @@ export default class ExcalidrawView
             new ScriptInstallPrompt(this.plugin).open();
           });
       });
+    //ymjr
+    if (this.plugin.settings.scriptStoreUrl) {
+      menu.addItem((item) => {
+        item
+          .setTitle(t("INSTALL_SCRIPT_BUTTON_CUSTOM"))
+          .setIcon(SCRIPTENGINE_ICON_NAME)
+          .setSection("pane")
+          .onClick(() => {
+            new ScriptInstallPrompt(
+              this.plugin,
+              this.plugin.settings.scriptStoreUrl,
+            ).open();
+          });
+      });
+    }
+    //ymjr
     super.onPaneMenu(menu, source);
   }
 
@@ -5665,6 +5897,16 @@ export default class ExcalidrawView
   }
 
   public onPointerDown(e: PointerEvent) {
+    /*ymjr+++>>>*/
+    const core = (window as any).EA_Core;
+    if (core) {
+      const context = { view: this, event: e };
+      const isIntercepted = core.dispatchSync("onPointerDown", context);
+      if (isIntercepted) {
+        return;
+      }
+    }
+    /*ymjr+++<<<*/
     if (!(isWinCTRLorMacCMD(e) || isWinMETAorMacCTRL(e))) {
       return;
     }
@@ -6427,6 +6669,40 @@ export default class ExcalidrawView
         nextLink: textElement?.link ?? null,
       };
     }
+
+    //ymjr>>>
+    // if ((window as any)?.onBeforeTextSubmit_Hook) {
+    //   const result = (window as any)?.onBeforeTextSubmit_Hook?.(
+    //     textElement,
+    //     nextText,
+    //     nextOriginalText,
+    //     isDeleted,
+    //   );
+    //   if (result) {
+    //     return result;
+    //   }
+    // }
+    const core = (window as any).EA_Core;
+    if (core) {
+      const context = {
+        textElement,
+        nextText,
+        nextOriginalText,
+        isDeleted,
+        
+        updatedNextOriginalText: null as string | null,
+        nextLink: textElement?.link ?? null
+      };
+      const isIntercepted = core.dispatchSync('onBeforeTextSubmit', context);
+
+      if (isIntercepted) {
+        return {
+          updatedNextOriginalText: context.updatedNextOriginalText,
+          nextLink: context.nextLink
+        };
+      }
+    }
+    //ymjr<<<
 
     // 1. Set the isEditingText flag to true to prevent autoresize on mobile
     // 1500ms is an empirical number, the on-screen keyboard usually disappears in 1-2 seconds
@@ -8021,7 +8297,16 @@ export default class ExcalidrawView
           this.excalidrawData,
           exactMatch,
         ),
-      );
+      ).concat( //ymjr
+        ((tagElements: ExcalidrawElement[]): ExcalidrawElement[] => {
+          return tagElements.filter((el) => {
+            return query.some((q) => {
+              return el.customData.tags.some((e: string) => {
+                return e == q.substring(1);
+              });
+            });
+          });
+        })(elements.filter((el) => el?.customData?.tags)));
 
     if (match.length === 0) {
       new Notice(t("NO_SEARCH_RESULT"));

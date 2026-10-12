@@ -10,8 +10,8 @@ export { getEmbeddedFilenameParts } from "./embeddedFilenameParts";
  * Loads a vault font and creates its data URL and `@font-face` definition.
  *
  * @param app - Obsidian application used to resolve and read the font file.
- * @param fontFileName - Vault link path or font filename to resolve.
- * @param sourcePath - Vault path from which the font link is resolved.
+ * @param fontFileNameOrFile - Vault link path, font filename, or resolved file.
+ * @param sourcePath - Vault path from which a string link is resolved.
  * @param name - Optional font-family name overriding the file basename.
  * @returns The font definition, resolved family name, encoded data URL, and
  * original buffer. Empty strings and a null buffer are returned when the font
@@ -20,9 +20,10 @@ export { getEmbeddedFilenameParts } from "./embeddedFilenameParts";
  * MIME types and CSS format names intentionally preserve the established
  * extension mapping used by plugin startup and embedded SVG font loading.
  */
+//ymjr
 export async function getFontDataURL(
   app: App,
-  fontFileName: string,
+  fontFileNameOrFile: string | TFile,
   sourcePath: string,
   name?: string,
 ): Promise<{
@@ -35,13 +36,19 @@ export async function getFontDataURL(
   let fontName = "";
   let dataURL = "";
   let arrayBuffer: ArrayBuffer | null = null;
-  const f = app.metadataCache.getFirstLinkpathDest(fontFileName, sourcePath);
-  if (f) {
-    arrayBuffer = await app.vault.readBinary(f);
+  const file =
+    typeof fontFileNameOrFile === "string"
+      ? app.metadataCache.getFirstLinkpathDest(
+          fontFileNameOrFile,
+          sourcePath,
+        )
+      : fontFileNameOrFile;
+  if (file) {
+    arrayBuffer = await app.vault.readBinary(file);
     let mimeType = "";
     let format = "";
 
-    switch (f.extension) {
+    switch (file.extension) {
       case "woff":
         mimeType = "application/font-woff";
         format = "woff";
@@ -61,7 +68,7 @@ export async function getFontDataURL(
       default:
         mimeType = "application/octet-stream";
     }
-    fontName = name ?? f.basename;
+    fontName = name ?? file.basename;
     dataURL = await getDataURL(arrayBuffer, mimeType);
     const split = dataURL.split(";base64,", 2);
     dataURL = `${split[0]};charset=utf-8;base64,${split[1]}`;

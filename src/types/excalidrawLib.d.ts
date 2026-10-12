@@ -257,7 +257,13 @@ export declare namespace ExcalidrawLib {
     text: string,
     font: FontString,
     lineHeight: number,
-  ): { width: number; height: number };
+  ): { width: number; height: number; };
+
+  function getTextHeight ( //ymjr
+    text: string,
+    fontSize: number,
+    lineHeight: ExcalidrawTextElement["lineHeight"],
+  ) : number;
 
   function getLineHeight(fontFamily: FontFamilyValues): number;
   function wrapText(text: string, font: FontString, maxWidth: number): string;
@@ -270,7 +276,8 @@ export declare namespace ExcalidrawLib {
     fontFamily: FontFamilyValues;
   }): FontString;
 
-  function getFontFamilyString({ fontFamily }: { fontFamily: number }): string;
+  //ymjr -- Derive the family value from the customized component's declaration.
+  function getFontFamilyString({ fontFamily }: { fontFamily: ExcalidrawTextElement["fontFamily"] }): string;
 
   function getBoundTextMaxWidth(container: ExcalidrawElement): number;
 
@@ -319,15 +326,21 @@ export declare namespace ExcalidrawLib {
   function configureObsidianExcalidrawHost(
     adapter: ObsidianExcalidrawHostAdapter,
   ): () => void;
-  function registerLocalFont(fontMetrics: FontMetadata, uri: string): void;
+  function registerLocalFont( //ymjr
+    fontMetrics: FontMetadata,
+    uri: string,
+    fontFamily?: string,
+    fontName?: string,
+  ): void;
   function getFontFamilies(): string[];
   function registerFontsInCSS(): Promise<void>;
-  function getCSSFontDefinition(fontFamily: number): Promise<string>;
+  function getCSSFontDefinition(fontFamily: ExcalidrawTextElement["fontFamily"]): Promise<string>; //ymjr
   function getTextFromElements(
     elements: readonly ExcalidrawElement[],
     separator?: string,
   ): string;
   function safelyParseJSON(json: string): JsonObject | null;
+  let isSafari : boolean; //ymjr
   function loadSceneFonts(
     elements: NonDeletedExcalidrawElement[],
   ): Promise<void>;

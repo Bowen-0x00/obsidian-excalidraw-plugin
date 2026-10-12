@@ -30,9 +30,10 @@ export class InsertMDDialog extends FuzzySuggestModal<TFile> {
   }
 
   getItems(): TFile[] {
-    return (this.app.vault.getFiles() || []).filter(
-      (f: TFile) => f.extension === "md" && !this.plugin.isExcalidrawFile(f),
-    );
+    return (this.app.vault.getFiles() || []); //ymjr
+    // .filter(
+    //   (f: TFile) => f.extension === "md" && !this.plugin.isExcalidrawFile(f),
+    // );
   }
 
   getItemText(item: TFile): string {

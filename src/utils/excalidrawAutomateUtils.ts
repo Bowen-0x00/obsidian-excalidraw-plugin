@@ -10,6 +10,7 @@ import { getTextMode } from "src/shared/TextMode";
 import {
   ExcalidrawElement,
   ExcalidrawImageElement,
+  ExcalidrawTextElement, //ymjr
   FileId,
   FixedPoint,
   FontString,
@@ -26,6 +27,8 @@ import {
   getFontFamilyString,
   getLineHeight,
   measureText,
+  getTextHeight, //ymjr
+  isSafari, //ymjr
   nanoid,
 } from "src/constants/constants";
 import {
@@ -70,6 +73,8 @@ export {
   getBoundTextElementId,
   repositionElementsToCursor,
 } from "./excalidrawElementUtils";
+
+import { EA_Kernel } from "src/utils/EA_Core";
 
 declare const PLUGIN_VERSION: string;
 
@@ -245,6 +250,8 @@ export function initExcalidrawAutomate(
 ): ExcalidrawAutomate {
   const ea = new ExcalidrawAutomate(plugin);
   window.ExcalidrawAutomate = ea;
+  // ymjr
+  EA_Kernel.hookExcalidrawAutomate(ea);
   return ea;
 }
 
@@ -275,10 +282,16 @@ export function getLineBox(points: [x: number, y: number][]): {
   };
 }
 
+/** Returns the runtime font-family string without changing its fallback rules. */
+export function getFontFamily(id: ExcalidrawTextElement["fontFamily"]): string {
+  //ymjr
+  return getFontFamilyString({ fontFamily: id });
+}
+
 export function _measureText(
   newText: string,
   fontSize: number,
-  fontFamily: number,
+  fontFamily: ExcalidrawTextElement["fontFamily"], //ymjr -- Match the fork's named-family support.
   lineHeight: number,
 ): { w: number; h: number } {
   //following odd error with mindmap on iPad while synchornizing with desktop.
@@ -296,8 +309,64 @@ export function _measureText(
   );
   return { w: metrics.width, h: metrics.height };
 }
+//ymjr>>>
+export function measureBaseline(
+  text: string,
+  fontSize: number,
+  fontFamily: ExcalidrawTextElement["fontFamily"], //ymjr
+  lineHeight: ExcalidrawTextElement["lineHeight"],
+  wrapInContainer?: boolean,
+) {
+  //zsviczian - avoiding frequent dom event at the top level of the document
+  //addressess slow performance when scaling sticky notes in Obsidian popout windows
+  const font = `${fontSize.toString()}px ${getFontFamily(fontFamily)}`;
+  const textMeasureDiv = this?.plugin?.textMeasureDiv ?? document.body; //zsviczian
+  const container = document.createElement("div");
+  container.style.position = "absolute";
+  container.style.whiteSpace = "pre";
+  container.style.font = font;
+  container.style.minHeight = "1em";
+  if (wrapInContainer) {
+    container.style.overflow = "hidden";
+    container.style.wordBreak = "break-word";
+    container.style.whiteSpace = "pre-wrap";
+  }
 
-export async function getTemplate(
+  container.style.lineHeight = String(lineHeight);
+
+  container.innerText = text;
+
+  // Baseline is important for positioning text on canvas
+  textMeasureDiv.appendChild(container); //zsviczian
+
+  const span = document.createElement("span");
+  span.style.display = "inline-block";
+  span.style.overflow = "hidden";
+  span.style.width = "1px";
+  span.style.height = "1px";
+  container.appendChild(span);
+  let baseline = span.offsetTop + span.offsetHeight;
+  const height = container.offsetHeight;
+
+  if (isSafari) {
+    const canvasHeight = getTextHeight(text, parseFloat(font), lineHeight);
+    const fontSize = parseFloat(font);
+    // In Safari the font size gets rounded off when rendering hence calculating the safari height and shifting the baseline if it differs
+    // from the actual canvas height
+    const domHeight = getTextHeight(text, Math.round(fontSize), lineHeight);
+    if (canvasHeight > height) {
+      baseline += canvasHeight - domHeight;
+    }
+
+    if (height > canvasHeight) {
+      baseline -= domHeight - canvasHeight;
+    }
+  }
+  textMeasureDiv.removeChild(container); //zsviczian
+  return baseline;
+}
+//ymjr<<<
+export async function getTemplate( //ymjr
   plugin: ExcalidrawPlugin,
   fileWithPath: string,
   loadFiles: boolean = false,
@@ -414,6 +483,18 @@ export async function getTemplate(
       }
     }
 
+    /*ymjr+++>>>*/
+    if (
+      !filenameParts.hasGroupref &&
+      !filenameParts.hasFrameref &&
+      !filenameParts.hasArearef &&
+      filenameParts.hasBlockref
+    ) {
+      groupElements = scene.elements.filter(
+        (el: ExcalidrawElement) => el.id === filenameParts.blockref,
+      );
+    }
+    /*ymjr+++<<<*/
     if (filenameParts.hasTaskbone) {
       groupElements = groupElements.filter(
         (el) =>
@@ -817,6 +898,7 @@ function estimateLineBound(
   return [minX, minY, maxX, maxY];
 }
 
+
 export const search = async (view: ExcalidrawView) => {
   const ea = view.plugin.ea;
   ea.reset();
@@ -1001,12 +1083,17 @@ export const getImagesMatchingQuery = (
   );
 };
 
+
 export const verifyMinimumPluginVersion = (
   requiredVersion: string,
 ): boolean => {
+  const minLength = Math.min(PLUGIN_VERSION.length, requiredVersion.length);
+  const truncatedPluginVersion = PLUGIN_VERSION.substring(0, minLength);
+  const truncatedRequiredVersion = requiredVersion.substring(0, minLength);
+
   return (
-    PLUGIN_VERSION.split("-")[0] === requiredVersion ||
-    isVersionNewerThanOther(PLUGIN_VERSION.split("-")[0], requiredVersion)
+    truncatedPluginVersion === truncatedRequiredVersion ||
+    isVersionNewerThanOther(PLUGIN_VERSION, requiredVersion)
   );
 };
 

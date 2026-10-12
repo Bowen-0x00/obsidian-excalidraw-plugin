@@ -1,4 +1,4 @@
-import { Notice } from "obsidian";
+import { Notice, type TFile } from "obsidian";
 import {
   ElementsMap,
   ExcalidrawElement,
@@ -76,10 +76,14 @@ export class ViewLinkNavigationManager {
    * Invokes the public link-click hook and reports whether default navigation
    * should stop.
    */
+  //ymjr
   public handleLinkHookCall(
     element: ExcalidrawElement,
     link: string,
     event: MouseEvent | null,
+    subpath?: string,
+    file?: TFile,
+    keys?: ModifierKeys,
   ): boolean {
     if (this.view.getHookServer().onLinkClickHook) {
       try {
@@ -90,6 +94,9 @@ export class ViewLinkNavigationManager {
             event,
             this.view,
             this.view.getHookServer(),
+            subpath,
+            file,
+            keys,
           )
         ) {
           return true;
@@ -382,7 +389,17 @@ export class ViewLinkNavigationManager {
       }
       [file, linkText, subpath] = result;
 
-      if (this.view.handleLinkHookCall(selectedElement, linkText, ev)) {
+      //ymjr
+      if (
+        this.view.handleLinkHookCall(
+          selectedElement,
+          linkText,
+          ev,
+          subpath,
+          file,
+          keys,
+        )
+      ) {
         return;
       }
     }
@@ -550,7 +567,9 @@ export class ViewLinkNavigationManager {
     const sceneElements = this.view.excalidrawAPI.getSceneElements() as readonly
       ExcalidrawElement[];
     const el = sceneElements.filter((element) => element.id === id)[0];
-    if (this.view.handleLinkHookCall(el, linkText, ev)) {
+    if (
+      this.view.handleLinkHookCall(el, linkText, ev, subpath, file, keys)
+    ) {
       return;
     }
 

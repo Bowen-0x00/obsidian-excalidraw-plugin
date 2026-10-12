@@ -1022,7 +1022,7 @@ export class EmbeddedFilesLoader {
           ? filenameParts.filepath + filenameParts.linkpartReference
           : file.path
         : file?.path,
-      false, //false
+              this.plugin.settings.exportSVGFont, //ymjr
       hasFilenameParts && filenameParts.hasClippedFrameref
         ? {
             ...exportSettings,

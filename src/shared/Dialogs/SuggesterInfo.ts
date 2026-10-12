@@ -106,8 +106,15 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
   },
   {
     field: "style.fontFamily",
-    code: "[number]",
-    desc: "1: Virgil, 2:Helvetica, 3:Cascadia, 4:Local Font, 5: Excalifont, 6: Nunito, 7: Lilita One, 8: Comic Shanns, 9: Liberation Sans",
+    code: "[number | string]", //ymjr
+    desc: "Built-in font ID or a registered custom font-family name. IDs: 1 Virgil, 2 Helvetica, 3 Cascadia, 4 Local Font, 5 Excalifont, 6 Nunito, 7 Lilita One, 8 Comic Shanns, 9 Liberation Sans.",
+    after: "",
+  },
+  //ymjr -- Reflect the custom font-family contract in script completion.
+  {
+    field: "getFontFamily",
+    code: "getFontFamily(val: number | string): string;",
+    desc: "Returns the family string for a built-in font ID or a custom family registered in the current runtime.",
     after: "",
   },
   {
@@ -1372,10 +1379,11 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
     desc: "If set, this callback is triggered when the user hovers a link in the scene. Return false to prevent the native Excalidraw onLinkHover management flow.",
     after: "",
   },
+  //ymjr -- Document the resolved file, subpath, and modifier-key link context.
   {
     field: "onLinkClickHook",
-    code: "onLinkClickHook: (element: ExcalidrawElement, linkText: string, event: MouseEvent, view: ExcalidrawView, ea: ExcalidrawAutomate) => boolean;",
-    desc: "If set, this callback is triggered when the user clicks a link in the scene. Return false to prevent the native Excalidraw onLinkClick management flow.",
+    code: "onLinkClickHook: (element: ExcalidrawElement, linkText: string, event: MouseEvent, view: ExcalidrawView, ea: ExcalidrawAutomate, subpath?: string, file?: TFile, keys?: ModifierKeys) => boolean;",
+    desc: "If set, this callback is triggered when the user clicks a link in the scene. The optional subpath, resolved file, and modifier-key state provide the resolved link context. Return false to prevent the native Excalidraw onLinkClick management flow.",
     after: "",
   },
   {

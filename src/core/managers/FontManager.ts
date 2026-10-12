@@ -115,65 +115,106 @@ export class FontManager {
       new Notice(t("FONTS_LOADED"));
     }
 
-    const font = await getFontDataURL(
-      this.plugin.app,
-      this.plugin.settings.experimantalFourthFont,
-      "",
-      "Local Font",
-    );
+    //ymjr
+    const multiFontFolder = this.plugin.settings.multiFontsFolder.trim();
+    const fontFiles = multiFontFolder
+      ? this.plugin.app.vault
+          .getFiles()
+          .filter(
+            (file) =>
+              file.path.startsWith(`${normalizePath(multiFontFolder)}/`) &&
+              ["ttf", "woff", "woff2", "otf"].includes(file.extension),
+          )
+          .sort((a, b) => a.name.localeCompare(b.name))
+      : [];
+    const configuredFonts: Array<{
+      family: string;
+      fileName: string;
+      dataURL: string;
+      arrayBuffer: ArrayBuffer | null;
+      extension: string;
+    }> = [];
 
-    if (font.dataURL === "") {
-      this.plugin.fourthFontLoaded = true;
-      return;
+    if (fontFiles.length > 0) {
+      for (const file of fontFiles) {
+        const font = await getFontDataURL(this.plugin.app, file, "");
+        if (!font.dataURL) {
+          continue;
+        }
+        configuredFonts.push({
+          family: font.fontName,
+          fileName: file.name,
+          dataURL: font.dataURL,
+          arrayBuffer: font.arrayBuffer,
+          extension: file.extension,
+        });
+      }
+    } else {
+      const font = await getFontDataURL(
+        this.plugin.app,
+        this.plugin.settings.experimantalFourthFont,
+        "",
+        "Local Font",
+      );
+      const file = this.plugin.app.metadataCache.getFirstLinkpathDest(
+        this.plugin.settings.experimantalFourthFont,
+        "",
+      );
+      if (font.dataURL && file) {
+        configuredFonts.push({
+          family: "Local Font",
+          fileName: file.name,
+          dataURL: font.dataURL,
+          arrayBuffer: font.arrayBuffer,
+          extension: file.extension,
+        });
+      }
     }
 
-    const fourthFontDataURL = font.dataURL;
-
-    const file = this.plugin.app.metadataCache.getFirstLinkpathDest(
-      this.plugin.settings.experimantalFourthFont,
-      "",
-    );
-    let fontMetrics = file.extension.startsWith("woff") || !font.arrayBuffer
-      ? undefined
-      : getFontMetrics(font.arrayBuffer);
-
-    if (!fontMetrics) {
-      fontMetrics = {
-        unitsPerEm: 1000,
-        ascender: 750,
-        descender: -250,
-        lineHeight: 1.2,
-      };
-    }
     const { excalidrawLib } = this.getRuntimePackage();
-    if (fontMetrics) {
+    for (const font of configuredFonts) {
+      let fontMetrics =
+        font.extension.startsWith("woff") || !font.arrayBuffer
+          ? undefined
+          : getFontMetrics(font.arrayBuffer);
+      if (!fontMetrics) {
+        fontMetrics = {
+          unitsPerEm: 1000,
+          ascender: 750,
+          descender: -250,
+          lineHeight: 1.2,
+        };
+      }
+      //ymjr
       excalidrawLib.registerLocalFont(
         { metrics: fontMetrics },
-        fourthFontDataURL,
+        font.dataURL,
+        font.family,
+        font.fileName,
       );
     }
-    for (const ownerDocument of this.getOpenObsidianDocuments()) {
-      await this.registerFontFaces(
-        [
-          {
-            family: "Local Font",
-            source: `url(${JSON.stringify(fourthFontDataURL)})`,
-            descriptors: {
-              display: "swap",
-              weight: "400",
-            },
-          },
-        ],
-        ownerDocument,
-        FONTS_STYLE_ID,
-        true,
-      );
+
+    const fontDefinitions: RuntimeFontFaceDefinition[] = configuredFonts.map(
+      (font) => ({
+        family: font.family,
+        source: `url(${JSON.stringify(font.dataURL)})`,
+        descriptors: {
+          display: "swap",
+          weight: "400",
+        },
+      }),
+    );
+    if (fontDefinitions.length > 0) {
+      for (const ownerDocument of this.getOpenObsidianDocuments()) {
+        await this.registerFontFaces(
+          fontDefinitions,
+          ownerDocument,
+          FONTS_STYLE_ID,
+          true,
+        );
+      }
     }
-    if (!this.plugin.fourthFontLoaded) {
-      window.setTimeout(() => {
-        this.plugin.fourthFontLoaded = true;
-      }, 100);
-    }
+    this.plugin.fourthFontLoaded = true;
     this.fontsReady = true;
   }
 

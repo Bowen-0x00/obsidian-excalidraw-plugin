@@ -10,9 +10,12 @@ import {
   DEVICE,
   MARKDOWN_TO_SVG_RENDER_CLASS,
   RERENDER_EVENT,
+  VIEW_TYPE_EXCALIDRAW, //ymjr
+  PLUGIN_ID, //ymjr
 } from "../../constants/constants";
 import { EmbeddedFilesLoader } from "../../shared/EmbeddedFileLoader";
 import { createPNG, createSVG } from "../../utils/excalidrawAutomateUtils";
+import ExcalidrawView from "../../view/ExcalidrawView";
 import type ExcalidrawPlugin from "../main";
 import { getIMGFilename } from "../../utils/fileUtils";
 import {
@@ -391,6 +394,29 @@ const _getSVGNative = async ({
     });
   }
 
+  //ymjr
+  let containerEl: HTMLElement;
+  if (plugin.settings.exportMD2PngInSVG) {
+    const excalidrawLeaves =
+      app.workspace.getLeavesOfType(VIEW_TYPE_EXCALIDRAW);
+    excalidrawLeaves.forEach((leaf) => {
+      if (
+        leaf.view instanceof ExcalidrawView &&
+        leaf.view.file?.path === file?.path
+      ) {
+        containerEl = leaf.containerEl;
+        if (containerEl.style.display === "none") {
+          setStyle(containerEl, {
+            display: null,
+            position: "absolute",
+            top: "-99999px",
+          });
+        }
+      }
+    });
+  }
+  //ymjr
+
   const svg =
     maybeSVG && isInstanceOfSVGSVGElement(maybeSVG)
       ? maybeSVG
@@ -433,6 +459,15 @@ const _getSVGNative = async ({
   if (!svg) {
     return null;
   }
+  //ymjr
+  if (containerEl?.style.top === "-99999px") {
+    setStyle(containerEl, {
+      display: "none",
+      position: null,
+      top: null,
+    });
+  }
+  //ymjr
 
   //cache SVG should have the width and height parameters and not the embedded font
   if (!maybeSVG && cacheReady) {
@@ -725,9 +760,7 @@ const createImgElement = async (
     if (imgOrDiv?.parentElement?.hasClass("canvas-node-content")) {
       return;
     }
-    const PLUGIN = app.plugins.plugins[
-      "obsidian-excalidraw-plugin"
-    ] as ExcalidrawPlugin;
+    const PLUGIN = app.plugins.plugins[PLUGIN_ID] as ExcalidrawPlugin; //ymjr
     const timeoutValue = DEVICE.isDesktop
       ? PLUGIN.settings.longPressDesktop
       : PLUGIN.settings.longPressMobile;

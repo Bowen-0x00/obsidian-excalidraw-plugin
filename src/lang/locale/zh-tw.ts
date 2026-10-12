@@ -300,6 +300,13 @@ export default {
   TRAY_SWITCH_TO_MD_ARIA: "切換至 Markdown 檢視模式",
   MASK_FILE_NOTICE: "這是一個蒙版影像。長按本提示觀看幫助影片。",
   INSTALL_SCRIPT_BUTTON: "安裝或更新 Excalidraw 指令碼",
+  INSTALL_SCRIPT_BUTTON_CUSTOM:
+    "安裝或更新 Excalidraw 指令碼（自訂位址）", //ymjr
+  CHECKING_SCRIPT: "正在檢查指令碼…",
+  INSTALL_SCRIPT: "安裝指令碼",
+  UPTODATE_SCRIPT: "指令碼已是最新版本",
+  UPDATE_SCRIPT: "更新指令碼",
+  UNABLETOCHECK_SCRIPT: "無法檢查指令碼",
   OPEN_AS_MD: "開啟為 Markdown",
   EXPORT_IMAGE: `匯出為圖片`,
   SHOW_TAB_TITLEBAR_BUTTONS: "顯示標籤頁標題欄按鈕",

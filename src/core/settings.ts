@@ -1191,6 +1191,182 @@ export class ExcalidrawSettingTab extends PluginSettingTab {
     return [fontsPage, experimentalPage, automatePage, compatibilityPage];
   }
 
+  //ymjr
+  private renderYmjrSettings(container: HTMLElement): void {
+    const addToggle = (
+      name: string,
+      description: string,
+      key:
+        | "exportSVGFont"
+        | "showAllArrowOption"
+        | "classifyLibrary"
+        | "exportMD2PngInSVG"
+        | "mindmapHandle",
+    ): void => {
+      new Setting(container)
+        .setName(name)
+        .setDesc(description)
+        .addToggle((toggle) =>
+          toggle
+            .setValue(this.plugin.settings[key])
+            .onChange((value) => {
+              this.plugin.settings[key] = value;
+              this.applySettingsUpdate();
+            }),
+        );
+    };
+    const addNumber = (
+      name: string,
+      key:
+        | "strokeWidthSliderMin"
+        | "strokeWidthSliderMax"
+        | "strokeWidthSliderStep",
+    ): void => {
+      new Setting(container)
+        .setName(name)
+        .addText((text) =>
+          text
+            .setValue(this.plugin.settings[key].toString())
+            .onChange((value) => {
+              this.plugin.settings[key] = parseFloat(value);
+              this.applySettingsUpdate();
+            }),
+        );
+    };
+
+    //ymjr
+    new Setting(container)
+      .setName("Multi font folder")
+      .setDesc(
+        "Folder containing custom fonts. This takes precedence over the single custom font setting.",
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder("Excalidraw/fonts")
+          .setValue(this.plugin.settings.multiFontsFolder)
+          .onChange((value) => {
+            this.plugin.settings.multiFontsFolder = value;
+            this.applySettingsUpdate();
+          }),
+      );
+    new Setting(container)
+      .setName("Laser stroke color")
+      .addColorPicker((picker) =>
+        picker
+          .setValue(this.plugin.settings.laserSettings.STROKE_COLOR)
+          .onChange((value) => {
+            this.plugin.settings.laserSettings.STROKE_COLOR = value;
+            this.applySettingsUpdate();
+          }),
+      );
+    new Setting(container)
+      .setName("Laser fill color")
+      .addColorPicker((picker) =>
+        picker
+          .setValue(this.plugin.settings.laserSettings.FILL_COLOR)
+          .onChange((value) => {
+            this.plugin.settings.laserSettings.FILL_COLOR = value;
+            this.applySettingsUpdate();
+          }),
+      );
+    new Setting(container)
+      .setName("Saving file name")
+      .setDesc("Template used when saving generated image files.")
+      .addText((text) =>
+        text
+          .setValue(this.plugin.settings.savingFileName)
+          .onChange((value) => {
+            this.plugin.settings.savingFileName = value;
+            this.applySettingsUpdate();
+          }),
+      );
+    addToggle(
+      "Export font strings in SVG",
+      "Improves SVG portability at the cost of larger files.",
+      "exportSVGFont",
+    );
+    addToggle(
+      "Show all arrow options",
+      "Expose every arrow option supplied by the custom Excalidraw runtime.",
+      "showAllArrowOption",
+    );
+    addToggle(
+      "Classify library",
+      "Classify custom library entries.",
+      "classifyLibrary",
+    );
+    addToggle(
+      "Export embedded Markdown to PNG in SVG",
+      "Rasterize embedded Markdown while exporting SVG.",
+      "exportMD2PngInSVG",
+    );
+    addToggle(
+      "Mindmap handle click",
+      "Expand and collapse mindmaps by clicking the handle.",
+      "mindmapHandle",
+    );
+    //ymjr
+    new Setting(container)
+      .setName("Custom script store URL")
+      .addText((text) =>
+        text
+          .setValue(this.plugin.settings.scriptStoreUrl)
+          .onChange((value) => {
+            this.plugin.settings.scriptStoreUrl = value;
+            this.applySettingsUpdate();
+          }),
+      );
+    addNumber("Stroke width slider minimum", "strokeWidthSliderMin");
+    addNumber("Stroke width slider maximum", "strokeWidthSliderMax");
+    addNumber("Stroke width slider step", "strokeWidthSliderStep");
+    new Setting(container)
+      .setName(t("LATEX_EDITOR_MODE_NAME"))
+      .setDesc(t("LATEX_EDITOR_MODE_DESC"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("modal", "Modal (live preview)")
+          .addOption("native", "Native (sidebar)")
+          .addOption("legacy", "Legacy (simple prompt)")
+          .setValue(this.plugin.settings.latexEditorMode)
+          .onChange((value: "legacy" | "modal" | "native") => {
+            this.plugin.settings.latexEditorMode = value;
+            this.applySettingsUpdate();
+          }),
+      );
+    new Setting(container)
+      .setName(t("LATEX_RESIZE_MODE_NAME"))
+      .setDesc(t("LATEX_RESIZE_MODE_DESC"))
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOption("lastEl", "Match last equation")
+          .addOption("fontsize", "Match current font size")
+          .setValue(this.plugin.settings.latexResizeMode)
+          .onChange((value: "fontsize" | "lastEl") => {
+            this.plugin.settings.latexResizeMode = value;
+            this.applySettingsUpdate();
+          }),
+      );
+  }
+
+  //ymjr
+  private getYmjrPages(): SettingsPageModel[] {
+    return [
+      {
+        name: "My Settings",
+        description: "ymjr custom Excalidraw features.",
+        buildDefinitions: () => [
+          this.createRenderedDefinition({
+            name: "ymjr custom settings",
+            aliases: ["custom fonts", "custom script store", "LaTeX editor"],
+            controlType: "ymjr custom settings",
+            render: (container) => this.renderYmjrSettings(container),
+          }),
+        ],
+        renderLegacy: (container) => this.renderYmjrSettings(container),
+      },
+    ];
+  }
+
   private getAIPages(): SettingsPageModel[] {
     return [
       {
@@ -1217,6 +1393,7 @@ export class ExcalidrawSettingTab extends PluginSettingTab {
       ...this.getDisplayAndLinksPages(renderState),
       ...this.getEmbedAndExportPages(renderState),
       ...this.getFontsAutomationAndCompatibilityPages(renderState),
+      ...this.getYmjrPages(), //ymjr
     ];
   }
 

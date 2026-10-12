@@ -340,6 +340,13 @@ export default {
   MASK_FILE_NOTICE:
     "This is a mask file. It is used to crop images and mask out parts of the image. Press and hold notice to open the help video.",
   INSTALL_SCRIPT_BUTTON: "Install or update Excalidraw Scripts",
+  INSTALL_SCRIPT_BUTTON_CUSTOM:
+    "Install or update Excalidraw Scripts (Custom)", //ymjr
+  CHECKING_SCRIPT: "Checking script…",
+  INSTALL_SCRIPT: "Install script",
+  UPTODATE_SCRIPT: "Script is up to date",
+  UPDATE_SCRIPT: "Update script",
+  UNABLETOCHECK_SCRIPT: "Unable to check script",
   OPEN_AS_MD: "Open as Markdown",
   EXPORT_IMAGE: `Export Image`,
   SHOW_TAB_TITLEBAR_BUTTONS: "Show tab titlebar buttons",
@@ -1931,7 +1938,10 @@ Thank you & Enjoy!
     "You can re-enable this under: Settings → Excalidraw → Basic → Warn about incomplete plugin updates.",
   VERSION_MISMATCH_REDOWNLOAD: "Re-download plugin",
   VERSION_MISMATCH_IGNORE: "Ignore",
-
+  LATEX_EDITOR_MODE_NAME: "LaTeX Editor Mode",
+  LATEX_EDITOR_MODE_DESC: "Select the behavior when editing LaTeX equations. 'Native' mode creates a temporary file in the sidebar, enabling support for plugins like LaTeX Suite and Vim mode.",
+  LATEX_RESIZE_MODE_NAME: "LaTeX Default Scale",
+  LATEX_RESIZE_MODE_DESC: "Determines how the size of new LaTeX equations is calculated.",
   //InlineLinkSuggester.ts
   INLINE_HINT: "Type [[ to search and insert a link",
 

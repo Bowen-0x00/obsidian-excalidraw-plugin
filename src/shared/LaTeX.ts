@@ -35,6 +35,7 @@ export const updateEquation = async (
     });
     addFiles(files, view);
   }
+  return data; //ymjr
 };
 
 export async function tex2dataURL(

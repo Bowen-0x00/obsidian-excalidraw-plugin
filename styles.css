@@ -5,6 +5,27 @@
   position: relative;
 }
 
+/* ymjr: Keep Library accessible when pinned scripts overflow the canvas. */
+.excalidraw :is(.mobile-misc-tools-container, .tray-misc-tools-container) {
+  box-sizing: border-box;
+  max-height: calc(100% - 8rem + var(--editor-container-padding));
+  overflow-y: auto;
+}
+
+.excalidraw :is(.mobile-misc-tools-container, .tray-misc-tools-container) > .ToolIcon {
+  flex-shrink: 0;
+}
+
+.excalidraw :is(.mobile-misc-tools-container, .tray-misc-tools-container) > .sidebar-trigger__label-element {
+  order: -1;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  align-self: stretch;
+  background-color: var(--island-bg-color);
+}
+
 .block-language-excalidraw {
   text-align: center;
 }

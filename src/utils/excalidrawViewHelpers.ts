@@ -2,9 +2,7 @@ import type {
   ExcalidrawImageElement,
 } from "@zsviczian/excalidraw/types/element/src/types";
 import { getEA } from "src/core";
-import { t } from "src/lang/helpers";
 import type ExcalidrawView from "src/view/ExcalidrawView";
-import { errorlog } from "./utils";
 
 export {
   cloneElement,
@@ -12,69 +10,68 @@ export {
   repositionElementsToCursor,
 } from "./excalidrawElementUtils";
 
+//ymjr
 export const insertLaTeXToView = (
   view: ExcalidrawView,
   center: boolean = false,
-) => {
-  const app = view.plugin.app;
-  const ea = getEA(view);
-
-  void import("src/shared/Dialogs/Prompt").then(({ LaTexPrompt }) => {
-    LaTexPrompt.Prompt(
-      view.plugin,
-      app,
-      t("ENTER_LATEX"),
-      view.plugin.settings.latexBoilerplate,
-    ).then(
-      async (formula: string) => {
-        const lastLatexEl = ea
+): void => {
+  void (async () => {
+    const ea = getEA(view);
+    try {
+      let scaleX = 1;
+      let scaleY = 1;
+      if (view.plugin.settings.latexResizeMode === "lastEl") {
+        const lastLatexElement = ea
           .getViewElements()
           .filter(
-            (el) =>
-              el.type === "image" && view.excalidrawData.hasEquation(el.fileId),
+            (element) =>
+              element.type === "image" &&
+              view.excalidrawData.hasEquation(element.fileId),
           )
           .reduce(
-            (maxel, curr) =>
-              !maxel || curr.updated > maxel.updated ? curr : maxel,
+            (latest, current) =>
+              !latest || current.updated > latest.updated ? current : latest,
             undefined,
-          ) as ExcalidrawImageElement;
-
-        let scaleX = 1;
-        let scaleY = 1;
-
-        if (lastLatexEl) {
-          const equation = view.excalidrawData.getEquation(lastLatexEl.fileId);
-          const dataurl = await ea.tex2dataURL(equation.latex);
-          if (dataurl && dataurl.size.width > 0 && dataurl.size.height > 0) {
-            scaleX = lastLatexEl.width / dataurl.size.width;
-            scaleY = lastLatexEl.height / dataurl.size.height;
+          ) as ExcalidrawImageElement | undefined;
+        if (lastLatexElement) {
+          const equation = view.excalidrawData.getEquation(
+            lastLatexElement.fileId,
+          );
+          const dataURL = equation
+            ? await ea.tex2dataURL(equation.latex)
+            : null;
+          if (dataURL?.size.width > 0 && dataURL.size.height > 0) {
+            scaleX = lastLatexElement.width / dataURL.size.width;
+            scaleY = lastLatexElement.height / dataURL.size.height;
           }
         }
+      } else {
+        const fontSize = ea.getExcalidrawAPI().getAppState().currentItemFontSize;
+        scaleX = fontSize / 15;
+        scaleY = scaleX;
+      }
 
-        if (formula) {
-          const id = await ea.addLaTex(0, 0, formula, scaleX, scaleY);
-          if (center) {
-            const el = ea.getElement(id);
-            if (el) {
-              const { width, height } = el;
-              const { x, y } = ea.getViewCenterPosition();
-              el.x = x - width / 2;
-              el.y = y - height / 2;
-            }
-          }
-          await ea.addElementsToView(!center, false, true);
-          ea.selectElementsInView([id]);
+      const formula =
+        view.plugin.settings.latexBoilerplate || "\\text{Enter LaTeX}";
+      const id = await ea.addLaTex(0, 0, formula, scaleX, scaleY);
+      if (!id) {
+        return;
+      }
+      if (center) {
+        const element = ea.getElement(id);
+        if (element) {
+          const position = ea.getViewCenterPosition();
+          element.x = position.x - element.width / 2;
+          element.y = position.y - element.height / 2;
         }
-        ea.destroy();
-      },
-      (e: unknown) => {
-        // Promise rejection handler (e.g. user cancelled prompt or Extras plugin is missing)
-        if (e && e instanceof Error) {
-          errorlog({ message: "LaTeX Insertion aborted", error: e });
-        }
-      },
-    );
-  });
+      }
+      await ea.addElementsToView(!center, false, true);
+      ea.selectElementsInView([id]);
+      await view.openLaTeXEditor(id);
+    } finally {
+      ea.destroy();
+    }
+  })();
 };
 
 export const search = async (view: ExcalidrawView) => {

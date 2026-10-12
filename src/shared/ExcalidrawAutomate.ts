@@ -124,7 +124,10 @@ import {
 } from "src/shared/svgToExcalidraw/parser";
 import { ROUNDNESS } from "src/constants/constants";
 import { ClipboardData } from "@zsviczian/excalidraw/types/excalidraw/clipboard";
-import { emulateKeysForLinkClick } from "src/utils/modifierkeyHelper";
+import { 
+  emulateKeysForLinkClick,
+  ModifierKeys, //ymjr
+} from "src/utils/modifierkeyHelper";
 import { Mutable } from "@zsviczian/excalidraw/types/common/src/utility-types";
 import PolyBool from "polybooljs";
 import { EmbeddableMDCustomProps } from "./Dialogs/EmbeddableSettings";
@@ -177,6 +180,7 @@ import {
   filterColorMap,
   getAppStateStrokeWidthEntry,
   getEmbeddedFileForImageElment,
+  getFontFamily, //ymjr
   getLineBox,
   getTemplate,
   isColorStringTransparent,
@@ -844,7 +848,7 @@ export class ExcalidrawAutomate {
     opacity: number;
     strokeSharpness?: StrokeRoundness; //defaults to undefined, use strokeRoundess and roundess instead. Only kept for legacy script compatibility type StrokeRoundness = "round" | "sharp"
     roundness: null | { type: RoundnessType; value?: number };
-    fontFamily: number; //1: Virgil, 2:Helvetica, 3:Cascadia, 4:Local Font
+    fontFamily: ExcalidrawTextElement["fontFamily"]; //ymjr -- Built-in IDs or named custom families.
     fontSize: number;
     textAlign: string; //"left"|"right"|"center"
     verticalAlign: string; //"top"|"bottom"|"middle" :for future use, has no effect currently
@@ -1209,6 +1213,10 @@ export class ExcalidrawAutomate {
         this.setStyle({ roundness: null }); //sharp
         return "sharp";
     }
+  }
+  /** Returns the registered family name for a built-in ID or custom family. */
+  getFontFamily(val: ExcalidrawTextElement["fontFamily"]): string { //ymjr
+    return getFontFamily(val);
   }
 
   /**
@@ -1631,10 +1639,23 @@ export class ExcalidrawAutomate {
                 )
               : embeddedFile(key, file.path, item.colorMap);
           } else {
-            outString += `${key}: ${item.hyperlink}\n\n`;
+            outString += `${key}: [[${item.hyperlink}]]\n\n`; //ymjr
           }
         }
       });
+      /*ymjr*/
+      outString += "## Tags\n";
+      const tagElements = this.getElements().filter(el => el?.customData?.tags);
+      const tagSet = new Set<string>();
+      for (const el of tagElements) {
+        for (const tag of el.customData.tags) {
+          tagSet.add(tag)
+        }
+      }
+      for (const tag of tagSet) {
+        outString += `${tag}\n\n`;
+      }
+      /*ymjr*/
       return `${outString}%%\n`;
     };
 
@@ -4295,6 +4316,9 @@ export class ExcalidrawAutomate {
     event: MouseEvent,
     view: ExcalidrawView,
     ea: ExcalidrawAutomate,
+    subpath?: string,//ymjr
+    file?: TFile,//ymjr
+    keys?: ModifierKeys //ymjr
   ) => boolean = null;
 
   /**
@@ -5335,7 +5359,11 @@ export class ExcalidrawAutomate {
       );
       return false;
     }
-    this.copyViewElementsToEAforEditing(res.content);
+    //ymjr: The custom SVG adapter preserves its legacy structural element types;
+    // its runtime objects satisfy the current scene-element contract.
+    this.copyViewElementsToEAforEditing(
+      res.content as unknown as readonly ExcalidrawElement[],
+    );
     return true;
   }
 

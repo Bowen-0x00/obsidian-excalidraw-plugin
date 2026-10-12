@@ -16,7 +16,9 @@ export type ExcalidrawCustomDataValue =
 export type ExcalidrawCustomData = Record<
   string,
   ExcalidrawCustomDataValue | undefined
->;
+> & {
+  tags?: string[];
+};
 
 export type ExcalidrawCustomDataPatch = Partial<ExcalidrawCustomData>;
 
@@ -24,9 +26,15 @@ export type ExcalidrawPDFCustomData = ExcalidrawCustomData & {
   pdfPageViewProps?: PDFPageViewProps;
 };
 
+//ymjr
+export type ExcalidrawLatexScale = {
+  scaleX: number;
+  scaleY: number;
+};
+
 export type ExcalidrawLatexCustomData = ExcalidrawCustomData & {
   latex?: string;
-  latexscale?: number;
+  latexscale?: ExcalidrawLatexScale;
 };
 
 export type ExcalidrawImageWithCustomData<

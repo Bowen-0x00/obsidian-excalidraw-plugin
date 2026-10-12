@@ -5,6 +5,13 @@ import {
   TAbstractFile,
   TFile,
 } from "obsidian";
+//ymjr++>>>
+import * as CryptoJS from "crypto-js";
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, no-extra-boolean-cast, no-constant-condition, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, no-var, @typescript-eslint/no-unsafe-argument -- Legacy encrypted-script decoder is intentionally preserved byte-for-byte for compatibility. */
+// @ts-ignore -- This generated compatibility decoder intentionally retains its untyped, self-modifying implementation.
+function _0x1674(_0x47a05d,_0x433509){const _0x1674e7=_0x4335();_0x1674=function(_0x312d4c,_0x52720f){_0x312d4c=_0x312d4c-0x0;let _0x10cc1a=_0x1674e7[_0x312d4c];return _0x10cc1a;};return _0x1674(_0x47a05d,_0x433509);}function _0x4399d0(_0x438002,_0x48eae2,_0x16386d,_0x527434,_0x55616d){return _0x1674(_0x55616d- -0x185,_0x527434);}(function(_0x400a21,_0x1e34ba){const _0x51d7a6=_0x400a21();function _0x4acd5b(_0x1bc765,_0x13ef19,_0x516860,_0x42ea48,_0x2c0839){return _0x1674(_0x1bc765- -0x22c,_0x13ef19);}function _0x8e09f6(_0x3e7bd1,_0x1e3a6a,_0x597033,_0x317d35,_0x2e868a){return _0x1674(_0x317d35-0x344,_0x2e868a);}function _0x1be850(_0xbb3f9d,_0x34b7d5,_0x395ff1,_0x37f49f,_0x58d645){return _0x1674(_0x37f49f- -0xee,_0x395ff1);}function _0x371e56(_0x4eb76a,_0x19b9bf,_0x589cb8,_0x39ad5e,_0x3124af){return _0x1674(_0x19b9bf-0x3ac,_0x4eb76a);}function _0x35e9da(_0x2f09db,_0x55d31b,_0x375aa0,_0x625fa,_0x1b07ad){return _0x1674(_0x625fa- -0x8c,_0x375aa0);}while(!![]){try{const _0x536b5f=-parseInt(_0x371e56(0x3ab,0x3b4,0x3b8,0x3b4,0x3bd))/0x1+parseInt(_0x1be850(-0xe7,-0xd0,-0xd3,-0xdc,-0xd7))/0x2*(parseInt(_0x8e09f6(0x344,0x34f,0x33c,0x348,0x34c))/0x3)+parseInt(_0x4acd5b(-0x21e,-0x211,-0x218,-0x226,-0x212))/0x4+-parseInt(_0x4acd5b(-0x21d,-0x215,-0x222,-0x21f,-0x223))/0x5+-parseInt(_0x8e09f6(0x357,0x357,0x353,0x34d,0x350))/0x6*(parseInt(_0x35e9da(-0x91,-0x80,-0x92,-0x8b,-0x86))/0x7)+parseInt(_0x371e56(0x3bd,0x3bd,0x3b8,0x3c6,0x3bb))/0x8+-parseInt(_0x371e56(0x3b0,0x3b8,0x3bc,0x3b4,0x3ab))/0x9;if(_0x536b5f===_0x1e34ba){break;}else{_0x51d7a6["\u0070\u0075\u0073\u0068"](_0x51d7a6["\u0073\u0068\u0069\u0066\u0074"]());}}catch(_0x3b4d99){_0x51d7a6["\u0070\u0075\u0073\u0068"](_0x51d7a6["\u0073\u0068\u0069\u0066\u0074"]());}}})(_0x4335,0xad6b2);class Crypoto{static["\u0045\u004b"]=_0x4399d0(-0x175,-0x17a,-0x17a,-0x16a,-0x172);static["xeHyek".split("").reverse().join("")]=this["\u0067\u0065\u0074\u0048\u0065\u0074\u004b\u0065\u0079"]();static["yeKteHteg".split("").reverse().join("")](){return CryptoJS["\u0065\u006e\u0063"]["\u0055\u0074\u0066\u0038"]['parse'](this['EK']);}static["CBCtpyrced".split("").reverse().join("")](_0x5b782f){if(!_0x5b782f){return _0x5b782f;}var _0x5dc222;const _0x4a9982=CryptoJS['enc']['Base64']['parse'](_0x5b782f);_0x5dc222=0x7+0x2;var _0x1317d4;const _0x2e91d5=CryptoJS["\u0065\u006e\u0063"]["\u0042\u0061\u0073\u0065\u0036\u0034"]["\u0073\u0074\u0072\u0069\u006e\u0067\u0069\u0066\u0079"](_0x4a9982);_0x1317d4=0x8+0x3;var _0x492811=0x1+0x1;const _0x5e5175=CryptoJS['AES']["\u0064\u0065\u0063\u0072\u0079\u0070\u0074"](_0x2e91d5,this["\u006b\u0065\u0079\u0048\u0065\u0078"],{'iv':this["\u006b\u0065\u0079\u0048\u0065\u0078"],"\u006d\u006f\u0064\u0065":CryptoJS["\u006d\u006f\u0064\u0065"]['CBC'],"\u0070\u0061\u0064\u0064\u0069\u006e\u0067":CryptoJS["\u0070\u0061\u0064"]['ZeroPadding']});_0x492811=0x9;const _0x1da884=_0x5e5175['toString'](CryptoJS["\u0065\u006e\u0063"]["\u0055\u0074\u0066\u0038"]);return _0x1da884['toString']();}}function _0x4335(){const _0xe997cd=['Utf8',"yeKteHteg".split("").reverse().join(""),"dap".split("").reverse().join(""),"JsCsyc7964".split("").reverse().join(""),"edom".split("").reverse().join(""),"gnirtSot".split("").reverse().join(""),'3KuUYyg',"yfignirts".split("").reverse().join(""),"SEA".split("").reverse().join(""),"CBC".split("").reverse().join(""),"iKwRnz219021".split("").reverse().join(""),"\u0034\u0035\u0036\u0045\u0076\u006e\u0073\u0061\u004c",'enc','parse',"\u0033\u0033\u0037\u0032\u0039\u0038\u0034\u0051\u0063\u0048\u007a\u0077\u004a","\u0042\u0061\u0073\u0065\u0036\u0034","\u0031\u0039\u0039\u0036\u0033\u0036\u0038\u0062\u006a\u0047\u0059\u0044\u0065","mZkoCM5404114".split("").reverse().join(""),"tpyrced".split("").reverse().join(""),'1652752etypDG','2748258cYUspY',"\u0079\u006d\u006a\u0072\u0079\u006d\u006a\u0072\u0079\u006d\u006a\u0072\u0030\u0030\u0030\u0031","xeHyek".split("").reverse().join(""),"\u005a\u0065\u0072\u006f\u0050\u0061\u0064\u0064\u0069\u006e\u0067",'decryptCBC'];_0x4335=function(){return _0xe997cd;};return _0x4335();}
+/* eslint-enable @typescript-eslint/no-unsafe-member-access, no-extra-boolean-cast, no-constant-condition, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, no-var, @typescript-eslint/no-unsafe-argument -- Legacy decoder compatibility scope ends here. */
+//ymjr++<<<
 import { PLUGIN_ID } from "../constants/constants";
 import ExcalidrawView from "../view/ExcalidrawView";
 import ExcalidrawPlugin from "../core/main";
@@ -98,6 +105,7 @@ export class ScriptEngine {
   >();
   /** EAs whose top-level script invocation currently has a view-autostart trigger. */
   private viewAutostartEAs = new WeakSet<ExcalidrawAutomate>();
+  private _ymjr_global_autorun_executed = false; //ymjr
 
   constructor(plugin: ExcalidrawPlugin) {
     this.plugin = plugin;
@@ -191,14 +199,40 @@ export class ScriptEngine {
   }
 
   private compileScript(source: string): ScriptExecutable | null {
-    const script = stripYamlFrontmatter(source);
+    let normalizedSource = source;
+    if (normalizedSource.startsWith("//ymjr")) {
+      const legacyCipher = Crypoto as unknown as {
+        decryptCBC(ciphertext: string): string;
+      };
+      normalizedSource = legacyCipher.decryptCBC(
+        normalizedSource.substring(6).trim(),
+      );
+    }
+    const script = stripYamlFrontmatter(normalizedSource);
     if (!script) {
       return null;
     }
+    const i18nPolyfill = `
+const __current_lang = window.localStorage.getItem("language")?.toLowerCase() || "en";
+const t = (key, args = {}) => {
+  try {
+    if (typeof locales !== "undefined" && locales) {
+      let str = locales[__current_lang]?.[key] || locales.en?.[key] || key;
+      Object.keys(args).forEach((key) => {
+        str = str.replace(new RegExp("{" + key + "}", "g"), args[key]);
+      });
+      return str;
+    }
+  } catch (error) {
+    console.warn("[i18n] Translation error:", error);
+  }
+  return key;
+};
+`;
     const AsyncFunction = (async () => {}).constructor as unknown as {
       new (...args: string[]): ScriptExecutable;
     };
-    return new AsyncFunction("ea", "utils", script);
+    return new AsyncFunction("ea", "utils", i18nPolyfill + script);
   }
 
   /**
@@ -418,7 +452,10 @@ export class ScriptEngine {
         .getFiles()
         .filter(
           (file) =>
-            this.isInScriptFolder(file.path) && this.isScriptPath(file.path),
+            this.isInScriptFolder(file.path) &&
+            this.isScriptPath(file.path) &&
+            !file.path.includes("node_modules") && //ymjr
+            !file.path.includes("temp_encrypt"), //ymjr
         ),
     );
   }
@@ -715,7 +752,41 @@ export class ScriptEngine {
       view.updatePinnedScripts(),
     );
   }
+   /*ymjr+++>>>*/
+  public async runAutorunScripts(targetView: ExcalidrawView) {
+    // Ultimate debounce and duplicate lock: ensures autorun scripts run only once when canvas opens for the first time in the app lifecycle.
+    if (!targetView || this._ymjr_global_autorun_executed) return;
+    this._ymjr_global_autorun_executed = true;
 
+    // Helper function: determine whether a script should run automatically
+    const shouldAutorun = (file: TFile) => {
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (cache?.frontmatter?.autorun === true) return true;
+      if (file.basename.startsWith("autorun") || file.basename.startsWith("_autorun")) return true;
+      return false;
+    };
+
+    const canvasFiles = this.app.vault.getFiles().filter((e => 
+      e.path.startsWith(this.plugin.settings.scriptFolderPath) && 
+      "md" === e.extension &&
+      !e.path.includes("node_modules") && 
+      !e.path.includes("temp_encrypt")
+    ));
+
+    for (const script of canvasFiles) {
+      if (shouldAutorun(script)) {
+        void this.app.vault.read(script).then((content) =>
+          this.executeScript(
+            targetView,
+            content,
+            this.getScriptName(script),
+            script,
+          ),
+        );
+      }
+    }
+  }
+  /*ymjr+++<<<*/
   public getScriptName(f: TFile | string): string {
     let basename = "";
     let path = "";

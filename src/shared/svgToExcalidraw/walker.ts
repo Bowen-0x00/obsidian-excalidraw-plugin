@@ -1,4 +1,4 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec2 } from "gl-matrix"; //ymjr
 import { dimensionsFromPoints } from "./utils";
 import ExcalidrawScene from "./elements/ExcalidrawScene";
 import Group, { getGroupAttrs } from "./elements/Group";
@@ -10,6 +10,8 @@ import {
   createExRect,
   createExEllipse,
   createExLine,
+  ExcalidrawText,
+  createExText,
   Point,
 } from "./elements/ExcalidrawElement";
 import {
@@ -23,7 +25,12 @@ import {
 import { getTransformMatrix, transformPoints } from "./transform";
 import { pointsOnPath } from "points-on-path";
 import { randomId, getWindingOrder } from "./utils";
-import { ROUNDNESS } from "../../constants/constants";
+import { getLineHeight, ROUNDNESS } from "../../constants/constants";
+import {
+  _measureText,
+  measureBaseline,
+} from "../../utils/excalidrawAutomateUtils";
+import type { Radians } from "@zsviczian/excalidraw/types/math/src/types";
 
 declare const mainDocument: Document;
 
@@ -38,6 +45,8 @@ const SUPPORTED_TAGS = [
   "polyline",
   "polygon",
   "switch",
+  "text", //ymjr
+  "foreignObject", //ymjr
 ];
 
 const nodeValidator = (node: Element): number => {
@@ -452,6 +461,111 @@ const walkers = {
 
     walk(args, tw.nextNode());
   },
+
+  text: (args: WalkerArgs) => {
+    // console.log("parse text")
+    const { tw, scene, groups } = args;
+    const el = tw.currentNode as Element;
+
+    const x = getNum(el, "x", 0);
+    const y = getNum(el, "y", 0);
+    const w = getNum(el, "width", 0);
+    const h = getNum(el, "height", 0);
+    const textAnchor = get(el, "text-anchor");
+
+    const mat = getTransformMatrix(el, groups);
+
+    // @ts-ignore
+    const m = mat4.fromValues(w, 0, 0, 0, 0, h, 0, 0, 0, 0, 1, 0, x, y, 0, 1);
+
+    const result = mat4.multiply(mat4.create(), mat, m);
+
+    const text = el.getText();
+    const computedStyle = window.getComputedStyle(el);
+    const fontFamily = el.getAttribute('font-family');
+    const fontSize = parseFloat(el.getAttribute('font-size'));
+    const color = el.getAttribute('fill');
+    const angle = Math.asin(mat[1]) as Radians;
+    let verticalAlign = computedStyle.getPropertyValue('verticalAlign');
+    verticalAlign = ["top", "middle", "bottom"].includes(verticalAlign) ? verticalAlign : "middle";
+
+    const textEl: ExcalidrawText = {
+      ...createExText({
+        fontSize,
+        fontFamily,
+        text,
+        rawText: text,
+        baseline: fontSize * 0.8,
+        textAlign: computedStyle.getPropertyValue("textAlign"),
+        verticalAlign,
+        containerId: null,
+        originalText: text,
+        lineHeight: 1.25,
+      }),
+      ...presAttrs(el, groups),
+      x: result[12],
+      y: result[13],
+      width: result[0],
+      height: result[5],
+      angle,
+      strokeColor: color,
+    };
+    const measure = _measureText(
+      textEl.text,
+      textEl.fontSize,
+      textEl.fontFamily,
+      // @ts-ignore
+      textEl.lineHeight ?? getLineHeight(textEl.fontFamily),
+    );
+    // @ts-ignore
+    const baseline = measureBaseline(textEl.text, textEl.fontSize, textEl.fontFamily, textEl.lineHeight ?? getLineHeight(textEl.fontFamily));
+    textEl.width = measure.w;
+    textEl.height = measure.h;
+    textEl.baseline = baseline;
+    if (textAnchor == "middle") {
+      textEl.x -= textEl.width / 2
+    } else if (textAnchor == "end") {
+      textEl.x -= textEl.width
+    }
+    if (textEl.angle != 0) {
+      const vec_halfwidth = vec2.rotate(
+        vec2.create(),
+        vec2.fromValues(textEl.width / 2, 0),
+        vec2.fromValues(0, 0),
+        -Number(textEl.angle),
+      )
+      const vec_halfheight = vec2.rotate(
+        vec2.create(),
+        vec2.fromValues(0, textEl.baseline - textEl.height / 2),
+        vec2.fromValues(0, 0),
+        -Number(textEl.angle),
+      )
+      const vec_ob2c = vec2.add(vec2.create(), vec_halfwidth, vec_halfheight);
+      const vec_b = vec2.rotate(
+        vec2.create(),
+        vec2.scale(vec2.create(), vec_ob2c, -1),
+        vec2.fromValues(0, 0),
+        textEl.angle
+      )
+      const vec_c2top = vec2.add(
+        vec2.create(),
+        vec_b,
+        vec2.fromValues(0, textEl.baseline),
+      );
+      const vec_ob2top = vec2.add(vec2.create(), vec_ob2c, vec_c2top);
+      textEl.x += vec_ob2top[0]
+      textEl.y += -vec_ob2top[1]
+    } else {
+      textEl.y -= textEl.baseline
+    }
+    // textEl.y -= (Math.tan(textEl.angle) * textEl.width / 2 + textEl.height / 2) * Math.cos(textEl.angle)
+    scene.elements.push(textEl);
+
+    walk(args, args.tw.nextNode());
+  },
+  foreignObject: (args: WalkerArgs) => {
+    walk(args, args.tw.nextSibling());
+  }
 };
 
 export function walk(args: WalkerArgs, nextNode: Node | null): void {
