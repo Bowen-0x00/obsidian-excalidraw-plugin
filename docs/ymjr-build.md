@@ -12,7 +12,7 @@
 
 Keep the plugin ID `obsidian-excalidraw-plugin-ymjr`. Do not redirect existing BRAT installations to the source fork. Source branch pushes do not publish or replace a release.
 
-The plugin's upstream baseline is `9d5057dba728198426f054faeac10ca8168c2143`; the component's baseline is `a2fd6348700f5241e73aac55f284e4109a29d556`. The migration preserves that paired baseline instead of introducing another upstream update.
+The plugin's upstream baseline is Release `2.29.0` (`4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`); the component's upstream baseline is `@zsviczian/excalidraw@0.18.143` (`b965b9f72227b9a0be31a6a74e4d477cea2c2a90`), with the merged custom component pinned at `74e74865c12ae5ad1476685c8c6a3a0bf256e741` in `ymjr-component.json`.
 
 ## Prerequisites
 

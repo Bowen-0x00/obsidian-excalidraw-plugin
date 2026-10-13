@@ -1,12 +1,10 @@
 
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import { execFileSync } from 'node:child_process';
 import zlib from 'node:zlib';
 import visualizer from 'rollup-plugin-visualizer';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from "@rollup/plugin-replace";
 import terser from "@rollup/plugin-terser";
-import copy from "rollup-plugin-copy";
 import typescript from "@rollup/plugin-typescript";
 import fs from 'fs';
 import path from 'path';
@@ -30,64 +28,26 @@ try {
 } catch (error) {
 }
 
+// These copies need only explicit files, not a glob dependency and its vulnerable braces parser.
+function copyBuildFiles(files, destination) {
+  return {
+    name: 'copy-build-files',
+    writeBundle() {
+      if (!files.length) return;
+      fs.mkdirSync(destination, { recursive: true });
+      for (const file of files) {
+        fs.copyFileSync(file, path.join(destination, path.basename(file)));
+      }
+    },
+  };
+}
+
 const DIST_FOLDER = 'dist';
 const absolutePath = path.resolve(DIST_FOLDER);
 fs.mkdirSync(absolutePath, { recursive: true });
 const isProd = (process.env.NODE_ENV === "production");
 const isLib = (process.env.NODE_ENV === "lib");
-
-const DEFAULT_PLUGIN_REPOSITORY = {
-  owner: "zsviczian",
-  name: "obsidian-excalidraw-plugin",
-  ref: "master",
-};
-
-const resolvePluginRepositoryContext = () => {
-  const repository = { ...DEFAULT_PLUGIN_REPOSITORY };
-
-  try {
-    const remoteUrl = execFileSync("git", ["remote", "get-url", "origin"], {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-    const match = remoteUrl.match(
-      /github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?$/i,
-    );
-    if (match) {
-      repository.owner = match[1];
-      repository.name = match[2];
-    }
-
-    const branch = execFileSync("git", ["branch", "--show-current"], {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-    if (branch) {
-      repository.ref = branch;
-      return repository;
-    }
-
-    const commit = execFileSync("git", ["rev-parse", "HEAD"], {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-    if (commit) {
-      repository.ref = commit;
-    }
-  } catch {
-    // Source archives do not include .git. Keep canonical release defaults.
-  }
-
-  return repository;
-};
-
-const pluginRepository = resolvePluginRepositoryContext();
-console.log(
-  `Running: ${process.env.NODE_ENV}; isProd: ${isProd}; isLib: ${isLib}; repository: ${pluginRepository.owner}/${pluginRepository.name}@${pluginRepository.ref}`,
-);
+console.log(`Running: ${process.env.NODE_ENV}; isProd: ${isProd}; isLib: ${isLib}`);
 
 
 // Add non-English locales here to embed them as compressed payloads in main.js.
@@ -219,7 +179,7 @@ if (!isLib) {
 // runtime.
 //
 // The runtime is DEFLATE-compressed primarily to help keep the shipped plugin
-// below the Community Plugin scanner's 5 MB bundle-size limit. Obsidian plugins
+// below the 5 MB bundle-size target (5 * 1024 * 1024 = 5,242,880 bytes). Obsidian plugins
 // currently cannot ship these runtime packages separately, so without this
 // packaging step React/ReactDOM must contribute their normal bundled size to
 // main.js.
@@ -367,9 +327,6 @@ const getRollupPlugins = (tsconfig, ...plugins) => [
   replace({
     preventAssignment: true,
     "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
-    __PLUGIN_REPOSITORY_OWNER__: JSON.stringify(pluginRepository.owner),
-    __PLUGIN_REPOSITORY_NAME__: JSON.stringify(pluginRepository.name),
-    __PLUGIN_REPOSITORY_REF__: JSON.stringify(pluginRepository.ref),
   }),
   commonjs(),
   nodeResolve({
@@ -416,10 +373,7 @@ const BUILD_CONFIG = {
     ] : [
       postprocess([[/var React = require\('react'\);/, packageString]]),
     ]),
-    copy({
-      targets: [{ src: 'manifest.json', dest: DIST_FOLDER }],
-      verbose: true,
-    }),
+    copyBuildFiles(['manifest.json'], DIST_FOLDER),
   ),
 };
 
@@ -434,7 +388,10 @@ const LIB_CONFIG = {
   },
   plugins: getRollupPlugins(
     { tsconfig: "tsconfig-lib.json" },
-    copy({ targets: [{ src: "src/*.d.ts", dest: "lib/typings" }] })
+    copyBuildFiles(
+      fs.readdirSync('src').filter(name => name.endsWith('.d.ts')).map(name => path.join('src', name)),
+      'lib/typings',
+    )
   ),
 };
 

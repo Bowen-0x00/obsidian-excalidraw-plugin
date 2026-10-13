@@ -31,6 +31,7 @@ import {
   ExcalidrawImperativeAPI,
   ExcalidrawInitialDataState,
   Gesture,
+  PointerDownState,
   LibraryItems,
   UIAppState,
 } from "@zsviczian/excalidraw/types/excalidraw/types";
@@ -57,7 +58,11 @@ import {
   sceneCoordsToViewportCoords,
 } from "../constants/constants";
 import ExcalidrawPlugin from "../core/main";
-import { ExcalidrawAutomate } from "../shared/ExcalidrawAutomate";
+import {
+  ExcalidrawAutomate,
+  type ViewLinkClickHook,
+} from "../shared/ExcalidrawAutomate";
+import type { PaneTarget } from "../types/utilTypes";
 import { TextMode, getTextMode } from "../shared/TextMode";
 import { ExcalidrawSidepanelView } from "./sidepanel/Sidepanel";
 import {
@@ -580,6 +585,8 @@ export default class ExcalidrawView
   private lastAppState: AppState | null = null;
   private lastElementsVersion: number = -1;
   private pendingMigrationHandoffToken: string | null = null;
+  private pendingOpenMode: "view" | "edit" | null = null;
+  private pendingOpenZoomToFit = false;
   private pendingMigrationBinaryFiles: BinaryFiles | null = null;
   private migrationBinaryFilePublication: Promise<void> | null = null;
   private isSynchronizing = false;
@@ -1038,6 +1045,11 @@ export default class ExcalidrawView
       forcePersistence,
       bypassSameFileEditGuard,
     );
+  }
+
+  /** Reports persistence acknowledgment without exposing a serialized save snapshot. */
+  public saveWithOutcome() {
+    return this.saveCoordinator.saveWithOutcome();
   }
 
   private async withPersistenceWriteLease<T>(
@@ -1864,6 +1876,7 @@ export default class ExcalidrawView
     subpath?: string,
     file?: TFile,
     keys?: ModifierKeys,
+    action?: PaneTarget,
   ): boolean {
     return this.linkNavigationManager.handleLinkHookCall(
       element,
@@ -1872,7 +1885,16 @@ export default class ExcalidrawView
       subpath,
       file,
       keys,
+      action,
     );
+  }
+
+  /** Registers an integration hook for link clicks originating from this view only. */
+  public registerViewLinkClickHook(
+    hook: ViewLinkClickHook,
+    ea: ExcalidrawAutomate,
+  ): () => void {
+    return this.linkNavigationManager.registerViewLinkClickHook(hook, ea);
   }
 
   private getLinkTextForElement(
@@ -3191,6 +3213,9 @@ export default class ExcalidrawView
       typeof state?.migrationHandoffToken === "string"
         ? state.migrationHandoffToken
         : null;
+    this.pendingOpenMode =
+      state?.mode === "view" || state?.mode === "edit" ? state.mode : null;
+    this.pendingOpenZoomToFit = state?.zoomToFit === true;
     await super.setState(state, result);
   }
 
@@ -4217,16 +4242,21 @@ export default class ExcalidrawView
     this.semaphores.justLoaded = justloaded;
     this.clearDirty();
     const om = this.excalidrawData.getOpenMode();
+    const requestedViewModeEnabled = this.pendingOpenMode === null
+      ? null
+      : this.pendingOpenMode === "view";
     this.clearOwnWriteReloadSuppression();
     const penEnabled = this.plugin.isPenMode();
     const api = this.excalidrawAPI;
     if (api) {
       //isLoaded flags that a new file is being loaded, isLoaded will be true after loadDrawing completes
-      const viewModeEnabled = !this.isLoaded
-        ? excalidrawData.elements.length > 0
-          ? om.viewModeEnabled
-          : false
-        : api.getAppState().viewModeEnabled;
+      const viewModeEnabled = requestedViewModeEnabled ?? (
+        !this.isLoaded
+          ? excalidrawData.elements.length > 0
+            ? om.viewModeEnabled
+            : false
+          : api.getAppState().viewModeEnabled
+      );
       const zenModeEnabled = !this.isLoaded
         ? om.zenModeEnabled
         : api.getAppState().zenModeEnabled;
@@ -4313,8 +4343,9 @@ export default class ExcalidrawView
                 }
               : {}),
             zenModeEnabled: om.zenModeEnabled,
-            viewModeEnabled:
-              excalidrawData.elements.length > 0 ? om.viewModeEnabled : false,
+            viewModeEnabled: requestedViewModeEnabled ?? (
+              excalidrawData.elements.length > 0 ? om.viewModeEnabled : false
+            ),
             linkOpacity: this.excalidrawData.getLinkOpacity(),
             penMode: penEnabled,
             penDetected: penEnabled,
@@ -4714,7 +4745,7 @@ export default class ExcalidrawView
     return ICON_NAME;
   }
 
-  async setMarkdownView(eState?: MarkdownViewOpenState) {
+  async setMarkdownView(eState?: MarkdownViewOpenState, active?: boolean) {
     //save before switching to markdown view.
     //this would also happen onClose, but it does not hurt to save it here
     //this way isDirty() will return false in onClose, thus
@@ -4747,7 +4778,11 @@ export default class ExcalidrawView
       }
 
       plugin.excalidrawFileModes[this.id || file.path] = "markdown";
-      await plugin.setMarkdownView(leaf, eState as ViewStateResult | undefined);
+      await plugin.setMarkdownView(
+        leaf,
+        eState as ViewStateResult | undefined,
+        active,
+      );
     } catch (e: unknown) {
       errorlog({
         where: "ExcalidrawView.setMarkdownView",
@@ -4757,7 +4792,7 @@ export default class ExcalidrawView
     }
   }
 
-  public async openAsMarkdown(eState?: MarkdownViewOpenState) {
+  public async openAsMarkdown(eState?: MarkdownViewOpenState, active?: boolean) {
     if (
       this.plugin.settings.compress &&
       this.plugin.settings.decompressForMDView
@@ -4767,7 +4802,7 @@ export default class ExcalidrawView
     } else if (this.isDirty()) {
       await this.save(true, true, true);
     }
-    void this.setMarkdownView(eState);
+    await this.setMarkdownView(eState, active);
   }
 
   public async convertExcalidrawToMD() {
@@ -5307,6 +5342,7 @@ export default class ExcalidrawView
     newElementsOnTop = false,
     shouldRestoreElements = false,
     captureUpdate = CaptureUpdateAction.IMMEDIATELY,
+    validateBeforePublish,
   }: {
     newElements: ExcalidrawElement[];
     repositionToCursor?: boolean;
@@ -5315,14 +5351,18 @@ export default class ExcalidrawView
     newElementsOnTop?: boolean;
     shouldRestoreElements?: boolean;
     captureUpdate?: CaptureUpdateActionType;
+    validateBeforePublish?: () => void;
   }): Promise<boolean> {
     const api = this.excalidrawAPI;
     if (!api) {
       return false;
     }
     const sceneElements = api.getSceneElements() as ExcalidrawElement[];
+    // Guarded callers prepare parsed text in a request-local map. A stale
+    // continuation must not leave metadata behind before publishing its scene.
+    const preparedText = validateBeforePublish ? new Map(this.excalidrawData.textElements) : undefined;
     const elementsMap = arrayToMap(sceneElements) as ElementsMap;
-    const textElements = newElements.filter((el) => el.type == "text");
+    const textElements = newElements.filter((el) => el.type == "text" && (!validateBeforePublish || !el.isDeleted));
     let shouldRefreshArrows = false;
     for (let i = 0; i < textElements.length; i++) {
       const textElement = textElements[i] as Mutable<ExcalidrawTextElement>;
@@ -5330,6 +5370,7 @@ export default class ExcalidrawView
         textElement.id,
         textElement.text,
         textElement.rawText, //TODO: implement originalText support in ExcalidrawAutomate
+        preparedText,
       );
       if (link) {
         if (this.plugin.settings.syncElementLinkWithText) {
@@ -5398,6 +5439,11 @@ export default class ExcalidrawView
       );
     }
 
+    validateBeforePublish?.();
+    if (validateBeforePublish) {
+      for (const element of newElements) if (element.isDeleted) preparedText.delete(element.id);
+      this.excalidrawData.textElements = preparedText;
+    }
     const files: BinaryFileData[] = [];
     if (images && Object.keys(images).length > 0) {
       Object.keys(images).forEach((k: FileId) => {
@@ -5552,6 +5598,7 @@ export default class ExcalidrawView
         gridColor: st.gridColor,
         colorPalette: st.colorPalette,
         colorTopPicks: st.colorTopPicks,
+        fontTopPicks: st.fontTopPicks,
         currentStrokeOptions: st.currentStrokeOptions,
         frameRendering: st.frameRendering,
         objectsSnapModeEnabled: st.objectsSnapModeEnabled,
@@ -5896,9 +5943,13 @@ export default class ExcalidrawView
     }
   }
 
-  public onPointerDown(e: PointerEvent) {
+  public onPointerDown(
+    e: PointerEvent,
+    selectionBeforePointerDown?: AppState,
+    pointerDownState?: PointerDownState,
+  ) {
     /*ymjr+++>>>*/
-    const core = (window as any).EA_Core;
+    const core = window.EA_Core;
     if (core) {
       const context = { view: this, event: e };
       const isIntercepted = core.dispatchSync("onPointerDown", context);
@@ -5920,6 +5971,56 @@ export default class ExcalidrawView
     //Timeout is required for Excalidraw to first complete the selection action before execution
     //of the link click continues
     window.setTimeout(() => {
+      const hitElement = pointerDownState?.hit.element;
+      if (
+        !this.excalidrawAPI?.getAppState().viewModeEnabled &&
+        isWinCTRLorMacCMD(e) &&
+        hitElement?.groupIds.length
+      ) {
+        // Deep selection gets the first click. Group-wide link fallbacks must
+        // never turn an unlinked member into a link to one of its siblings.
+        if (
+          !selectionBeforePointerDown?.selectedElementIds[hitElement.id] ||
+          Object.keys(selectionBeforePointerDown.selectedElementIds).length !==
+            1 ||
+          hitElement.groupIds.some(
+            (id) => selectionBeforePointerDown.selectedGroupIds[id],
+          )
+        ) {
+          return;
+        }
+        const textElement =
+          hitElement.type === "text"
+            ? hitElement
+            : hitElement.type !== "arrow"
+              ? this.excalidrawAPI.getSceneElements().find(
+                  (el) =>
+                    el.type === "text" &&
+                    el.id === getBoundTextElementId(hitElement),
+                )
+              : null;
+        if (
+          textElement?.type !== "text" &&
+          hitElement.type !== "image" &&
+          !hitElement.link
+        ) {
+          return;
+        }
+        this.removeLinkTooltip();
+        void this.linkClick(
+          e,
+          textElement?.type === "text"
+            ? { id: textElement.id, text: textElement.text }
+            : null,
+          hitElement.type === "image"
+            ? { id: hitElement.id, fileId: hitElement.fileId }
+            : null,
+          !textElement && hitElement.type !== "image"
+            ? { id: hitElement.id, text: hitElement.link }
+            : null,
+        );
+        return;
+      }
       if (this.isLinkSelected()) {
         void this.handleLinkClick(e);
         return;
@@ -6185,11 +6286,24 @@ export default class ExcalidrawView
         return;
       }
       this.semaphores.justLoaded = false;
+      const pendingOpenMode = this.pendingOpenMode;
+      const pendingOpenZoomToFit = this.pendingOpenZoomToFit;
+      this.pendingOpenMode = null;
+      this.pendingOpenZoomToFit = false;
+      if (pendingOpenMode) {
+        const viewModeEnabled = pendingOpenMode === "view";
+        this.updateScene({
+          appState: { viewModeEnabled },
+          captureUpdate: CaptureUpdateAction.NEVER,
+        });
+        this.toolsPanelRef?.current?.setExcalidrawViewMode(viewModeEnabled);
+      }
       if (
         !this.semaphores.preventAutozoom &&
-        this.plugin.settings.zoomToFitOnOpen
+        (pendingOpenZoomToFit || this.plugin.settings.zoomToFitOnOpen)
       ) {
         if (
+          pendingOpenZoomToFit ||
           getExcalidraAndMarkdowViewsForFile(this.app, this.file).length === 1
         ) {
           this.zoomToFit(false, true);
@@ -6649,11 +6763,8 @@ export default class ExcalidrawView
     if (this.compatibilityMode) {
       return textElement.originalText ?? textElement.text;
     }
-    const raw = this.excalidrawData.getRawText(textElement.id);
-    if (!raw) {
-      return textElement.rawText;
-    }
-    return raw;
+    // Undo/redo restores the scene source before the Markdown cache is synchronized.
+    return textElement.rawText ?? this.excalidrawData.getRawText(textElement.id);
   }
 
   public onBeforeTextSubmit(
@@ -6811,12 +6922,13 @@ export default class ExcalidrawView
     }
 
     // 5. Check if the user made changes to the text, or
-    //    the text is missing from ExcalidrawData textElements cache (recently copy/pasted)
+    //    the ExcalidrawData cache differs from the submitted source (undo/redo or paste)
+    const textChanged = nextOriginalText !== textElement.originalText;
     if (
-      nextOriginalText !== textElement.originalText ||
-      !this.excalidrawData.getRawText(textElement.id)
+      textChanged ||
+      nextOriginalText !== this.excalidrawData.getRawText(textElement.id)
     ) {
-      //the user made changes to the text or the text is missing from Excalidraw Data (recently copy/pasted)
+      // Refresh stale source as well as new edits before returning parsed display text.
       //setTextElement will attempt a quick parse (without processing transclusions)
       this.setDirty();
 
@@ -6863,7 +6975,9 @@ export default class ExcalidrawView
           }
           this.setDirty();
         }
-        api.history.clear();
+        if (textChanged) {
+          api.history.clear();
+        }
       };
 
       const [parseResultOriginal, link] = this.excalidrawData.setTextElement(
@@ -6895,7 +7009,10 @@ export default class ExcalidrawView
           }
           return { updatedNextOriginalText: null, nextLink: textElement.link };
         } //There were no links to parse, raw text and parsed text are equivalent
-        api.history.clear();
+        // Updating only the cache after undo must not discard the redo stack.
+        if (textChanged) {
+          api.history.clear();
+        }
         return { updatedNextOriginalText: parseResultOriginal, nextLink: link };
       }
       return { updatedNextOriginalText: null, nextLink: textElement.link };
@@ -6953,8 +7070,25 @@ export default class ExcalidrawView
     }
     window.setTimeout(() => this.removeLinkTooltip(), 500);
 
-    let event = e?.detail?.nativeEvent;
-    if (this.handleLinkHookCall(element, link, event as MouseEvent)) {
+    const nativeEvent = e?.detail?.nativeEvent;
+    const ownerMouseEvent = this.ownerWindow?.MouseEvent;
+    const event = nativeEvent ?? new (ownerMouseEvent ?? MouseEvent)("click", {
+      ...emulateKeysForLinkClick("new-tab"),
+    });
+    const hasModifier =
+      event.shiftKey || event.ctrlKey || event.metaKey || event.altKey;
+    const linkAction = hasModifier ? linkClickModifierType(event) : "new-tab";
+    if (
+      this.handleLinkHookCall(
+        element,
+        link,
+        event as MouseEvent,
+        undefined, //ymjr
+        undefined, //ymjr
+        undefined, //ymjr
+        linkAction,
+      )
+    ) {
       return;
     }
     //if(openExternalLink(element.link, this.app, !isSHIFT(event) && !isWinCTRLorMacCMD(event) && !isWinMETAorMacCTRL(event) && !isWinALTorMacOPT(event) ? element : undefined)) return;
@@ -6962,7 +7096,7 @@ export default class ExcalidrawView
       return;
     }
 
-    if (!event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    if (!hasModifier) {
       void this.linkClick(
         null,
         null,

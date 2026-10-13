@@ -18,22 +18,51 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 <div class="ex-coffee-div"><a href="${URLs.KO_FI_COM_ZSOLT}"><img src="${URLs.CDN_KO_FI_COM_CDN_KOFI3_PNG}" border="0" alt="Buy Me a Coffee at ko-fi.com"  height=45></a></div>
 `,
 //ymjr -- Preserve release documentation for custom hooks and toolbar scrolling.
-"2.28.0": `
+"2.29.0": `
+${getYouTubeDiv("H64AW1l-ae4")}
 ## New
-- The Community Script Store now has a searchable card-based library, a focused update section with **Update all**, and a compact top area for Excalidraw Mastery, support, and creating your own scripts. Script details now support reinstalling, opening local files in a new tab, uninstalling, and moving managed scripts between groups under the **Downloaded** folder. Update detection keeps the existing \`directory-info.json\` modified-time contract, ignores private copies outside **Downloaded**, and handles duplicate managed copies consistently. [#2944](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2944)
-- Copied Markdown image SVGs now replace embedded base64 images and fonts with short placeholders, making them smaller and easier to share with AI agents when developing custom CSS.
+- **Excalidraw CLI for AI agents.** Local AI agents can create, edit, inspect, and export drawings, and run trusted scripts. Requires Obsidian 1.12.2+ with CLI enabled. Select **Excalidraw: Show CLI and agent instructions** to get started. [#2988](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2988)
+- **Better image attachments.** Pasted and dropped images now follow Obsidian attachment rules, including compatible attachment-management plugins. [#2964](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2964)
 
 ## New from Excalidraw.com
-- Create sticky notes with the new **Sticky note** tool or the **N** shortcut. Labels automatically fit and grow with their note, with dedicated colors and a creation-date footer. [#12064](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12064)
-- Right click panning (without enabling a specific "Miro-style" setting) is now supported. [#12110](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12110)
+- **Wrap or unwrap with W.** Put text inside a shape, detach labels, or wrap selected elements in a frame. Press W again to reverse the action. [#12264](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12264)
+- **Select overlapping elements.** Alt-click to cycle through stacked objects. [#12237](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12237)
+- **Smarter duplication.** Duplicated numbered labels and list items automatically advance their numbering. You can also Alt-drag to duplicate text while editing it. [#12189](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12189) [#12219](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12219)
+- **Better cropping and resizing.** Shift maintains image crop proportions, Alt crops from the center, and double-clicking a crop handle restores an edge. Corner resizing for text is more intuitive. [#12260](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12260) [#12262](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12262)
+- **Improved frames.** Edge-aligned elements are included correctly, clipping is more consistent, and cutting a frame includes its contents (deleting a frame still leaves them behind). [#12270](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12270)
+- Google Drive videos start playing when you activate their embeds. [#12246](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12246)
+
+## Fixed
+- **Text undo/redo.** Editing after undo or redo no longer restores outdated text, and closing an unchanged editor preserves redo history. [#2976](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2976)
+- **Markdown embeds.** Fixed blank or interrupted drawing embeds, nested and self-referencing drawing images, and back-of-the-note embeds showing the full drawing instead of the linked section. [#2953](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2953) [#2979](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2979) [#2931](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2931)
+- **Grouped links.** Ctrl/Cmd-click selects the intended group member first; a second click follows that element's link. [#2989](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2989)
+- **LaTeX in popouts.** Fixed cursor placement and keyboard selection when editing formulas in a separate window. [#2970](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2970)
+- Middle-mouse panning over a text editor no longer ends text editing or multiplies the movement. [#12244](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12244)
+
+## Excalidraw Automate
+- Scripts can use the new CLI through ea.executeCLI() and create drawings at an exact path with ea.create().
+`,
+"2.28.1": `
+Re-released due to a minor deployment hiccup, hopefully fixed now.
+`,
+"2.28.0": `
+**Note to ExcaliBrain users:** Update ExcaliBrain. Excalidraw 2.28.0 breaks compatibility with ExcaliBrain v0.2.18.
+
+## New
+- A brand new and improved Community Script Store. [#2944](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2944)
+- When you copy the Markdown Image SVGs for Image CSS AI prompting, the SVG now replace embedded base64 images and fonts with short placeholders, making them smaller and easier to share with agents.
+
+## New from Excalidraw.com
+- Create sticky notes with the new **Sticky note** tool or the **N** shortcut. [#12064](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12064)
+- Right click panning. [#12110](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12110)
+- Customize font toppicks by drag and drop. To set them as default save your toppick choices as a template. [#12160](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12160)
 
 ## Fixed / Refactored
 - The Library button stays visible at the top of the right-hand toolbar when many scripts are pinned. The remaining buttons scroll within the drawing pane.
 - Lasso tool was not available in the More Tools menu in Tray Mode [#2937](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2937)
 - \`.excalidraw\` drawings with embedded binary images now render those images when opened into an already-used Excalidraw tab. [#2929](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2929)
 - Descriptions in settings no longer disappear when you revisit a settings page from search results. [#2935](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2935)
-- Drawing persistence is now more reliable during rapid edits across multiple tabs, popout moves, and immediate closing. Backups and automatic exports now track the exact successfully saved revision. [#2933](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2933)
-- Rapidly changing Markdown image appearance, selection, or image/embeddable conversion no longer leaves a rejected image-render promise in the console or lets a superseded render overwrite the newer element state.
+- Improved saving and backupts. [#2933](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2933)
 - Fixed a bug where, with *"Render Excalidraw as Image in Obsidian PDF Export"* enabled, exporting a Hybrid Note (an Excalidraw drawing with your own Markdown content alongside it) to PDF could render blank sections wherever a regular image (or other non-Excalidraw) embed appeared on the Markdown side. [#2292](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2292), 🙏[bluechallenge](${URLs.GITHUB_COM}/bluechallenge) [#2936](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2936)
 - Selection rectangles in popout windows are no longer positioned incorrectly when displays use different DPI settings. [#2940](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2940)
 
@@ -43,19 +72,6 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 style.fontFamily: number | string;
 getFontFamily(val: number | string): string;
 \`\`\`
-- Added three view-lifecycle helpers for integrations that use a view-local Excalidraw Automate instance or render generated/transient scene state:
-\`\`\`ts
-clearViewDirty(): void;
-registerThisAsViewEA(): boolean;
-deregisterThisAsViewEA(): boolean;
-\`\`\`
-  - \`clearViewDirty()\` clears the target view's current dirty marker without saving it.
-  - \`registerThisAsViewEA()\` registers the EA instance as the hook server for its target view.
-  - \`deregisterThisAsViewEA()\` restores the default plugin-global EA hook server and is safe to use during view teardown.
-- Scripts can create native sticky notes, including automatically fitted labels:
-\`\`\`ts
-addStickyNote(topX: number, topY: number, text: string, formatting?: {width?: number; height?: number; fontSize?: number; fontFamily?: number; textAlign?: "left" | "center" | "right"; textVerticalAlign?: "top" | "middle" | "bottom";}, id?: string): string;
-\`\`\`
 - Unbound arrows created with Excalidraw Automate's \`addArrow()\` no longer contain incomplete binding data that could cause an error when selected.
 <!-- ymjr -->
 - \`onLinkClickHook\` now receives optional resolved-link context after the existing arguments:
@@ -63,6 +79,22 @@ addStickyNote(topX: number, topY: number, text: string, formatting?: {width?: nu
 onLinkClickHook: (element: ExcalidrawElement, linkText: string, event: MouseEvent, view: ExcalidrawView, ea: ExcalidrawAutomate, subpath?: string, file?: TFile, keys?: ModifierKeys) => boolean;
 \`\`\`
 - Updated the [ea-script-template](${URLs.GITHUB_COM}/zsviczian/ea-script-template). Read [EA Script prompting with AI is magical](${URLs.COMMUNITY_SKETCH_YOUR_MIND_COM}/t/10977)
+- Enhancements to support K-Plex and ExcaliBrain integration.
+  \`\`\`ts
+  public async toggleViewMode(view: View): Promise<View | null>;
+  registerViewLinkClickHook(hook: ViewLinkClickHook): () => void;
+  viewZoomToFit(): void;
+  clearViewDirty(): void;
+  registerThisAsViewEA(): boolean;
+  deregisterThisAsViewEA(): boolean;
+  \`\`\`
+- Excalidraw view state accepts one-shot \`mode: "view" | "edit"\` and \`zoomToFit: true\` options. This lets host integrations open a drawing in its intended mode without polling the React canvas.
+- Link-open callbacks now receive a usable native event even when an upstream synthesized event omitted it.
+- Scripts can create native sticky notes, including automatically fitted labels:
+  \`\`\`ts
+  addStickyNote(topX: number, topY: number, text: string, formatting?: {width?: number; height?: number; fontSize?: number; fontFamily?: number; textAlign?: "left" | "center" | "right"; textVerticalAlign?: "top" | "middle" | "bottom";}, id?: string): string;
+  \`\`\`
+- Unbound arrows created with Excalidraw Automate's \`addArrow()\` no longer contain incomplete binding data that could cause an error when selected.
 
 `,
 "2.27.3": `

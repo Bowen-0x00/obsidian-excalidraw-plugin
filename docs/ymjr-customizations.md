@@ -1,6 +1,6 @@
 # ymjr Customizations Inventory (Obsidian Excalidraw Plugin)
 
-This document provides a comprehensive inventory of all custom runtime modifications and enhancements maintained in the `obsidian-excalidraw-plugin-source` fork (branch `ymjr`), compared against upstream base commit `9d5057dba728198426f054faeac10ca8168c2143`.
+This document provides a comprehensive inventory of all custom runtime modifications and enhancements maintained in the `obsidian-excalidraw-plugin-source` fork (branch `ymjr`), compared against upstream Release [`2.29.0`](https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.29.0) (tag/commit `4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`) and its paired `@zsviczian/excalidraw@0.18.143` upstream commit `b965b9f72227b9a0be31a6a74e4d477cea2c2a90` (pinned custom component commit `74e74865c12ae5ad1476685c8c6a3a0bf256e741`).
 
 ---
 
@@ -229,6 +229,21 @@ All customizations in this repository adhere to the following principles:
 
 ---
 
+### 2.15 Pinned Sibling Build Boundary & Custom Plugin Identity
+- **Description**: Enforces that runtime JS, CSS, and TypeScript declarations come from the exact pinned sibling `excalidraw-zsviczian-ymjr` commit declared in `ymjr-component.json`, injects `manifest.json` (`id: "obsidian-excalidraw-plugin-ymjr"`, `version: "2.29.0-1"`) into the production bundle, and dispatches crop commands via `${PLUGIN_ID}:crop-image`.
+- **Exact Source Files & Functions**:
+  - `ymjr-component.json` (`L1-6`): Pins `commit: "74e74865c12ae5ad1476685c8c6a3a0bf256e741"` and `upstreamCommit: "b965b9f72227b9a0be31a6a74e4d477cea2c2a90"`.
+  - `scripts/ymjrComponent.mjs` (`L1-33`): `getYmjrComponentRoot()` verifies sibling git checkout matches `ymjr-component.json`.
+  - `scripts/buildYmjr.mjs` (`L1-23`) & `build-ymjr.bat` (`L1-22`) & `movejs.bat` (`L1-26`): Paired component + plugin build and optional explicit vault deployment scripts.
+  - `rollup.config.mjs` (`L17, L92-101, L123-129, L145-146, L332-336`): Reads `excalidrawObsidianDist` from `getYmjrComponentRoot()`, reads `manifest.json` instead of `manifest-beta.json`, and sets `preserveSymlinks: true`.
+  - `tsconfig.json` (`L11-25`) & `tsconfig.dev.json` (`L2, L6, L8, L22, L26-28`): Maps `@zsviczian/excalidraw` and `@excalidraw/*` declarations to `../excalidraw-zsviczian-ymjr/packages/excalidraw/types/*`.
+  - `src/constants/constants.ts` (`L251`): `PLUGIN_ID = "obsidian-excalidraw-plugin-ymjr"`.
+  - `src/view/components/menu/ToolsPanel.tsx` (`L6, L456`): Uses `${PLUGIN_ID}:crop-image` in `actionCropImage()`.
+  - `manifest.json` (`L2-10`): Custom plugin identity (`obsidian-excalidraw-plugin-ymjr`, `Excalidraw-ymjr`, `2.29.0-1`).
+- **Ownership**: **Plugin Source**.
+
+---
+
 ## 3. Source vs. Component Responsibility Matrix
 
 | Feature Domain | Plugin Source Responsibility (`obsidian-excalidraw-plugin-source`) | Component Responsibility (`excalidraw-zsviczian-ymjr`) |
@@ -298,3 +313,33 @@ When merging future upstream releases of `obsidian-excalidraw-plugin`, apply the
 
 - **Retired Tools**: Upstream historical packaging scripts (`prod.postprocess.config.js`, `unpack.js`, `test.js`) and generated runtime outputs (`excalidraw_unpacked.js`, private `prompt` files) are excluded from the clean source checkout. Active builds rely on pinned sibling `dist/obsidian` artifacts.
 - **License**: The repository license is AGPL-3.0 (aligned in `package.json`).
+
+---
+
+## 7. Release 2.29.0-1 Sync & Line Number Snapshot
+
+- **Upstream Plugin Release**: [`2.29.0`](https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.29.0), lightweight tag `2.29.0` $\rightarrow$ commit `4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`.
+- **Upstream Component Pairing**: `@zsviczian/excalidraw@0.18.143` $\rightarrow$ commit `b965b9f72227b9a0be31a6a74e4d477cea2c2a90` (verified via `2.29.0` `package.json`, `package-lock.json` integrity `sha512-ElZG+PmNM1AL4JVp6sPoLkf9xZ9zbUiTjgWBT8EBtPcRSWx6zQV9BRXD5XSG9k0d+GFpUyypltxkoKhHDDK3IQ==`, and npm registry `gitHead`).
+- **Pinned Custom Component Commit**: `74e74865c12ae5ad1476685c8c6a3a0bf256e741`.
+- **Refreshed Line Numbers by Feature (2.29.0-1)**:
+  - **2.1 Custom Script Store**: `src/constants/constants.ts` (`L104, L119, L251-252`), `src/core/main.ts` (`L19, L38-39, L51, L139-146, L223-224, L491-492, L756-1000`), `src/core/settingsDefaults.ts` (`L166, L624`), `src/core/settings.ts` (`L1194-1215`), `src/shared/Dialogs/ScriptInstallPrompt.ts` (`L2-3, L33, L101-106, L116-120, L137-143, L148-177`), `src/view/ExcalidrawView.ts` (`L2198-2212, L3677`), `src/view/managers/ViewExcalidrawExtensionRenderer.ts` (`L39-40, L379-388`), `src/lang/locale/{en,es,ru,zh-cn,zh-tw}.ts` (`en.ts: L349-355, L1947-1950`; `es.ts: L337-345`; `ru.ts: L326-334`; `zh-cn.ts: L309-315, L1776-1779`; `zh-tw.ts: L309-315`).
+  - **2.2 Encrypted Scripts, i18n Polyfill, Autorun**: `src/shared/Scripts.ts` (`L8-14, L110, L204-237, L461-464, L761-795`), `src/view/ExcalidrawView.ts` (`L5018-5033`).
+  - **2.3 Central Script Event Dispatcher (`EA_Core`)**: `src/utils/EA_Core.ts` (`L1-253`), `src/utils/excalidrawAutomateUtils.ts` (`L13, L30-31, L294`), `src/view/ExcalidrawView.ts` (`L14, L4525-4531, L5951-5960, L6784-6817`).
+  - **2.4 Multi-Font Directory Loading & Metrics**: `src/core/managers/FontManager.ts` (`L118-217`), `src/core/settingsDefaults.ts` (`L234-235, L720-721`), `src/core/settings.ts` (`L1216-1231`), `src/types/excalidrawLib.d.ts` (`L255-261, L274-275, L321-335`), `src/utils/embeddedAssetUtils.ts` (`L13-14, L23, L26, L39-47, L51, L71`), `src/shared/ExcalidrawAutomate.ts` (`L868, L1244-1247`), `src/utils/excalidrawAutomateUtils.ts` (`L285-290`), `docs/API/ExcalidrawAutomate.d.ts` (`L246, L292-293`), `docs/API/attributes_functions_overview.md` (`L84, L126-127, L746`).
+  - **2.5 SVG Text Import & ForeignObject Skipping**: `src/shared/svgToExcalidraw/elements/ExcalidrawElement.ts` (`L40-41, L54-69, L132-151`), `src/shared/svgToExcalidraw/walker.ts` (`L1, L13-14, L28-33, L48-49, L464-568`), `src/utils/excalidrawAutomateUtils.ts` (`L77-78, L312-369`), `src/shared/ExcalidrawAutomate.ts` (`L131-134, L5498-5502`).
+  - **2.6 Element CustomData Tags & Scene Search**: `src/utils/elementCustomDataUtils.ts` (`L19-21`), `src/shared/ExcalidrawAutomate.ts` (`L1680, L1684-1696`), `src/shared/ExcalidrawData.ts` (`L1126, L1730-1744`), `src/view/ExcalidrawView.ts` (`L8434-8443`).
+  - **2.7 Safe Filename Template Interpolation**: `src/core/settingsDefaults.ts` (`L237, L723-724`), `src/core/settings.ts` (`L1232-1245`), `src/shared/ExcalidrawData.ts` (`L1799-1827`).
+  - **2.8 LaTeX Editor Modes, Scaling, and `latexscale`**: `src/core/settingsDefaults.ts` (`L264-274, L1046-1057`), `src/core/settings.ts` (`L1246-1277`), `src/utils/LatexEditModal.ts` (`L1-148`), `src/utils/excalidrawViewHelpers.ts` (`L13, L17-74`), `src/view/ExcalidrawView.ts` (`L292, L720-725, L1491-1718`), `src/utils/excalidrawAutomateUtils.ts` (`L486-497`), `src/shared/LaTeX.ts` (`L38`), `src/utils/elementCustomDataUtils.ts` (`L29-34, L37`).
+  - **2.9 Extended Link Context & Group Link Support**: `src/constants/assets/startupScript.md` (`L47, L53-56, L59`), `src/shared/Dialogs/SuggesterInfo.ts` (`L115-123, L1408, L1411-1412`), `src/shared/ExcalidrawAutomate.ts` (`L4396-4398`), `src/view/ExcalidrawView.ts` (`L1871-1890, L7082-7090`), `src/view/managers/ViewLinkNavigationManager.ts` (`L1, L88-115, L437-449, L617-627`), `src/utils/linkUtils.ts` (`L37, L40-44`).
+  - **2.10 Custom Settings, Companion Controls & Pinned Toolbar CSS**: `src/core/settings.ts` (`L1194-1369, L1396`), `src/core/settingsDefaults.ts` (`L264-274, L1046-1057`), `src/core/managers/MarkdownPostProcessor.ts` (`L13-14, L18, L398-420, L463-471, L766`), `src/shared/EmbeddedFileLoader.ts` (`L1025`), `styles.css` (`L8-28`).
+  - **2.11 Universal File Insertion in InsertMDDialog**: `src/shared/Dialogs/InsertMDDialog.ts` (`L33-36`).
+  - **2.12 Pure Block Reference Transclusion Template**: `src/utils/excalidrawAutomateUtils.ts` (`L901`).
+  - **2.13 Legacy String FontFamily Normalization**: `src/shared/ExcalidrawData.ts` (`L615-628`).
+  - **2.14 Custom Version Comparison**: `src/utils/excalidrawAutomateUtils.ts` (`L1086-1096`).
+  - **2.15 Pinned Sibling Build & Plugin Identity**: `ymjr-component.json` (`L1-6`), `rollup.config.mjs` (`L17, L92-101, L123-129, L145-146, L332-336`), `scripts/buildYmjr.mjs` (`L1-23`), `scripts/ymjrComponent.mjs` (`L1-33`), `src/view/components/menu/ToolsPanel.tsx` (`L6, L456`), `manifest.json` (`L2-10`).
+- **Conflict Resolution Summary (2.29.0)**:
+  - `manifest.json`: Preserved `id: "obsidian-excalidraw-plugin-ymjr"` and `name: "Excalidraw-ymjr"`, and set `version: "2.29.0-1"`.
+  - `package-lock.json`: Retained `fontkit` transitive entries (`brotli`, `dfa`, `unicode-trie`, `unicode-trie/node_modules/pako`) while accepting upstream's removal of `braces`, `dir-glob`, and `universalify` (PR #2993) and update of `@zsviczian/excalidraw` to `0.18.143`.
+  - `src/shared/Dialogs/Messages.ts`: Added upstream `"2.29.0"` and `"2.28.1"` release notes at the top while retaining the `ymjr` custom font, toolbar scrolling, and `onLinkClickHook` notes under `"2.28.0"`.
+  - `src/shared/ExcalidrawData.ts` (`saveDataURLtoVault`): Retained `savingFileName` safe regex template interpolation and updated the empty-template fallback to use upstream's `canSaveAsObsidianAttachment(...)` check.
+  - `src/view/ExcalidrawView.ts` & `src/view/managers/ViewLinkNavigationManager.ts`: Combined `subpath?: string, file?: TFile, keys?: ModifierKeys` with upstream's `action?: PaneTarget` and `registerViewLinkClickHook`, and combined `EA_Core` `"onPointerDown"` interception with upstream's `selectionBeforePointerDown` and `pointerDownState` parameters in `onPointerDown`.

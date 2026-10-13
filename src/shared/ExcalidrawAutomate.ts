@@ -1,6 +1,7 @@
 import type React from "react";
 import ExcalidrawPlugin from "src/core/main";
 import LZString from "lz-string";
+import type { ExcalidrawCLIRequest, ExcalidrawCLIResult } from "src/types/excalidrawCliTypes";
 import {
   FillStyle,
   StrokeStyle,
@@ -23,6 +24,7 @@ import {
 import { ColorMap, MimeType } from "../types/embeddedFileLoaderTypes";
 import {
   Editor,
+  MarkdownView,
   Notice,
   OpenViewState,
   RequestUrlResponse,
@@ -50,6 +52,7 @@ import {
   refreshTextDimensions,
   getFontFamilyString,
   convertToExcalidrawElements,
+  VIEW_TYPE_EXCALIDRAW,
 } from "src/constants/constants";
 import {
   blobToBase64,
@@ -79,6 +82,7 @@ import {
   isObsidianThemeDark,
   mergeMarkdownFiles,
   openLeaf,
+  setExcalidrawView,
 } from "src/utils/obsidianUtils";
 import { getAttachmentsFolderAndFilePath } from "src/utils/pathUtils";
 import {
@@ -243,6 +247,19 @@ import { cropPNGBlob } from "src/utils/imageExportUtils";
 import { RELEASE_NOTES } from "./Dialogs/Messages";
 
 type ExcalidrawAutomateHelpTarget = ((...args: unknown[]) => unknown) | string;
+
+/** Details supplied to an integration when a link is activated in one Excalidraw view. */
+export interface ViewLinkClickContext {
+  element: ExcalidrawElement;
+  linkText: string;
+  event: MouseEvent | null;
+  action: PaneTarget;
+  view: ExcalidrawView;
+  ea: ExcalidrawAutomate;
+}
+
+/** A view-scoped link hook. Return `false` to prevent Excalidraw's default navigation. */
+export type ViewLinkClickHook = (context: ViewLinkClickContext) => boolean | void;
 
 extendPlugins([
   HarmonyPlugin,
@@ -1158,6 +1175,16 @@ export class ExcalidrawAutomate {
   }
 
   /**
+   * Executes the native CLI's JSON protocol in-process. Targets must be explicit;
+   * this method does not use this EA's staged elements or target view. Inspect
+   * `schema` for command fields and check `ok` and `persistence` in the result.
+   * Receipts are session-only and expire after 15 minutes or plugin reload.
+   */
+  public executeCLI(request: ExcalidrawCLIRequest): Promise<ExcalidrawCLIResult> {
+    return this.plugin.executeCLI(request);
+  }
+
+  /**
    * Sets the fill style for new elements.
    * @param {number} val - The fill style value (0: "hachure", 1: "cross-hatch", 2: "solid").
    * @returns {"hachure"|"cross-hatch"|"solid"} The fill style string.
@@ -1451,6 +1478,10 @@ export class ExcalidrawAutomate {
   async create(params?: {
     filename?: string;
     foldername?: string;
+    /** Exact new vault path/format, fail on collision, bypass interactive defaults. */
+    exactPath?: string;
+    /** Internal synchronous lifecycle guard for unattended creation. */
+    validateBeforeCreate?: () => void;
     templatePath?: string;
     onNewPane?: boolean;
     silent?: boolean;
@@ -1480,11 +1511,15 @@ export class ExcalidrawAutomate {
       ? await getTemplate(
           this.plugin,
           params.templatePath,
-          true,
+          !params.exactPath,
           new EmbeddedFilesLoader(this.plugin),
           0,
         )
       : null;
+    const templateEmbeddedMetadata = params?.exactPath && params.templatePath
+      ? (await this.plugin.app.vault.read(this.plugin.app.vault.getFileByPath(params.templatePath)))
+        .replaceAll("\r\n", "\n").match(/^##? Embedded Files\s*\n([\s\S]*?)(?=^%%|^##? Drawing\b)/m)?.[1] ?? ""
+      : "";
     if (template?.plaintext) {
       if (params.plaintext) {
         params.plaintext = `${params.plaintext}\n\n${template.plaintext}`;
@@ -1494,6 +1529,7 @@ export class ExcalidrawAutomate {
     }
     let elements = template ? template.elements : [];
     elements = elements.concat(this.getElements());
+    if (params?.exactPath && new Set(elements.map(element => element.id)).size !== elements.length) throw new Error("Exact drawing creation requires unique element IDs");
     let frontmatter: string;
     if (params?.frontmatterKeys) {
       const keys = Object.keys(params.frontmatterKeys);
@@ -1586,15 +1622,16 @@ export class ExcalidrawAutomate {
     };
 
     const generateMD = (): string => {
-      const textElements = this.getElements().filter(
+      const metadataElements = params?.exactPath ? elements : this.getElements();
+      const textElements = metadataElements.filter(
         (el) => el.type === "text",
-      ) as ExcalidrawTextElement[];
+      );
       let outString = `# Excalidraw Data\n\n## Text Elements\n`;
       textElements.forEach((te) => {
         outString += `${te.rawText ?? te.originalText ?? te.text} ^${te.id}\n\n`;
       });
 
-      const elementsWithLinks = this.getElements().filter(
+      const elementsWithLinks = metadataElements.filter(
         (el) => el.type !== "text" && el.link,
       );
       elementsWithLinks.forEach((el) => {
@@ -1602,9 +1639,10 @@ export class ExcalidrawAutomate {
       });
 
       outString +=
-        Object.keys(this.imagesDict).length > 0
+        Object.keys(this.imagesDict).length > 0 || templateEmbeddedMetadata
           ? `\n## Embedded Files\n`
           : "\n";
+      outString += templateEmbeddedMetadata;
 
       const embeddedFile = (
         key: FileId,
@@ -1666,7 +1704,7 @@ export class ExcalidrawAutomate {
     const foldername = params?.foldername
       ? params.foldername
       : this.plugin.settings.folder;
-    const initData = this.plugin.settings.compatibilityMode
+    const initData = (params?.exactPath ? params.exactPath.endsWith(".excalidraw") : this.plugin.settings.compatibilityMode)
       ? JSON.stringify(scene, null, "\t")
       : frontmatter +
         generateMD() +
@@ -1674,6 +1712,12 @@ export class ExcalidrawAutomate {
           JSON.stringify(scene, null, "\t"),
           this.plugin.settings.compress,
         );
+
+    if (params?.exactPath) {
+      return (await this.plugin.createDrawing(filename, foldername, initData, {
+        exactPath: params.exactPath, validateBeforeCreate: params.validateBeforeCreate,
+      })).path;
+    }
 
     if (params.silent) {
       return (await this.plugin.createDrawing(filename, foldername, initData))
@@ -3947,6 +3991,25 @@ export class ExcalidrawAutomate {
   }
 
   /**
+   * Registers a link-click hook on the target view only.
+   *
+   * The callback receives Excalidraw's resolved pane action, so integrations do not need to read
+   * plugin settings or reproduce platform-specific modifier-key rules. The returned disposer must
+   * be called when the integration unmounts. Returning `false` from the callback prevents native
+   * link navigation.
+   *
+   * @param hook - Callback invoked for links activated in the current target view.
+   * @returns A disposer that unregisters this callback, or a no-op disposer if no view is ready.
+   */
+  registerViewLinkClickHook(hook: ViewLinkClickHook): () => void {
+    const view = this.getReadyTargetView("registerViewLinkClickHook()");
+    if (!view) {
+      return () => undefined;
+    }
+    return view.registerViewLinkClickHook(hook, this);
+  }
+
+  /**
    * Updates the scene in the target view.
    * @param {Object} scene - The scene to load to Excalidraw.
    * @param {ExcalidrawElement[]} [scene.elements] - Array of elements in the scene.
@@ -4056,6 +4119,20 @@ export class ExcalidrawAutomate {
       return;
     }
     view.zoomToElements(selectElements, elements, margin);
+  }
+
+  /**
+   * Zooms the target view to fit its complete scene using Excalidraw's normal safety limits.
+   *
+   * This honors the plugin's maximum zoom setting and skips unsafe automatic zoom work while the
+   * view is closing, editing text, or displaying a modal.
+   */
+  viewZoomToFit(): void {
+    const view = this.getReadyTargetView("viewZoomToFit()");
+    if (!view) {
+      return;
+    }
+    view.zoomToFit(false);
   }
 
   /**
@@ -4989,6 +5066,65 @@ export class ExcalidrawAutomate {
    */
   isExcalidrawView(view: ExcalidrawView | null | undefined): boolean {
     return view instanceof ExcalidrawView;
+  }
+
+  /**
+   * Toggles an Excalidraw-backed view between the native Excalidraw and Markdown representations.
+   *
+   * The supplied view is the authority for the transition; this method does not depend on the
+   * workspace's currently active leaf or the command palette. Markdown views are accepted only
+   * when their file is an Excalidraw file. Excalidraw compatibility-mode views are left unchanged.
+   *
+   * @param {View} view - The ExcalidrawView or MarkdownView to toggle.
+   * @returns {Promise<View | null>} The replacement view after a successful toggle, or null when
+   * the supplied view is not a live Excalidraw-backed view that can be toggled.
+   */
+  public async toggleViewMode(view: View): Promise<View | null> {
+    if (view instanceof ExcalidrawView) {
+      const file = view.file;
+      const leaf = view.leaf;
+      if (
+        !file ||
+        !leaf ||
+        leaf.view !== view ||
+        view.compatibilityMode ||
+        !this.isExcalidrawFile(file)
+      ) {
+        return null;
+      }
+
+      const preserveInactive = this.plugin.app.workspace.getMostRecentLeaf() !== leaf;
+      await view.openAsMarkdown(
+        preserveInactive ? { focus: false } : undefined,
+        preserveInactive ? false : undefined,
+      );
+      return leaf.view instanceof MarkdownView ? leaf.view : null;
+    }
+
+    if (!(view instanceof MarkdownView)) {
+      return null;
+    }
+
+    const file = view.file;
+    const leaf = view.leaf;
+    if (
+      !file ||
+      !leaf ||
+      leaf.view !== view ||
+      !this.isExcalidrawFile(file)
+    ) {
+      return null;
+    }
+
+    await view.save();
+    this.plugin.excalidrawFileModes[leaf.id || file.path] =
+      VIEW_TYPE_EXCALIDRAW;
+    const preserveInactive = this.plugin.app.workspace.getMostRecentLeaf() !== leaf;
+    await setExcalidrawView(
+      leaf,
+      preserveInactive ? { active: false, focus: false } : undefined,
+    );
+    return leaf.view instanceof ExcalidrawView ? leaf.view : null;
   }
 
   /**

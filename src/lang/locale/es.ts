@@ -16,6 +16,12 @@ declare const PLUGIN_VERSION: string;
 
 // Español
 export default {
+  // Native CLI and agent discovery
+  CLI_HELP: "Mostrar instrucciones de CLI y agentes",
+  CLI_COPY_SKILL: "Copiar instrucciones para agentes",
+  CLI_AGENT_INSTRUCTIONS: `Lee: ${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_CLI}\n\n<<instrucciones del usuario>>`,
+  CLI_DESCRIPTION: "CLI nativa de Excalidraw",
+
   // Sugester
   SELECT_FILE_TO_INSERT: "Selecciona un archivo para insertar",
   // main.ts

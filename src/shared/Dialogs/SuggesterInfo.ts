@@ -15,6 +15,12 @@ const EMBEDDABLE_MDCUSTOMPROPS = `type EmbeddableMDCustomProps = {<br>useObsidia
 
 export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
   {
+    field: "executeCLI",
+    code: "executeCLI(request: ExcalidrawCLIRequest): Promise<ExcalidrawCLIResult>;",
+    desc: "Runs the versioned native CLI protocol in-process with explicit targets. Does not use this EA's workbench or target view. Check ok, mutation and persistence. Use schema for fields; receipts expire after 15 minutes or plugin reload.",
+    after: "",
+  },
+  {
     field: "help",
     code: "help(target: Function | string)",
     desc: "Utility function that provides help about ExcalidrawAutomate functions and properties. I recommend calling this function from Developer Console to print out help to the console.",
@@ -229,9 +235,9 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
   },
   {
     field: "create",
-    code: "async create(params?: {filename?: string, foldername?: string, templatePath?: string, onNewPane?: boolean, silent?: boolean, frontmatterKeys?: {},}): Promise<string>;",
+    code: "async create(params?: {filename?: string, foldername?: string, exactPath?: string, validateBeforeCreate?: () => void, templatePath?: string, onNewPane?: boolean, silent?: boolean, frontmatterKeys?: {},}): Promise<string>;",
     desc:
-      "Create a drawing and save it to filename.\nIf filename is null: default filename as defined in Excalidraw settings.\nIf folder is null: default folder as defined in Excalidraw settings\nReturns the path to the created file.\n" +
+      "Create a drawing and save it to filename.\nIf filename is null: default filename as defined in Excalidraw settings.\nIf folder is null: default folder as defined in Excalidraw settings\nexactPath creates that exact new vault path/format without collision suffixes, template pickers, or opening a view. validateBeforeCreate is a synchronous lifecycle guard. Returns the path to the created file.\n" +
       "frontmatterKeys: {\n" +
       '  "excalidraw-plugin"?: "raw" | "parsed";\n' +
       '  "excalidraw-link-prefix"?: string;\n' +
@@ -995,6 +1001,14 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
     after: "",
   },
   {
+    field: "toggleViewMode",
+    code: "public async toggleViewMode(view: View): Promise<View | null>",
+    desc:
+      "Toggles the supplied live Excalidraw-backed view between Excalidraw and Markdown without relying on the active workspace leaf. " +
+      "The input may be an ExcalidrawView or a MarkdownView whose file is an Excalidraw drawing. Returns the replacement view after a successful toggle, or null when the supplied view is not eligible.",
+    after: "(view);",
+  },
+  {
     field: "getAttachmentFilepath",
     code: "async getAttachmentFilepath(filename: string): Promise<string>",
     desc:
@@ -1319,6 +1333,12 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
     after: "",
   },
   {
+    field: "registerViewLinkClickHook",
+    code: "registerViewLinkClickHook(hook: ViewLinkClickHook): () => void;",
+    desc: "Registers a link-click hook only for the target view and returns a disposer. The callback receives the resolved pane action, so integrations do not need to inspect Excalidraw settings or reproduce platform modifier rules. Return false to prevent native navigation.",
+    after: "",
+  },
+  {
     field: "splitFolderAndFilename",
     code: "splitFolderAndFilename(filepath: string): { folderpath: string; filename: string; basename: string; extension: string; }",
     desc: "Splits a file path into its components.",
@@ -1336,6 +1356,12 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
     field: "viewZoomToElements",
     code: "viewZoomToElements(selectElements: boolean,elements: ExcalidrawElement[], margin: number = 0.05):void",
     desc: "Zoom tarteView to fit elements provided as input. elements === [] will zoom to fit the entire scene. SelectElements toggles whether the elements should be in a selected state at the end of the operation.",
+    after: "",
+  },
+  {
+    field: "viewZoomToFit",
+    code: "viewZoomToFit(): void",
+    desc: "Zooms the target view to fit its complete scene using Excalidraw's normal maximum zoom and safety checks.",
     after: "",
   },
   {

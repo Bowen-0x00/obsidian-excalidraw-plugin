@@ -12,7 +12,6 @@ import {
   View,
 } from "obsidian";
 import {
-  VIEW_TYPE_EXCALIDRAW,
   ICON_NAME,
   IMAGE_TYPES,
   DEVICE,
@@ -94,6 +93,7 @@ import { PaneTarget } from "src/types/utilTypes";
 import { decompress } from "src/utils/sceneDataUtils";
 import { insertLaTeXToView } from "src/utils/excalidrawViewHelpers";
 import { isMarkdownImageElement } from "src/shared/MarkdownImage";
+import { CLIInstructions } from "src/shared/Dialogs/CLIInstructions";
 
 declare const PLUGIN_VERSION: string;
 
@@ -142,6 +142,11 @@ export class CommandManager {
   }
 
   public initialize() {
+    this.plugin.addCommand({
+      id: "show-cli-instructions",
+      name: t("CLI_HELP"),
+      callback: () => new CLIInstructions(this.app).open(),
+    });
     try {
       this.taskbone = new Taskbone(this.plugin);
       this.registerCommands();
@@ -2508,20 +2513,14 @@ export class CommandManager {
         const excalidrawView =
           this.app.workspace.getActiveViewOfType(ExcalidrawView);
         if (excalidrawView) {
-          void excalidrawView.openAsMarkdown();
+          void this.plugin.ea.toggleViewMode(excalidrawView);
           return;
         }
 
         const markdownView =
           this.app.workspace.getActiveViewOfType(MarkdownView);
         if (markdownView && fileIsExcalidraw) {
-          void (async () => {
-            await markdownView.save();
-            const activeLeaf = markdownView.leaf;
-            this.plugin.excalidrawFileModes[activeLeaf.id || activeFile.path] =
-              VIEW_TYPE_EXCALIDRAW;
-            await setExcalidrawView(activeLeaf);
-          })();
+          void this.plugin.ea.toggleViewMode(markdownView);
         }
       },
     });

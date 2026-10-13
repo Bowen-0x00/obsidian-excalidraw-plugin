@@ -54,6 +54,8 @@ Follow Obsidian's **Developer Policies** and **Plugin Guidelines**. In particula
 
 - Default to local/offline operation. Only make network requests when essential to the feature.
 - No hidden telemetry. If you collect optional analytics or call third-party services, require explicit opt-in and document clearly in `README.md` and in settings.
+- Keep every external origin and every fully static URL as a literal `https://...` string in source so reviewers and security scanners can identify the destination without executing the code. A dynamic resource path may be appended only to a literal base URL, and each untrusted path segment must be validated or encoded.
+- Never conceal a network destination or evade a scanner finding by splitting or joining domain labels, deriving an origin from Git state, environment variables, runtime configuration, or character codes, or by encoding, compressing, encrypting, or otherwise transforming a URL. Do not weaken, suppress, or work around a scanner by making an endpoint less statically visible; fix the underlying behavior or document a genuine false positive transparently.
 - Never execute remote code, fetch and eval scripts, or auto-update plugin code outside of normal releases.
 - Minimize scope: read/write only what's necessary inside the vault. Do not access files outside the vault.
 - Clearly disclose any external services used, data sent, and risks.
@@ -135,6 +137,12 @@ Follow Obsidian's **Developer Policies** and **Plugin Guidelines**. In particula
 - Introduce network calls without an obvious user-facing reason and documentation.
 - Ship features that require cloud services without clear disclosure and explicit opt-in.
 - Store or transmit vault contents unless essential and consented.
+
+## Issue Investigation And Resolution Templates
+
+- For source-based issue investigations, GitHub issue comments, and a prioritized shortlist, use [issue assessment](docs/agent-workflows/issue-assessment.md).
+- Only after maintainer approval of specific issues, use [issue implementation handoff and resolution](docs/agent-workflows/issue-resolution.md) to prepare a dedicated branch and plan-only draft PR for the local implementation agent.
+- The issue owns the technical assessment; the draft PR owns the implementation plan; the branch owns the code. Keep draft PRs open through implementation, link cross-repository dependencies, and do not merge without authorization.
 
 ## References
 
@@ -310,11 +318,11 @@ Window ownership for rendering is not the same as ownership for persistent plugi
 - `src/lang/helpers.ts` resolves those tokens at runtime.
 - If you add new runtime-dependent locale patterns, you must keep `rollup.config.mjs` and `src/lang/helpers.ts` in sync.
 
-### Safe URL Tokenization
+### Safe URL Handling
 
 - Safe URLs are centralized in `src/constants/safeUrls.ts`.
-- The build tokenizes URL constants and resolves them at runtime.
-- If you change safe URL handling, rebuild and verify both token emission and token resolution.
+- Preserve literal, statically reviewable origins and complete static URLs. Only repository-relative or resource-relative paths may be constructed dynamically from validated or encoded path segments.
+- If you change safe URL handling, rebuild and verify that the intended literal origins remain visible in both source and `dist/main.js`, and search for domain assembly or endpoint-obfuscation patterns before release.
 
 ### Versioning Nuance
 
@@ -505,7 +513,17 @@ If a task touches any of the above, read adjacent code first and validate more c
 
 ## Validation Expectations
 
-There is no standard unit-test suite wired into `package.json`.
+There is no comprehensive runtime unit-test suite. The CLI harness has focused tests wired into `package.json`.
+
+### Obsidian CLI runtime lane
+
+Follow [Obsidian runtime testing](docs/OBSIDIAN_RUNTIME_TESTING.md) for macOS and Windows setup, and its linked fork guide for feature gates. `npm run test:obsidian:runner` tests the vault guards and platform launchers without Obsidian. `npm run verify:obsidian:plugin` builds this plugin with the installed component package. `npm run verify:obsidian` first builds and copies the sibling fork's four Obsidian artifacts. Both native lanes require the explicitly configured `excalidraw-test` vault, check the CLI-selected vault and config paths before deployment, stage the exact `main.js`/CSS/manifest, and assert a live drawing and clean JavaScript error buffer. Review the report's build mode, source identity, hashes, and cleanup result. A previous local artifact copy into `node_modules` remains in effect for the plugin-only lane until `npm install` restores the published package.
+
+Look for an existing `excalidraw-test` vault in Obsidian's vault registry and confirm its path and enabled plugin. If absent, ask the user to create it and install/enable Excalidraw from Community plugins before deployment. Do not create or download a replacement vault without consent. Complete any first-open trust prompt and reopen the vault before CLI probes. Never choose a personal/default vault when the test vault is unavailable.
+
+Use the test-only `scripts/testing/host/processTools.mjs` for native launches. Windows captures output through `Obsidian.com`; long or multiline Windows evals use an owned temporary UTF-8 script and are cleaned up after each call. npm and Yarn launch through JavaScript entries using the current Node executable, avoiding Windows `.cmd` shims. Run CLI scenarios serially. If a request times out, check for a pending Obsidian error/trust dialog; ask the user to save and restart when necessary rather than force-closing an application with other vaults open. Record Windows and macOS live validation separately.
+
+Use this lane after fork behavior or packaging changes when Obsidian is available, then exercise the affected workflow using the fork's V03–V11 validation gates. A blank-drawing smoke does not validate raw text, clipboard, font/image assets, saved scenes, custom pens, popout migration, offline behavior, or physical mobile touch. Record what was tested, artifact/source identity, and any pending or unavailable gates. Never deploy a local build to a personal/default vault as a substitute for the named test vault. Keep CLI eval access to internal plugin instances and temporary test controllers out of production modules.
 
 Repo-wide ESLint currently reports a large backlog of pre-existing issues, so it is not yet a blocking pass/fail gate for every task.
 
@@ -541,7 +559,7 @@ Validation guidance:
 - For host-boundary changes, run the fork's focused adapter tests without Obsidian, then validate plugin registration and teardown through cold startup, plugin reload, the main window, a new and restored popout, and window removal. Confirm adapter methods observe settings changed after registration.
 - After React/package-loading changes, validate cold startup, plugin reload, the main window, new and restored popouts, and moving a leaf between windows. Confirm that no `window.React` or `window.ReactDOM` global was introduced.
 - After Radix/portal changes, validate visibility, positioning, stacking, click-outside, and Escape handling in both the main window and a popout; include mobile when viewport collision behavior can differ.
-- Record `dist/main.js` byte size after packaging changes and report remaining headroom under the release limit.
+- Record `dist/main.js` byte size after packaging changes and report remaining headroom under the 5 MB release target: 5 × 1024 × 1024 = 5,242,880 bytes.
 - Prefer targeted diagnostics for the files you touched when repo-wide lint noise obscures signal.
 - Prefer `npm run build` plus targeted file diagnostics over raw `tsc --noEmit` as the primary gate. Standalone `tsc` can surface large volumes of dependency-typing noise unrelated to touched files.
 - Do not treat `dist/` output edits as source fixes.

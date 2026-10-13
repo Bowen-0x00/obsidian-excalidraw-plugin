@@ -2,6 +2,12 @@ import "obsidian";
 import type { ExcalidrawAutomate } from "src/shared/ExcalidrawAutomate";
 import { errorlog } from "src/utils/coreUtils";
 import type ExcalidrawView from "src/view/ExcalidrawView";
+export type {
+  ExcalidrawAutomate,
+  ViewLinkClickContext,
+  ViewLinkClickHook,
+} from "src/shared/ExcalidrawAutomate";
+export type { ExcalidrawEphemeralState } from "src/types/excalidrawViewTypes";
 //import { ExcalidrawAutomate } from "./ExcalidrawAutomate";
 //export ExcalidrawAutomate from "./ExcalidrawAutomate";
 //export {ExcalidrawAutomate} from  "./ExcaildrawAutomate";
@@ -15,6 +21,7 @@ export type {
 } from "@zsviczian/excalidraw/types/element/src/types";
 export type { Point } from "src/types/types";
 export type { MathJaxRenderOptions } from "src/types/mathJaxTypes";
+export type { ExcalidrawCLIRequest, ExcalidrawCLIResult, CLICommand, CLIJSON } from "src/types/excalidrawCliTypes";
 export const getEA = (view?: ExcalidrawView): ExcalidrawAutomate | null => {
   try {
     return window.ExcalidrawAutomate.getAPI(view);
