@@ -16,24 +16,29 @@ All customizations in this repository adhere to the following principles:
 ## 2. Feature Inventory
 
 ### 2.1 Custom Script Store & In-Vault Script Installer
-- **Description**: Allows browsing, installing, and updating Excalidraw Automate scripts from an alternative remote URL without relying solely on the upstream repository. Supports rendering script catalogs via Markdown codeblocks, tracking remote modification dates (`mtime`), downloading scripts with companion icons (`.svg`), and hot-restarting open sidepanel tabs.
+- **Description**: Allows browsing, installing, and updating Excalidraw Automate scripts from an alternative remote URL without relying solely on the upstream repository. Supports rendering script catalogs via Markdown codeblocks, preserving category subfolder hierarchies (`Downloaded(Custom)/<category>/<script>.md`), one-click batch installation of all catalog scripts with real-time progress tracking, tracking remote modification dates (`mtime`), downloading scripts with companion icons (`.svg`), and hot-restarting open sidepanel tabs.
 - **Exact Source Files & Functions**:
   - `src/constants/constants.ts`: `SCRIPT_INSTALL_CODEBLOCK = "excalidraw-script-install"`
+  - `src/utils/scriptFileUtils.ts`: `getCustomScriptRelativePath(scriptUrl, customStoreUrl?, directoryInfo?)` resolves relative category subpaths (e.g. `animation/Action-Progressive-Drawing-Animator.md`).
   - `src/core/main.ts`:
     - `public customScriptStore: string | false`
-    - `registerInstallCodeblockProcessor()`: Registers the Markdown codeblock processor for `excalidraw-script-install`. Evaluates remote vs. local `mtime`, downloads files to `${scriptFolderPath}/Downloaded(Custom)`, handles icon fallbacks, and triggers sidepanel tab reloads via `restartSidepanelTabIfActive()`.
+    - `registerInstallCodeblockProcessor()`: Registers the Markdown codeblock processor for `excalidraw-script-install`. Evaluates remote vs. local `mtime`, resolves categorized subfolder paths via `getCustomScriptRelativePath`, downloads files to `${scriptFolderPath}/Downloaded(Custom)/<category>/`, handles icon fallbacks, migrates legacy flat root files to category subfolders, and triggers sidepanel tab reloads via `restartSidepanelTabIfActive()`. Adds `data-script-fname` and `data-script-url` to script codeblock containers and buttons for DOM state coordination.
+    - `getRemoteDirectoryInfo(url: string)`: Caches directory metadata to avoid repeated individual requests across dozens of codeblocks.
   - `src/core/settingsDefaults.ts`:
     - `scriptStoreUrl: string` (default: `"https://raw.giteeusercontent.com/Bowen-0x00/obsidian-excalidraw-scripts/raw/main/Scripts/index.md"`)
   - `src/core/settings.ts`: `renderYmjrSettings()` provides the "Custom script store URL" setting input.
   - `src/shared/Dialogs/ScriptInstallPrompt.ts`:
-    - `ScriptInstallPluginContext`: Extended type supporting `customScriptStore`.
+    - `ScriptInstallPluginContext`: Extended type supporting `customScriptStore` and `getRemoteDirectoryInfo`.
     - `constructor(plugin, customStoreUrl?)`: Accepts optional custom store URL.
     - `loadCustomStore()`: Fetches remote `index.md` and renders the custom script store in an Obsidian Modal.
+    - `renderCustomStoreActions(source: string)`: Renders a sticky top actions bar in the custom script store displaying total script count, installed/pending counts, a real-time progress bar, and an "Install all scripts" batch installer button.
+    - `downloadCustomScriptFile(script, folder)`: Downloads individual script and optional icon into categorized subfolder, migrating legacy flat files if present.
   - `src/view/ExcalidrawView.ts`:
     - Header action button added when `scriptStoreUrl` is configured: `this.addAction(SCRIPTENGINE_ICON_NAME, t("INSTALL_SCRIPT_BUTTON_CUSTOM"), ...)`
     - `onPaneMenu()`: Appends "Install or update Excalidraw Scripts (Custom)" to view action pane menu.
   - `src/view/managers/ViewExcalidrawExtensionRenderer.ts`: Main menu item added to Excalidraw hamburger menu when `scriptStoreUrl` is configured.
-  - `src/lang/locale/{en,es,ru,zh-cn,zh-tw}.ts`: Localized strings (`INSTALL_SCRIPT_BUTTON_CUSTOM`, `CHECKING_SCRIPT`, `INSTALL_SCRIPT`, `UPTODATE_SCRIPT`, `UPDATE_SCRIPT`).
+  - `src/lang/locale/{en,es,ru,zh-cn,zh-tw}.ts`: Localized strings (`INSTALL_SCRIPT_BUTTON_CUSTOM`, `SCRIPT_STORE_CUSTOM_TITLE`, `SCRIPT_STORE_INSTALL_ALL`, `SCRIPT_STORE_INSTALLING_ALL`, `SCRIPT_STORE_INSTALL_ALL_DONE`, `SCRIPT_STORE_INSTALL_ALL_PARTIAL`, `SCRIPT_STORE_ALL_UP_TO_DATE`, `SCRIPT_STORE_REINSTALL_ALL`, `SCRIPT_STORE_TOTAL_COUNT`, `SCRIPT_STORE_INSTALLED_COUNT`, `SCRIPT_STORE_PENDING_COUNT`, etc.).
+  - `styles.css`: Added styles for `.excalidraw-script-store__custom-actions` and its header, status, badge, progress bar, and action buttons.
 - **Ownership**: **Plugin Source**.
 
 ---

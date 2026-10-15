@@ -4,6 +4,7 @@
 export type RemoteDirectoryInfo = {
   fname: string;
   mtime: number;
+  relativePath?: string; //ymjr
 };
 
 /**

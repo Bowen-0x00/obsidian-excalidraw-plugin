@@ -1844,6 +1844,16 @@ Obsidian 的 Excalidraw 外掛遠不只是畫圖工具。由於它與 Obsidian �
   SCRIPT_STORE_UPDATING: "正在更新...",
   SCRIPT_STORE_UPDATE_ALL_DONE: "所有社群指令碼都已是最新版本。",
   SCRIPT_STORE_UPDATE_ALL_PARTIAL: "部分指令碼無法更新。失敗數量：",
+  SCRIPT_STORE_CUSTOM_TITLE: "自訂指令碼市場", //ymjr
+  SCRIPT_STORE_INSTALL_ALL: "安裝全部指令碼", //ymjr
+  SCRIPT_STORE_INSTALLING_ALL: "正在安裝全部指令碼...", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_DONE: "全部指令碼安裝完成！", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_PARTIAL: "指令碼安裝完成，部分失敗。失敗數量：", //ymjr
+  SCRIPT_STORE_ALL_UP_TO_DATE: "所有指令碼均已安裝且為最新版本。", //ymjr
+  SCRIPT_STORE_REINSTALL_ALL: "重新安裝全部", //ymjr
+  SCRIPT_STORE_TOTAL_COUNT: "總數", //ymjr
+  SCRIPT_STORE_INSTALLED_COUNT: "已安裝", //ymjr
+  SCRIPT_STORE_PENDING_COUNT: "待安裝/更新", //ymjr
   SCRIPT_STORE_BROWSE_TITLE: "瀏覽指令碼",
   SCRIPT_STORE_BROWSE_DESC: "可依名稱、作者、描述或分類搜尋。",
   SCRIPT_STORE_SEARCH_PLACEHOLDER: "搜尋社群指令碼",

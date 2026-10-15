@@ -1547,6 +1547,16 @@ export default {
   SCRIPT_STORE_UPDATE_ALL_DONE: "All community scripts are up to date.",
   SCRIPT_STORE_UPDATE_ALL_PARTIAL:
     "Some scripts could not be updated. Failed:",
+  SCRIPT_STORE_CUSTOM_TITLE: "Custom script store", //ymjr
+  SCRIPT_STORE_INSTALL_ALL: "Install all scripts", //ymjr
+  SCRIPT_STORE_INSTALLING_ALL: "Installing all scripts...", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_DONE: "All scripts installed successfully.", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_PARTIAL: "Script installation completed with failures. Failed count:", //ymjr
+  SCRIPT_STORE_ALL_UP_TO_DATE: "All scripts are already installed and up to date.", //ymjr
+  SCRIPT_STORE_REINSTALL_ALL: "Reinstall all", //ymjr
+  SCRIPT_STORE_TOTAL_COUNT: "Total", //ymjr
+  SCRIPT_STORE_INSTALLED_COUNT: "Installed", //ymjr
+  SCRIPT_STORE_PENDING_COUNT: "Pending", //ymjr
   SCRIPT_STORE_BROWSE_TITLE: "Browse scripts",
   SCRIPT_STORE_BROWSE_DESC: "Search by name, author, description, or category.",
   SCRIPT_STORE_SEARCH_PLACEHOLDER: "Search community scripts",

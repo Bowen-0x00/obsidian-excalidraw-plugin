@@ -23,6 +23,7 @@ ${getYouTubeDiv("H64AW1l-ae4")}
 ## New
 - **Excalidraw CLI for AI agents.** Local AI agents can create, edit, inspect, and export drawings, and run trusted scripts. Requires Obsidian 1.12.2+ with CLI enabled. Select **Excalidraw: Show CLI and agent instructions** to get started. [#2988](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2988)
 - **Better image attachments.** Pasted and dropped images now follow Obsidian attachment rules, including compatible attachment-management plugins. [#2964](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2964)
+- **Install all scripts in Custom Script Store (ymjr).** Added a one-click "Install all scripts" button, real-time progress bar, and category subfolder preservation to the custom script store, enabling structured batch installation and updates of all community scripts at once.
 
 ## New from Excalidraw.com
 - **Wrap or unwrap with W.** Put text inside a shape, detach labels, or wrap selected elements in a frame. Press W again to reverse the action. [#12264](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12264)
@@ -33,6 +34,7 @@ ${getYouTubeDiv("H64AW1l-ae4")}
 - Google Drive videos start playing when you activate their embeds. [#12246](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12246)
 
 ## Fixed
+- **Optional ymjr mindmap scripts.** Update the engine and Action script files together. Deep trees and invalid cyclic/multiple-parent graphs no longer recurse indefinitely; pending edits stop when their drawing changes or closes. Mobile controls use larger touch targets and native multiline dialogs. Rescue/detach preserves other element metadata, and Markdown export asks before overwriting an existing file.
 - **Text undo/redo.** Editing after undo or redo no longer restores outdated text, and closing an unchanged editor preserves redo history. [#2976](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2976)
 - **Markdown embeds.** Fixed blank or interrupted drawing embeds, nested and self-referencing drawing images, and back-of-the-note embeds showing the full drawing instead of the linked section. [#2953](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2953) [#2979](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2979) [#2931](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2931)
 - **Grouped links.** Ctrl/Cmd-click selects the intended group member first; a second click follows that element's link. [#2989](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/2989)

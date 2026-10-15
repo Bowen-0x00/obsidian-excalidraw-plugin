@@ -1892,6 +1892,16 @@ Si quieres ver lo que ya es posible hoy, aquí tienes una presentación de las f
   SCRIPT_STORE_UPDATING: "Actualizando...",
   SCRIPT_STORE_UPDATE_ALL_DONE: "Todos los scripts de la comunidad están actualizados.",
   SCRIPT_STORE_UPDATE_ALL_PARTIAL: "No se pudieron actualizar algunos scripts. Fallidos:",
+  SCRIPT_STORE_CUSTOM_TITLE: "Tienda de scripts personalizada", //ymjr
+  SCRIPT_STORE_INSTALL_ALL: "Instalar todos los scripts", //ymjr
+  SCRIPT_STORE_INSTALLING_ALL: "Instalando todos los scripts...", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_DONE: "Todos los scripts se instalaron correctamente.", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_PARTIAL: "Instalación completada con algunos fallos. Cantidad fallida:", //ymjr
+  SCRIPT_STORE_ALL_UP_TO_DATE: "Todos los scripts ya están instalados y actualizados.", //ymjr
+  SCRIPT_STORE_REINSTALL_ALL: "Reinstalar todo", //ymjr
+  SCRIPT_STORE_TOTAL_COUNT: "Total", //ymjr
+  SCRIPT_STORE_INSTALLED_COUNT: "Instalados", //ymjr
+  SCRIPT_STORE_PENDING_COUNT: "Pendientes", //ymjr
   SCRIPT_STORE_BROWSE_TITLE: "Explorar scripts",
   SCRIPT_STORE_BROWSE_DESC: "Busca por nombre, autor, descripción o categoría.",
   SCRIPT_STORE_SEARCH_PLACEHOLDER: "Buscar scripts de la comunidad",

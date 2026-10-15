@@ -59,3 +59,63 @@ export const resolveConfiguredStartupScriptPath = (
   }
   return isScriptFilePath(path) ? path : `${path}.md`;
 };
+/**
+ * Resolves the relative subpath for a custom store script, preserving category subfolders
+ * (e.g. "animation/Action-Progressive-Drawing-Animator.md").
+ */
+//ymjr
+export const getCustomScriptRelativePath = (
+  scriptUrl: string,
+  customStoreUrl?: string,
+  directoryInfo?: Map<string, { mtime: number; relativePath?: string }>,
+): string => {
+  let decodedUrl = scriptUrl;
+  try {
+    decodedUrl = decodeURI(scriptUrl);
+  } catch {
+    // keep raw if decode fails
+  }
+
+  const fname = decodedUrl.substring(decodedUrl.lastIndexOf("/") + 1);
+
+  // 1. Check relativePath from directory-info.json
+  if (directoryInfo && directoryInfo.has(fname)) {
+    const rel = directoryInfo.get(fname)?.relativePath;
+    if (rel && rel.includes("/")) {
+      return rel;
+    }
+  }
+
+  // 2. Derive relative path from customStoreUrl base directory
+  if (customStoreUrl) {
+    let decodedStoreUrl = customStoreUrl;
+    try {
+      decodedStoreUrl = decodeURI(customStoreUrl);
+    } catch {
+      // keep raw
+    }
+    const lastSlash = decodedStoreUrl.lastIndexOf("/");
+    if (lastSlash > -1) {
+      const baseUrl = decodedStoreUrl.substring(0, lastSlash + 1);
+      if (decodedUrl.startsWith(baseUrl)) {
+        const sub = decodedUrl.slice(baseUrl.length);
+        if (sub && sub.includes("/")) {
+          return sub;
+        }
+      }
+    }
+  }
+
+  // 3. Fallback: match standard /Scripts/ marker in URL
+  const marker = "/Scripts/";
+  const markerIdx = decodedUrl.indexOf(marker);
+  if (markerIdx > -1) {
+    const sub = decodedUrl.slice(markerIdx + marker.length);
+    if (sub && sub.includes("/")) {
+      return sub;
+    }
+  }
+
+  // 4. Default: return filename
+  return fname;
+};

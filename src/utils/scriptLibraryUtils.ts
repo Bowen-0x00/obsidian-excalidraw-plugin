@@ -33,6 +33,7 @@ type ScriptLibraryScriptEngine = {
   refreshManagedScriptFile(file: TFile): Promise<void>;
   removeManagedScriptFile(scriptPath: string, scriptName: string): Promise<void>;
   renameManagedScriptFile(file: TFile, destinationPath: string): Promise<void>;
+  reloadScripts?: () => Promise<void>; //ymjr
 };
 
 /** Narrow plugin surface required by the community-script library helpers. */

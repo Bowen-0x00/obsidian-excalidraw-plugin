@@ -62,6 +62,7 @@ import {
   setExcalidrawView,
 } from "../utils/obsidianUtils";
 import { FileId } from "@zsviczian/excalidraw/types/element/src/types";
+import { getCustomScriptRelativePath } from "../utils/scriptFileUtils"; //ymjr
 import { ScriptEngine } from "../shared/Scripts";
 import {
   hoverEvent,
@@ -754,8 +755,51 @@ export default class ExcalidrawPlugin extends Plugin {
   }
 
   //ymjr
+  private directoryInfoCache: Map<
+    string,
+    { fetchedAt: number; data: Map<string, number> }
+  > = new Map();
+  public async getRemoteDirectoryInfo(
+    url: string,
+  ): Promise<Map<string, number> | null> {
+    const cached = this.directoryInfoCache.get(url);
+    if (cached && Date.now() - cached.fetchedAt < 60000) {
+      return cached.data;
+    }
+    try {
+      const text = await request({ url });
+      if (!text) {
+        return null;
+      }
+      const list = JSON.parse(text) as RemoteDirectoryInfo[];
+      const map = new Map<string, number>();
+      list.forEach((item) => map.set(item.fname, item.mtime));
+      this.directoryInfoCache.set(url, { fetchedAt: Date.now(), data: map });
+      return map;
+    } catch {
+      return null;
+    }
+  }
+
+  //ymjr
   private registerInstallCodeblockProcessor() {
     const codeblockProcessor = async (source: string, el: HTMLElement) => {
+      source = source.trim();
+      let decodedURI = source;
+      try {
+        decodedURI = decodeURI(source);
+      } catch (e: unknown) {
+        errorlog({
+          where:
+            "ExcalidrawPlugin.registerInstallCodeblockProcessor.codeblockProcessor.onClick",
+          source,
+          error: e,
+        });
+      }
+      const fname = decodedURI.substring(decodedURI.lastIndexOf("/") + 1);
+      el.setAttribute("data-script-fname", fname); //ymjr
+      el.setAttribute("data-script-url", source); //ymjr
+
       //Button next to the "List of available scripts" at the top
       //In try/catch block because this approach is very error prone, depends on
       //MarkdownRenderer() and index.md structure, in case these are not as
@@ -771,6 +815,7 @@ export default class ExcalidrawPlugin extends Plugin {
         button2 = link.parentElement.createEl("button", null, (b) => {
           b.setText(t("UPDATE_SCRIPT"));
           b.addClass("mod-muted");
+          b.setAttribute("data-script-fname-update", fname); //ymjr
           setButtonBgColor(b, "success");
           hideElement(b);
         });
@@ -782,8 +827,9 @@ export default class ExcalidrawPlugin extends Plugin {
         });
       }
 
-      source = source.trim();
       const button = el.createEl("button");
+      button.setAttribute("data-script-fname", fname); //ymjr
+      button.setAttribute("data-script-url", source); //ymjr
         const setButtonText = (
           text: "CHECKING" | "INSTALL" | "UPTODATE" | "UPDATE" | "ERROR",
         ) => {
@@ -817,32 +863,24 @@ export default class ExcalidrawPlugin extends Plugin {
           }
         };
         button.addClass("mod-muted");
-        let decodedURI = source;
-        try {
-          decodedURI = decodeURI(source);
-        } catch (e: unknown) {
-          errorlog({
-            where:
-              "ExcalidrawPlugin.registerInstallCodeblockProcessor.codeblockProcessor.onClick",
-            source,
-            error: e,
-          });
-        }
-        const fname = decodedURI.substring(decodedURI.lastIndexOf("/") + 1);
 
         //ymjr
         const folder = this.customScriptStore
           ? `${this.settings.scriptFolderPath}/Downloaded(Custom)`
           : `${this.settings.scriptFolderPath}/${SCRIPT_INSTALL_FOLDER}`;
 
+        const relativePath = this.customScriptStore
+          ? getCustomScriptRelativePath(source, this.settings.scriptStoreUrl)
+          : fname;
+        const targetPath = `${folder}/${relativePath}`;
+
         const downloaded = this.app.vault
           .getFiles()
           .filter((f) => f.path.startsWith(folder) && f.name === fname)
           .sort((a, b) => (a.path > b.path ? 1 : -1));
         let scriptFile = downloaded[0];
-        const scriptPath = scriptFile?.path ?? `${folder}/${fname}`;
+        const scriptPath = scriptFile?.path ?? targetPath;
         const svgPath = getIMGFilename(scriptPath, "svg");
-
         // Use the upstream getFileByPath API.
         let svgFile = this.app.vault.getFileByPath(svgPath);
         setButtonText(scriptFile ? "CHECKING" : "INSTALL");
@@ -864,10 +902,25 @@ export default class ExcalidrawPlugin extends Plugin {
           };
 
           try {
-            scriptFile = await download(source, scriptFile, scriptPath);
+            const previousPath = scriptFile?.path;
+            scriptFile = await download(source, scriptFile, targetPath);
             if (!scriptFile) {
               setButtonText("ERROR");
               throw new Error("File not found");
+            }
+
+            // Clean up old flat file if migrated to category subfolder
+            if (previousPath && previousPath !== scriptFile.path) {
+              const oldFile = this.app.vault.getFileByPath(previousPath);
+              if (oldFile) {
+                await this.app.fileManager.trashFile(oldFile);
+              }
+              const oldSvg = this.app.vault.getFileByPath(
+                getIMGFilename(previousPath, "svg"),
+              );
+              if (oldSvg) {
+                await this.app.fileManager.trashFile(oldSvg);
+              }
             }
 
             // Missing icons are valid for custom stores.
@@ -875,7 +928,7 @@ export default class ExcalidrawPlugin extends Plugin {
               svgFile = await download(
                 getIMGFilename(source, "svg"),
                 svgFile,
-                svgPath,
+                getIMGFilename(scriptFile.path, "svg"),
               );
             } catch {
               svgFile = null;
@@ -940,10 +993,11 @@ export default class ExcalidrawPlugin extends Plugin {
         const url = this.customScriptStore
           ? updatedUrl
           : URLs.RAW_GITHUBUSERCONTENT_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_MASTER_EA_SCRIPTS_DIRECTORY_INFO_JSON;
-        const directoryInfo = JSON.parse(
-          await request({ url }),
-        ) as RemoteDirectoryInfo[];
-        directoryInfo.forEach((file) => files.set(file.fname, file.mtime));
+        //ymjr
+        const directoryInfo = await this.getRemoteDirectoryInfo(url);
+        if (directoryInfo) {
+          directoryInfo.forEach((mtime, fnameKey) => files.set(fnameKey, mtime));
+        }
 
         const checkModifyDate = (
           gitFilename: string,

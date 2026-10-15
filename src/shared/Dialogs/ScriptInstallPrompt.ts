@@ -6,6 +6,8 @@ import {
   normalizePath,
   request,
   setIcon,
+  TFile, //ymjr
+  TFolder, //ymjr
 } from "obsidian";
 import { SCRIPT_INSTALL_FOLDER } from "../../constants/constants";
 import {
@@ -31,6 +33,12 @@ import {
 } from "../../utils/scriptLibraryUtils";
 import { errorlog } from "../../utils/utils";
 import { ContentSearcher } from "../components/ContentSearcher";
+//ymjr
+import { createOrOverwriteFile, getIMGFilename } from "../../utils/fileUtils";
+import { getCustomScriptRelativePath } from "../../utils/scriptFileUtils";
+import { ExcalidrawSidepanelView } from "../../view/sidepanel/Sidepanel";
+import { hideElement, setButtonBgColor, setStyle } from "../../utils/styleUtils";
+import type { RemoteDirectoryInfo } from "../../types/githubTypes";
 
 const CATALOG_URL =
   URLs.RAW_GITHUBUSERCONTENT_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_MASTER_EA_SCRIPTS_SCRIPT_STORE_JSON;
@@ -99,9 +107,17 @@ const getScriptSourceUrl = (entry: ScriptStoreEntry): string =>
   getPluginRepositoryBlobUrl(`ea-scripts/${entry.file}`);
 
 //ymjr
+type CustomStoreScriptItem = {
+  url: string;
+  fname: string;
+  scriptPath: string;
+  svgPath: string;
+};
+
 type ScriptInstallPluginContext = ScriptLibraryPluginContext &
   Component & {
     customScriptStore?: string | false;
+    getRemoteDirectoryInfo?: (url: string) => Promise<Map<string, number> | null>;
   };
 
 export class ScriptInstallPrompt extends Modal {
@@ -136,7 +152,9 @@ export class ScriptInstallPrompt extends Modal {
     });
     //ymjr
     if (this.customStoreUrl) {
+      this.titleEl.setText(t("INSTALL_SCRIPT_BUTTON_CUSTOM"));
       this.plugin.customScriptStore = this.customStoreUrl;
+      this.renderLoading();
       void this.loadCustomStore();
       return;
     }
@@ -148,11 +166,13 @@ export class ScriptInstallPrompt extends Modal {
   //ymjr
   private async loadCustomStore(): Promise<void> {
     try {
-      new ContentSearcher(this.contentDiv);
-      const source = await request({ url: this.customStoreUrl });
+      this.renderLoading();
+      const source = await this.fetchCustomStoreContent(this.customStoreUrl);
       if (!source) {
         throw new Error("Custom script store returned no content");
       }
+      this.contentDiv.replaceChildren();
+      new ContentSearcher(this.contentDiv);
       await MarkdownRenderer.render(
         this.plugin.app,
         source,
@@ -168,10 +188,425 @@ export class ScriptInstallPrompt extends Modal {
       this.contentDiv.querySelectorAll("a.internal-link").forEach((element) => {
         element.removeAttribute("target");
       });
+      await this.renderCustomStoreActions(source);
     } catch (error: unknown) {
       errorlog({ where: "ScriptInstallPrompt.loadCustomStore", error });
       new Notice(t("SCRIPT_INSTALL_PROMPT_OPEN_ERROR"));
       this.close();
+    }
+  }
+  //ymjr
+  private async fetchCustomStoreContent(url: string): Promise<string> {
+    return await request({ url });
+  }
+
+  private parseCustomStoreScripts(
+    source: string,
+    folder: string,
+    directoryInfoMap?: Map<string, { mtime: number; relativePath?: string }>,
+  ): CustomStoreScriptItem[] {
+    const matches = [
+      ...source.matchAll(/```excalidraw-script-install\s+([\s\S]*?)\s*```/g),
+    ];
+    const items: CustomStoreScriptItem[] = [];
+    const seen = new Set<string>();
+
+    for (const match of matches) {
+      const url = match[1].trim();
+      if (!url) {
+        continue;
+      }
+      let decoded = url;
+      try {
+        decoded = decodeURI(url);
+      } catch {
+        // ignore decoding errors
+      }
+      const fname = decoded.substring(decoded.lastIndexOf("/") + 1);
+      if (!fname || seen.has(fname)) {
+        continue;
+      }
+      seen.add(fname);
+
+      const relativePath = getCustomScriptRelativePath(
+        url,
+        this.customStoreUrl,
+        directoryInfoMap,
+      );
+      const scriptPath = `${folder}/${relativePath}`;
+      const svgPath = getIMGFilename(scriptPath, "svg");
+      items.push({
+        url,
+        fname,
+        scriptPath,
+        svgPath,
+      });
+    }
+    return items;
+  }
+
+  private getExistingCustomScriptFiles(folder: string): Map<string, TFile> {
+    const existing = new Map<string, TFile>();
+    const folderObj = this.plugin.app.vault.getFolderByPath(folder);
+    if (!folderObj) {
+      this.plugin.app.vault
+        .getFiles()
+        .filter((f) => f.path.startsWith(folder))
+        .forEach((f) => existing.set(f.name, f));
+      return existing;
+    }
+    const visit = (f: TFolder) => {
+      f.children.forEach((child) => {
+        if (child instanceof TFile) {
+          existing.set(child.name, child);
+        } else if (child instanceof TFolder) {
+          visit(child);
+        }
+      });
+    };
+    visit(folderObj);
+    return existing;
+  }
+
+  private async fetchCustomDirectoryInfo(): Promise<Map<
+    string,
+    { mtime: number; relativePath?: string }
+  > | null> {
+    if (!this.customStoreUrl) {
+      return null;
+    }
+    const lastSlashIndex = this.customStoreUrl.lastIndexOf("/");
+    const updatedUrl =
+      lastSlashIndex !== -1
+        ? `${this.customStoreUrl.substring(0, lastSlashIndex + 1)}directory-info.json`
+        : this.customStoreUrl;
+
+    try {
+      const text = await request({ url: updatedUrl });
+      if (!text) {
+        return null;
+      }
+      const list = JSON.parse(text) as RemoteDirectoryInfo[];
+      const map = new Map<string, { mtime: number; relativePath?: string }>();
+      list.forEach((item) =>
+        map.set(item.fname, {
+          mtime: item.mtime,
+          relativePath: item.relativePath,
+        }),
+      );
+      return map;
+    } catch {
+      return null;
+    }
+  }
+
+  private async downloadCustomScriptFile(
+    script: CustomStoreScriptItem,
+    folder: string,
+  ): Promise<TFile> {
+    const fetchContent = async (url: string): Promise<string | null> => {
+      try {
+        const res = await request({ url });
+        if (!res || res.startsWith("404: Not Found")) {
+          return null;
+        }
+        return res;
+      } catch {
+        return null;
+      }
+    };
+    const downloaded = this.plugin.app.vault
+      .getFiles()
+      .filter((f) => f.path.startsWith(folder) && f.name === script.fname)
+      .sort((a, b) => (a.path > b.path ? 1 : -1));
+    const scriptFile = downloaded[0];
+    const previousPath = scriptFile?.path;
+    const targetScriptPath = script.scriptPath;
+    const targetSvgPath = getIMGFilename(targetScriptPath, "svg");
+
+    const scriptData = await fetchContent(script.url);
+    if (!scriptData) {
+      throw new Error(`File not found: ${script.url}`);
+    }
+
+    const savedFile = await createOrOverwriteFile(
+      this.plugin.app,
+      targetScriptPath,
+      scriptData,
+    );
+    if (!savedFile) {
+      throw new Error(`Failed to write file: ${targetScriptPath}`);
+    }
+
+    // Clean up old flat file if migrated to category subfolder
+    if (previousPath && previousPath !== targetScriptPath) {
+      const oldFile = this.plugin.app.vault.getFileByPath(previousPath);
+      if (oldFile) {
+        await this.plugin.app.fileManager.trashFile(oldFile);
+      }
+      const oldSvg = this.plugin.app.vault.getFileByPath(
+        getIMGFilename(previousPath, "svg"),
+      );
+      if (oldSvg) {
+        await this.plugin.app.fileManager.trashFile(oldSvg);
+      }
+    }
+
+    try {
+      const svgUrl = getIMGFilename(script.url, "svg");
+      const svgData = await fetchContent(svgUrl);
+      if (svgData) {
+        await createOrOverwriteFile(
+          this.plugin.app,
+          targetSvgPath,
+          svgData,
+        );
+      }
+    } catch {
+      // Icons are optional for custom stores
+    }
+
+    return savedFile;
+  }
+
+  private markScriptButtonUptodate(fname: string): void {
+    const escaped = fname.replace(/"/g, '\\"');
+    const button = this.contentDiv.querySelector<HTMLButtonElement>(
+      `button[data-script-fname="${escaped}"]`,
+    );
+    if (button) {
+      button.setText(t("UPTODATE_SCRIPT"));
+      setButtonBgColor(button, "normal");
+    }
+    const button2 = this.contentDiv.querySelector<HTMLButtonElement>(
+      `button[data-script-fname-update="${escaped}"]`,
+    );
+    if (button2) {
+      hideElement(button2);
+    }
+  }
+
+  private async restartActiveSidepanelTabs(
+    scripts: CustomStoreScriptItem[],
+  ): Promise<void> {
+    const spView = ExcalidrawSidepanelView.getExisting(false);
+    if (!spView || !this.plugin.scriptEngine) {
+      return;
+    }
+    for (const script of scripts) {
+      const file = this.plugin.app.vault.getFileByPath(script.scriptPath);
+      if (!file) continue;
+      const scriptName = this.plugin.scriptEngine.getScriptName(file);
+      if (scriptName && spView.getTabByScript(scriptName)) {
+        try {
+          await spView.restartTabForScript(scriptName);
+        } catch (error: unknown) {
+          errorlog({
+            where: "ScriptInstallPrompt.restartActiveSidepanelTabs",
+            scriptName,
+            error,
+          });
+        }
+      }
+    }
+  }
+  //ymjr
+  private async renderCustomStoreActions(source: string): Promise<void> {
+    const folder = this.plugin.customScriptStore
+      ? `${this.plugin.settings.scriptFolderPath}/Downloaded(Custom)`
+      : `${this.plugin.settings.scriptFolderPath}/${SCRIPT_INSTALL_FOLDER}`;
+    const directoryInfo = await this.fetchCustomDirectoryInfo();
+    const scripts = this.parseCustomStoreScripts(source, folder, directoryInfo);
+    if (scripts.length === 0) {
+      return;
+    }
+
+    const existingFiles = this.getExistingCustomScriptFiles(folder);
+
+    const getPendingScripts = (currentExisting: Map<string, TFile>) =>
+      scripts.filter((s) => {
+        const file = currentExisting.get(s.fname);
+        if (!file) {
+          return true;
+        }
+        if (directoryInfo && directoryInfo.has(s.fname)) {
+          const remoteMtime = directoryInfo.get(s.fname)?.mtime;
+          return remoteMtime !== undefined && remoteMtime > file.stat.mtime;
+        }
+        return false;
+      });
+
+    const pendingScripts = getPendingScripts(existingFiles);
+
+    const actionsContainer = createDiv({
+      cls: "excalidraw-script-store__custom-actions",
+    });
+
+    const header = actionsContainer.createDiv({
+      cls: "excalidraw-script-store__custom-actions-header",
+    });
+
+    const info = header.createDiv({
+      cls: "excalidraw-script-store__custom-actions-info",
+    });
+
+    const titleRow = info.createDiv({
+      cls: "excalidraw-script-store__custom-actions-title-row",
+    });
+    const iconSpan = titleRow.createSpan({
+      cls: "excalidraw-script-store__custom-actions-icon",
+    });
+    setIcon(iconSpan, "package-check");
+    titleRow.createEl("strong", { text: t("SCRIPT_STORE_CUSTOM_TITLE") });
+    titleRow.createSpan({
+      cls: "excalidraw-script-store__custom-actions-badge",
+      text: `${t("SCRIPT_STORE_TOTAL_COUNT")}: ${scripts.length}`,
+    });
+
+    const statusEl = info.createDiv({
+      cls: "excalidraw-script-store__custom-actions-status",
+    });
+
+    const updateStatusUI = (pendingCount: number, installedCount: number) => {
+      if (pendingCount === 0) {
+        statusEl.setText(t("SCRIPT_STORE_ALL_UP_TO_DATE"));
+      } else {
+        statusEl.setText(
+          `${t("SCRIPT_STORE_INSTALLED_COUNT")}: ${installedCount} · ${t("SCRIPT_STORE_PENDING_COUNT")}: ${pendingCount}`,
+        );
+      }
+    };
+    updateStatusUI(pendingScripts.length, scripts.length - pendingScripts.length);
+
+    const buttonsDiv = header.createDiv({
+      cls: "excalidraw-script-store__custom-actions-buttons",
+    });
+
+    const installAllBtn = buttonsDiv.createEl("button", {
+      cls: pendingScripts.length > 0 ? "mod-cta" : "",
+      type: "button",
+    });
+
+    const updateButtonUI = (pendingCount: number) => {
+      if (pendingCount === 0) {
+        installAllBtn.setText(t("SCRIPT_STORE_REINSTALL_ALL"));
+        installAllBtn.removeClass("mod-cta");
+      } else {
+        installAllBtn.setText(`${t("SCRIPT_STORE_INSTALL_ALL")} (${pendingCount})`);
+        installAllBtn.addClass("mod-cta");
+      }
+    };
+    updateButtonUI(pendingScripts.length);
+
+    const progressDiv = actionsContainer.createDiv({
+      cls: "excalidraw-script-store__custom-actions-progress is-hidden",
+    });
+    const progressBar = progressDiv.createDiv({
+      cls: "excalidraw-script-store__custom-actions-progress-bar",
+    });
+    const progressFill = progressBar.createDiv({
+      cls: "excalidraw-script-store__custom-actions-progress-fill",
+    });
+    const progressText = progressDiv.createDiv({
+      cls: "excalidraw-script-store__custom-actions-progress-text",
+    });
+
+    installAllBtn.addEventListener("click", () => {
+      void (async () => {
+        const currentExisting = this.getExistingCustomScriptFiles(folder);
+        let targetScripts = getPendingScripts(currentExisting);
+        if (targetScripts.length === 0) {
+          targetScripts = [...scripts];
+        }
+
+        installAllBtn.disabled = true;
+        progressDiv.removeClass("is-hidden");
+        setStyle(progressFill, { width: "0%" });
+        progressText.setText(t("SCRIPT_STORE_INSTALLING_ALL"));
+
+      let completed = 0;
+      let successCount = 0;
+      let failCount = 0;
+      const total = targetScripts.length;
+
+      try {
+        await this.plugin.scriptEngine.withScriptFileEventsSuspended(
+          async () => {
+            const queue = [...targetScripts];
+            const worker = async () => {
+              while (queue.length > 0) {
+                const item = queue.shift();
+                if (!item) {
+                  break;
+                }
+                try {
+                  await this.downloadCustomScriptFile(item, folder);
+                  successCount++;
+                  this.markScriptButtonUptodate(item.fname);
+                } catch (e: unknown) {
+                  failCount++;
+                  errorlog({
+                    where: "ScriptInstallPrompt.installAllCustomScripts",
+                    script: item.fname,
+                    error: e,
+                  });
+                } finally {
+                  completed++;
+                  const pct = Math.round((completed / total) * 100);
+                  setStyle(progressFill, { width: `${pct}%` });
+                  progressText.setText(`(${completed}/${total}) ${item.fname}`);
+                  installAllBtn.setText(`${t("SCRIPT_STORE_UPDATING")} ${pct}%`);
+                }
+              }
+            };
+
+            const concurrency = Math.min(5, total);
+            await Promise.all(
+              Array.from({ length: concurrency }, () => worker()),
+            );
+          },
+        );
+
+        if (this.plugin.scriptEngine.reloadScripts) {
+          await this.plugin.scriptEngine.reloadScripts();
+        }
+
+        await this.restartActiveSidepanelTabs(targetScripts);
+
+        if (failCount === 0) {
+          new Notice(
+            `${t("SCRIPT_STORE_INSTALL_ALL_DONE")} (${successCount})`,
+          );
+        } else {
+          new Notice(
+            `${t("SCRIPT_STORE_INSTALL_ALL_PARTIAL")} ${successCount}/${total}`,
+          );
+        }
+      } catch (err: unknown) {
+        errorlog({
+          where: "ScriptInstallPrompt.installAllBtn.click",
+          error: err,
+        });
+        new Notice(t("SCRIPT_INSTALL_ERROR_NOTICE"));
+      } finally {
+        progressDiv.addClass("is-hidden");
+        installAllBtn.disabled = false;
+
+        const refreshedExisting = this.getExistingCustomScriptFiles(folder);
+        const refreshedPending = getPendingScripts(refreshedExisting);
+        updateStatusUI(
+          refreshedPending.length,
+          scripts.length - refreshedPending.length,
+        );
+        updateButtonUI(refreshedPending.length);
+        }
+      })();
+    });
+    const searchBar = this.contentDiv.querySelector(".excalidraw-search");
+    if (searchBar) {
+      searchBar.insertAdjacentElement("afterend", actionsContainer);
+    } else {
+      this.contentDiv.prepend(actionsContainer);
     }
   }
 

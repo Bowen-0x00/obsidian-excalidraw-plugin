@@ -1847,6 +1847,16 @@ Obsidian 的 Excalidraw 插件远不只是画图工具。由于它与 Obsidian �
   SCRIPT_STORE_UPDATING: "正在更新...",
   SCRIPT_STORE_UPDATE_ALL_DONE: "所有社区脚本均已是最新版本。",
   SCRIPT_STORE_UPDATE_ALL_PARTIAL: "部分脚本无法更新。失败数量：",
+  SCRIPT_STORE_CUSTOM_TITLE: "自定义脚本市场", //ymjr
+  SCRIPT_STORE_INSTALL_ALL: "安装全部脚本", //ymjr
+  SCRIPT_STORE_INSTALLING_ALL: "正在安装全部脚本...", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_DONE: "全部脚本安装完成！", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_PARTIAL: "脚本安装完成，部分失败。失败数量：", //ymjr
+  SCRIPT_STORE_ALL_UP_TO_DATE: "所有脚本均已安装且为最新版本。", //ymjr
+  SCRIPT_STORE_REINSTALL_ALL: "重新安装全部", //ymjr
+  SCRIPT_STORE_TOTAL_COUNT: "总数", //ymjr
+  SCRIPT_STORE_INSTALLED_COUNT: "已安装", //ymjr
+  SCRIPT_STORE_PENDING_COUNT: "待安装/更新", //ymjr
   SCRIPT_STORE_BROWSE_TITLE: "浏览脚本",
   SCRIPT_STORE_BROWSE_DESC: "可按名称、作者、描述或分类搜索。",
   SCRIPT_STORE_SEARCH_PLACEHOLDER: "搜索社区脚本",

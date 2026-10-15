@@ -1533,6 +1533,16 @@ export default {
   SCRIPT_STORE_UPDATING: "Обновление...",
   SCRIPT_STORE_UPDATE_ALL_DONE: "Все скрипты сообщества обновлены.",
   SCRIPT_STORE_UPDATE_ALL_PARTIAL: "Некоторые скрипты не удалось обновить. Ошибок:",
+  SCRIPT_STORE_CUSTOM_TITLE: "Пользовательский магазин скриптов", //ymjr
+  SCRIPT_STORE_INSTALL_ALL: "Установить все скрипты", //ymjr
+  SCRIPT_STORE_INSTALLING_ALL: "Установка всех скриптов...", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_DONE: "Все скрипты успешно установлены.", //ymjr
+  SCRIPT_STORE_INSTALL_ALL_PARTIAL: "Установка скриптов завершена с ошибками. Количество ошибок:", //ymjr
+  SCRIPT_STORE_ALL_UP_TO_DATE: "Все скрипты уже установлены и обновлены.", //ymjr
+  SCRIPT_STORE_REINSTALL_ALL: "Переустановить все", //ymjr
+  SCRIPT_STORE_TOTAL_COUNT: "Всего", //ymjr
+  SCRIPT_STORE_INSTALLED_COUNT: "Установлено", //ymjr
+  SCRIPT_STORE_PENDING_COUNT: "Ожидающие", //ymjr
   SCRIPT_STORE_BROWSE_TITLE: "Обзор скриптов",
   SCRIPT_STORE_BROWSE_DESC: "Ищите по названию, автору, описанию или категории.",
   SCRIPT_STORE_SEARCH_PLACEHOLDER: "Поиск скриптов сообщества",
