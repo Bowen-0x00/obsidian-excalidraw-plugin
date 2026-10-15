@@ -31,5 +31,6 @@ repository.zip
 
 # ymjr -- Keep private prompts, local archives, and generated diagnostics out of source.
 /prompt
+/movejs.bat
 *.7z
 /excalidraw_unpacked.js
