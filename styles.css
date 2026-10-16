@@ -2586,3 +2586,13 @@ button.excalidraw-font-picker {
 }
 .excalidraw-table-resize-col { cursor: col-resize; }
 .excalidraw-table-resize-row { cursor: row-resize; }
+
+/* ymjr -- Theme previews are live DOM swatches, never canvas mutations or screenshots. */
+.excalidraw-table-properties { width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 40px); }
+.excalidraw-table-properties .modal-content { overflow-y: auto; }
+.excalidraw-table-theme-gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 12px 0 16px; }
+.excalidraw-table-theme-card { height: auto; display: flex; flex-direction: column; gap: 6px; padding: 7px; white-space: normal; font-size: var(--font-ui-smaller); }
+.excalidraw-table-theme-card[aria-pressed="true"] { outline: 2px solid var(--interactive-accent); outline-offset: 1px; }
+.excalidraw-table-theme-preview { width: 100%; overflow: hidden; border: 1px solid var(--background-modifier-border); border-radius: 3px; }
+.excalidraw-table-theme-preview > div { height: 18px; line-height: 18px; font-size: 10px; text-align: center; }
+@media (max-width: 520px) { .excalidraw-table-theme-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

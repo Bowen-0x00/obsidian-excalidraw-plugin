@@ -14,6 +14,7 @@ import type {
 import { setStyle } from "src/utils/styleUtils";
 import { setElementDisplay } from "src/utils/htmlUtils";
 import { sceneCoordsToViewportCoords } from "src/constants/constants";
+import { renderTableAppearanceControls } from "./TableAppearanceControls"; //ymjr
 
 /** Context actions are independent of native grouping and hidden in view mode. */
 export class TableToolbar {
@@ -90,20 +91,34 @@ export class TableToolbar {
     this.modal = modal;
     const cell = this.manager.getCell(this.cellId ?? undefined);
     const root = cell && this.manager.getRoot(cell);
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        modal.close();
+      }
+    };
+    let modalWindow: Window | null = null;
+    const clampToViewport = () => {
+      const owner = modal.modalEl.ownerDocument.defaultView;
+      if (!owner) return;
+      const bounds = modal.modalEl.getBoundingClientRect();
+      setStyle(modal.modalEl, {
+        left: `${Math.max(8, Math.min(bounds.left, owner.innerWidth - bounds.width - 8))}px`,
+        top: `${Math.max(8, Math.min(bounds.top, owner.innerHeight - bounds.height - 8))}px`,
+      });
+    };
     modal.onOpen = () => {
       modal.contentEl.empty();
       modal.setTitle(t(create ? "TABLE_CREATE" : "TABLE_PROPERTIES"));
-      modal.modalEl.addEventListener(
+      modal.modalEl.addClass("excalidraw-table-properties"); //ymjr
+      modal.modalEl.ownerDocument.addEventListener(
         "keydown",
-        (event) => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            modal.close();
-          }
-        },
+        closeOnEscape,
         true,
       );
+      modalWindow = modal.modalEl.ownerDocument.defaultView;
+      modalWindow?.addEventListener("resize", clampToViewport);
       let modeInput: HTMLSelectElement | null = null;
       const number = (
         label: Parameters<typeof t>[0],
@@ -172,6 +187,7 @@ export class TableToolbar {
       } else if (cell && root) {
         const table = getTableData(root) as TableRootData,
           data = getTableData(cell) as TableCellData;
+        renderTableAppearanceControls(modal.contentEl, this.manager, cell.id); //ymjr
         number("TABLE_WIDTH", table.columnWidths[data.col], 40, 2000, (n) =>
           this.manager.setColumnWidth(cell.id, n),
         );
@@ -218,6 +234,12 @@ export class TableToolbar {
       }
     };
     modal.onClose = () => {
+      modalWindow?.removeEventListener("resize", clampToViewport);
+      modal.modalEl.ownerDocument.removeEventListener(
+        "keydown",
+        closeOnEscape,
+        true,
+      );
       modal.contentEl.empty();
       if (this.modal === modal) this.modal = null;
     };
@@ -296,6 +318,7 @@ export class TableToolbar {
         ),
       );
     });
+    button("TABLE_APPEARANCE", "◧", () => this.open()); //ymjr -- direct preset access
     button("TABLE_PROPERTIES", "…", () => this.open());
     this.handles = ["col", "row"].map((axis) => {
       const h = host.createDiv({

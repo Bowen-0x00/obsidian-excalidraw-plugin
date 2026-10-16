@@ -13,6 +13,7 @@ import type {
   TableRootData,
 } from "src/utils/elementCustomDataUtils";
 
+import { syncTableAppearance } from "./tableAppearance"; //ymjr
 const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
 /** One pass owns both cell geometry and content placement; no DOM timing is involved. */
@@ -279,6 +280,7 @@ export function layoutTables(
       height: y - root.y,
       angle: 0 as ExcalidrawElement["angle"],
     });
+    syncTableAppearance(view,root,cells); //ymjr -- new/inserted cells inherit semantic appearance
   }
   for (const element of changedBindings)
     lib.updateBoundElements(element, scene);

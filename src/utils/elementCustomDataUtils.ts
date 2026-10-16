@@ -2,6 +2,8 @@ import type { Mutable } from "@zsviczian/excalidraw/types/common/src/utility-typ
 import type {
   ExcalidrawElement,
   ExcalidrawImageElement,
+  FillStyle,
+  StrokeStyle,
 } from "@zsviczian/excalidraw/types/element/src/types";
 import type { PDFPageViewProps } from "src/types/embeddedFileLoaderTypes";
 
@@ -12,6 +14,40 @@ export type TableRow = {
   heightMode: "auto" | "fixed";
   height: number;
 };
+
+//ymjr -- Presets resolve to saved colors, not a dependency on a future catalog version.
+export type TableBorderPreset =
+  | "grid"
+  | "framed"
+  | "dashed"
+  | "three-line"
+  | "none";
+export type TableAppearance = {
+  theme: string;
+  paintRevision: number;
+  paper: string;
+  header: { background: string; text: string; fill: FillStyle };
+  body: {
+    background: string;
+    alternate: string;
+    text: string;
+    fill: FillStyle;
+  };
+  headerEnabled: boolean;
+  striped: boolean;
+  border: TableBorderPreset;
+  borderColor: string;
+  outerWidth: number;
+  innerWidth: number;
+  shadow: boolean;
+};
+export type TableCellBorders = Record<
+  "top" | "right" | "bottom" | "left",
+  {
+    width: number;
+    style: StrokeStyle;
+  }
+>;
 export type TableRootData = {
   schemaVersion: 2;
   role: "root";
@@ -21,6 +57,7 @@ export type TableRootData = {
   columnWidths: number[];
   rows: TableRow[];
   padding: number;
+  appearance?: TableAppearance;
 };
 export type TableCellData = {
   schemaVersion: 2;
@@ -35,6 +72,9 @@ export type TableCellData = {
   padding: number;
   overflow: "wrap" | "ellipsis";
   heightMode: "auto" | "fixed";
+  appearancePaint?: string;
+  appearanceBorderColor?: string;
+  borders?: TableCellBorders;
 };
 export type TableContentData = {
   schemaVersion: 2;
@@ -106,6 +146,7 @@ export type ExcalidrawCustomData = Record<
   ExcalidrawCustomDataValue | undefined
 > & {
   tags?: string[];
+  tableTextPaint?: string; //ymjr -- last explicitly applied table-label palette revision
   table?: TableData; //ymjr
 };
 

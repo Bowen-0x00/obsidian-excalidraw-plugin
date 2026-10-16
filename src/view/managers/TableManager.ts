@@ -17,10 +17,13 @@ import type {
   TableCellData,
   TableContentData,
   LegacyTableData,
+  TableAppearance,
 } from "src/utils/elementCustomDataUtils";
 import { layoutTables } from "src/shared/table/tableLayout";
 import { parseMarkdownTable } from "src/shared/table/tableMarkdown";
 import { TableToolbar } from "../components/table/TableToolbar";
+import { makeTableAppearance } from "src/shared/table/tableAppearance"; //ymjr
+import type { TableThemeId } from "src/shared/table/tableAppearance"; //ymjr
 
 /** Options shared by scripts, Markdown paste and the table creation panel. */
 export type TableCreateOptions = {
@@ -190,6 +193,34 @@ export class TableManager {
       }
   }
 
+  /** Applies a complete palette/template in one undo entry without touching content or sizing. */
+  applyTheme(cellId: string, theme: TableThemeId): void {
+    this.editRoot(cellId, (table) => {
+      table.appearance = makeTableAppearance(
+        theme,
+        (table.appearance?.paintRevision ?? 0) + 1,
+      );
+    });
+  }
+
+  /** Patches appearance independently; border/shadow changes do not overwrite manual cell fills. */
+  setAppearance(cellId: string, patch: Partial<TableAppearance>): void {
+    this.editRoot(cellId, (table) => {
+      const previous = table.appearance ?? makeTableAppearance("light-blue", 0);
+      const repaint =
+        patch.header !== undefined ||
+        patch.body !== undefined ||
+        patch.headerEnabled !== undefined ||
+        patch.striped !== undefined ||
+        patch.paper !== undefined;
+      table.appearance = {
+        ...previous,
+        ...patch,
+        paintRevision: previous.paintRevision + (repaint ? 1 : 0),
+      };
+    });
+  }
+
   /** Resolves a cell's stable table root. */
   getRoot(cell: ExcalidrawElement): ExcalidrawElement | undefined {
     const data = getTableData(cell);
@@ -291,7 +322,7 @@ export class TableManager {
       }
       ea.copyViewElementsToEAforEditing([root]);
       ea.getElement(root.id).customData = { ...root.customData, table };
-      await ea.addElementsToView(false, true, false);
+      await ea.addElementsToView(false, true, true); //ymjr -- inserted cells must stay above the themed table paper
     } finally {
       ea.destroy();
     }
