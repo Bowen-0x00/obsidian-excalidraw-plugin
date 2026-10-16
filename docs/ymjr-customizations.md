@@ -1,6 +1,6 @@
 # ymjr Customizations Inventory (Obsidian Excalidraw Plugin)
 
-This document inventories the `obsidian-excalidraw-plugin-source` ymjr fork against upstream Release [`2.29.0`](https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.29.0) (tag/commit `4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`) and its paired `@zsviczian/excalidraw@0.18.143` upstream commit `b965b9f72227b9a0be31a6a74e4d477cea2c2a90`. The native-table appearance branch pins custom component `a6fa16c94068dd5c46f6edcd5855ff9c78633dfa`; this unpublished checkpoint does not replace the stable ymjr branch or publish a package.
+This document inventories the `obsidian-excalidraw-plugin-source` ymjr fork against upstream Release [`2.29.0`](https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.29.0) (tag/commit `4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`) and its paired `@zsviczian/excalidraw@0.18.143` upstream commit `b965b9f72227b9a0be31a6a74e4d477cea2c2a90`. Native-table host release `2.29.0-4` pins custom component `a6fa16c94068dd5c46f6edcd5855ff9c78633dfa`; no npm package publication or unrelated upstream synchronization is part of this release.
 
 ---
 
@@ -37,6 +37,7 @@ All customizations in this repository adhere to the following principles:
 - Local feature branch: `feat/table-appearance-20261016`; pre-appearance plugin/component HEADs remain `backup/table-before-appearance-20261016`. Test evidence and the complete generated PNG/SVG/native Excalidraw collection are retained in the isolated lab and `Scripts2/temp/table-appearance-showcase`. No market/plugin/package release is implied.
 - Final paired build pins component `a6fa16c94068dd5c46f6edcd5855ff9c78633dfa`. Ten appearance cases (`table-themes-1792164135105.json`), 12 main-table cases (`table-1792164142366.json`), and six real-surface/portable-reopen cases (`appearance-surface-1792165389032.json`) pass without new runtime errors. The portable cases include independent renamed Markdown image attachments, decoded through the native image cache. Eight component table/text tests, focused ESLint and the final production/declaration builds pass. The 430px layout proof is desktop viewport emulation, not physical mobile coverage.
 - Showcase delivery contains 26 final PNG/SVG/native `.excalidraw`/`.excalidraw.md` sets with byte/hash manifests, plus full and narrow gallery captures. The bilingual README fragments and 26 portable examples are prepared but not published. Final `main.js` is 5,246,645 bytes, 3,765 bytes over the repository's 5 MiB release target; this remains an unpublished development checkpoint.
+- Release preparation for `2.29.0-4` retains the verified native-table checkpoint and adds only version/upgrade documentation and lossless build-time DEFLATE `memLevel: 6`. The component payload probe saves 10,520 embedded Base64 bytes with exact inflate equality; final artifact sizes and real published-install validation are recorded in the release receipt, not inferred from this probe. Existing installations must remove both retired table engines before restarting and opening old tables.
 
 
 

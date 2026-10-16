@@ -12,7 +12,7 @@
 
 Keep the plugin ID `obsidian-excalidraw-plugin-ymjr`. Do not redirect existing BRAT installations to the source fork. Source branch pushes do not publish or replace a release.
 
-The plugin's upstream baseline is Release `2.29.0` (`4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`); the component's upstream baseline is `@zsviczian/excalidraw@0.18.143` (`b965b9f72227b9a0be31a6a74e4d477cea2c2a90`), with the merged custom component pinned at `74e74865c12ae5ad1476685c8c6a3a0bf256e741` in `ymjr-component.json`.
+The plugin's upstream baseline is Release `2.29.0` (`4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`); the component's upstream baseline is `@zsviczian/excalidraw@0.18.143` (`b965b9f72227b9a0be31a6a74e4d477cea2c2a90`). `ymjr-component.json` is the authority for the exact custom component pin; the native-table release pins `a6fa16c94068dd5c46f6edcd5855ff9c78633dfa`.
 
 ## Prerequisites
 
@@ -104,6 +104,10 @@ dist/manifest.json
 Upload them as individual assets named `main.js`, `styles.css`, and `manifest.json`, not only as a ZIP. GitHub's automatically generated source archives are not installable plugin bundles.
 
 `manifest.json` supplies the custom plugin identity and the injected runtime version. The upstream `manifest-beta.json` is not the ymjr release manifest. Do not change the library/package version merely to change the Obsidian plugin release version.
+
+<!-- ymjr -- Preserve all runtime features while meeting the three-file release size target. -->
+Production runtime payloads use zlib DEFLATE level 9 with `memLevel: 6`; the format and runtime decoder remain unchanged. On the native-table component payload, this reduces its embedded Base64 from 2,845,308 to 2,834,788 bytes compared with the default memory level 8. The build-time probe verifies an exact inflate round trip. This is lossless packaging, not omitted fonts, features or offline resources. Check the final `dist/main.js` against the 5 MiB target (5,242,880 bytes) after each release build.
+
 
 MathJax rendering remains supplied by the installed Excalidraw Extras companion plugin. The custom formula editing UI remains in this plugin; building these two repositories does not build or publish Extras.
 

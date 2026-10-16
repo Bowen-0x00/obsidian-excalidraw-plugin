@@ -17,8 +17,9 @@ import { buildReactRuntime } from './scripts/buildReactRuntime.mjs';
 import { getYmjrComponentRoot } from "./scripts/ymjrComponent.mjs"; //ymjr
 
 function compressDeflateBase64(code) {
-  // Compress using Node's native zlib at maximum compression
-  const compressed = zlib.deflateSync(Buffer.from(code, "utf-8"), { level: 9 });
+  //ymjr -- memLevel 6 packs this mixed code/font payload more tightly than zlib's default 8.
+  // This only changes build-time block selection; the existing DEFLATE decoder is unchanged.
+  const compressed = zlib.deflateSync(Buffer.from(code, "utf-8"), { level: 9, memLevel: 6 });
   return compressed.toString("base64");
 }
 
