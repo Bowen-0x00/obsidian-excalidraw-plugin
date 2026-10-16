@@ -2105,4 +2105,24 @@ Thank you & Enjoy!
   //carveout.ts
   NEW_DRAWING_TIMEOUT:
     "File not found. New Excalidraw drawing is taking too long to create. Please try again.",
+  //ymjr -- TableManager / TableToolbar
+  TABLE_CREATE: "Create table",
+  TABLE_PROPERTIES: "Table properties",
+  TABLE_ROWS: "Rows",
+  TABLE_COLUMNS: "Columns",
+  TABLE_WIDTH: "Column width",
+  TABLE_HEIGHT: "Row height",
+  TABLE_PADDING: "Cell padding",
+  TABLE_ROW_MODE: "Row sizing",
+  TABLE_AUTO: "Auto height",
+  TABLE_FIXED: "Fixed · ellipsis",
+  TABLE_SELECT: "Select whole table",
+  TABLE_ADD_ROW: "Insert row below",
+  TABLE_ADD_COLUMN: "Insert column right",
+  TABLE_DELETE_ROW: "Delete row",
+  TABLE_DELETE_COLUMN: "Delete column",
+  TABLE_ATTACH: "Put selection in this cell",
+  TABLE_DETACH: "Detach cell contents",
+  TABLE_CONTAIN: "Fit whole image",
+  TABLE_COVER: "Crop to fill",
 };

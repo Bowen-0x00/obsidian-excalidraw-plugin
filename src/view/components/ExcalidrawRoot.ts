@@ -100,6 +100,8 @@ export function createExcalidrawRootElement(
     }
     view.plugin.scriptEngine.runAutostartScripts(view);
     return () => {
+      view.tableManager?.destroy(); //ymjr
+      view.tableManager = null;
       view.obsidianMenu.destroy();
       view.obsidianMenu = null;
       view.embeddableMenu.destroy();
@@ -206,6 +208,8 @@ export function createExcalidrawRootElement(
           onChange: (et, st, files) =>
             view.onChange(et as ExcalidrawElement[], st, files),
           onIncrement: (event) => view.onExcalidrawIncrement(event),
+          onDuplicate: (next, _previous, data) =>
+            view.tableManager?.onDuplicate(next, data), //ymjr -- remap composite ownership in the native transaction
           onLibraryChange: (libraryItems) =>
             view.onLibraryChange(libraryItems),
           renderTopRightUI: (isMobile: boolean, appState: AppState) =>

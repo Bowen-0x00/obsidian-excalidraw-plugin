@@ -1,6 +1,6 @@
 # ymjr Customizations Inventory (Obsidian Excalidraw Plugin)
 
-This document provides a comprehensive inventory of all custom runtime modifications and enhancements maintained in the `obsidian-excalidraw-plugin-source` fork (branch `ymjr`), compared against upstream Release [`2.29.0`](https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.29.0) (tag/commit `4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`) and its paired `@zsviczian/excalidraw@0.18.143` upstream commit `b965b9f72227b9a0be31a6a74e4d477cea2c2a90` (pinned custom component commit `74e74865c12ae5ad1476685c8c6a3a0bf256e741`).
+This document inventories the `obsidian-excalidraw-plugin-source` ymjr fork against upstream Release [`2.29.0`](https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.29.0) (tag/commit `4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`) and its paired `@zsviczian/excalidraw@0.18.143` upstream commit `b965b9f72227b9a0be31a6a74e4d477cea2c2a90`. The native-table local integration branch pins custom component `58ef2b03e5b049dd99b89ccffa22fcd92f2c2618`; this unpublished checkpoint does not replace the stable ymjr branch or publish a package.
 
 ---
 
@@ -14,6 +14,18 @@ All customizations in this repository adhere to the following principles:
 ---
 
 ## 2. Feature Inventory
+
+### Native semantic tables — local integration checkpoint, 2026-10-16
+
+<!-- ymjr -->
+- **Ownership:** plugin-owned `TableManager` transactions, `tableLayout.layoutTables` synchronous layout, `TableToolbar` view/document-local UI, and `tableMarkdown.parseMarkdownTable`. The component only supplies the pre-observer scene lifecycle and managed-label constraints; no global EA_Core table hooks remain.
+- **Files:** `src/view/managers/TableManager.ts`, `src/view/components/table/TableToolbar.ts`, `src/shared/table/{tableLayout,tableMarkdown}.ts`; integration in `ExcalidrawView.setExcalidrawAPI/onChange/onPaste`, `ExcalidrawRoot` cleanup/`onDuplicate`, `CommandManager` command `table-create`, `elementCustomDataUtils` metadata, `excalidrawLib.d.ts`, maintained locales and `styles.css`.
+- **Saved contract:** `customData.table.schemaVersion=2`, roles `root/cell/content`; stable row/column/cell IDs, one root's row sizing/column widths/padding, native bound text source, and native media/group membership. Group IDs are not table identity. Legacy `root,row,col,rowNum,colNum` cells migrate without replacing their IDs.
+- **Behavior:** row height derives from measured content and can shrink to its minimum; fixed rows use source-preserving ellipsis. Text, column changes, root/cell movement and dependent geometry normalize before the native store observes them. Image files/crops and diagram bindings remain native; duplication uses `OnDuplicateData` ID remapping. Source file identity/intrinsic dimensions are retained independently of fitted geometry; loading/reopening cannot switch cover to contain. Native Delete clears a cell rather than punching a hole in the grid. Deleted-element tombstones remain in every table transaction.
+- **Entry points:** `view.tableManager.create/stage/insert/remove/setRowMode/setColumnWidth/attachContent/detachContent/setFit/openTools`; `stage` joins an existing EA workbench transaction for Bridge `create_table`. `Action-Table-Generate/Modify` become thin UI/operation entries; the obsolete table/paste engines are retired. No public package version or dependency is changed.
+- **Baseline/recovery:** plugin `3e6998e1ada495af112cf440e48828525cc51914`, component `9327290413d709110cdb1dc7ef3933fdd9b2c005`; local `feat/table-layout-20261016` and `backup/table-baseline-20261016`. Test vault and evidence live in `D:/Project/excalidraw-agent-mcp/exports/table-lab`, never the personal vault. This is an explicitly paired unpublished source checkpoint.
+- **Verification:** 12 main-window cases (`table-1792158674664.json`), five native-media/Markdown/migration cases (`table-extra-1792158679191.json`), three real-popout cases (`table-popout-1792159277762.json`), two actual Bridge construction cases (`bridge-table-1792159280640.json`) and two registered creation UI/action cases (`table-create-ui-1792159448836.json`) pass in isolated Windows Obsidian 1.14.4, with no new renderer exceptions in those runs. Native PNG and Chromium SVG were visually reviewed. Five component label regressions, paired production build, library declarations and focused new-module ESLint pass. The lab also verifies byte-exact baseline deployment rollback. Full core typecheck retains the pre-existing test/window.h backlog; no diagnostics name the changed production files. Baseline fork-ledger drift and hot-reload/cross-window diagnostics remain separately recorded rather than suppressed. Physical mobile/macOS coverage is not claimed.
+
 
 ### 2.1 Custom Script Store & In-Vault Script Installer
 - **Description**: Allows browsing, installing, and updating Excalidraw Automate scripts from an alternative remote URL without relying solely on the upstream repository. Supports rendering script catalogs via Markdown codeblocks, preserving category subfolder hierarchies (`Downloaded(Custom)/<category>/<script>.md`), one-click batch installation of all catalog scripts with real-time progress tracking, tracking remote modification dates (`mtime`), downloading scripts with companion icons (`.svg`), and hot-restarting open sidepanel tabs.

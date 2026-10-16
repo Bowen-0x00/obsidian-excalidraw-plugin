@@ -2558,3 +2558,31 @@ button.excalidraw-font-picker {
 .excalidraw .excalidraw-tooltip-wrapper {
   --no-tooltip: true;
 }
+
+/* ymjr -- drawing-owned floating table controls and row/column resize affordances. */
+.excalidraw-table-toolbar {
+  position: absolute;
+  z-index: 7;
+  display: flex;
+  gap: 3px;
+  max-width: calc(100% - 16px);
+  padding: 5px;
+  overflow-x: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  box-shadow: var(--shadow-s);
+}
+.excalidraw-table-toolbar button { min-height: 28px; min-width: 28px; padding: 2px 7px; white-space: nowrap; }
+.excalidraw-table-resize {
+  position: absolute;
+  z-index: 8;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--background-primary);
+  border-radius: 3px;
+  background: var(--interactive-accent);
+  touch-action: none;
+}
+.excalidraw-table-resize-col { cursor: col-resize; }
+.excalidraw-table-resize-row { cursor: row-resize; }

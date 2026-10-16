@@ -193,6 +193,18 @@ export class CommandManager {
     this.importSVGDialog = new ImportSVGDialog(this.plugin);
     this.insertMDDialog = new InsertMDDialog(this.plugin);
 
+    //ymjr -- tables are a native view feature, not an autorun-script prerequisite.
+    this.addCommand({
+      id: "table-create",
+      name: t("TABLE_CREATE"),
+      checkCallback: (checking: boolean) => {
+        const view = this.app.workspace.getActiveViewOfType(ExcalidrawView);
+        if (!view?.tableManager) return false;
+        if (!checking) view.tableManager.openTools(true);
+        return true;
+      },
+    });
+
     const createNewAction = (e: MouseEvent | KeyboardEvent, file: TFile) => {
       let folderpath = file.path;
       if (file instanceof TFile) {

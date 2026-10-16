@@ -192,6 +192,7 @@ import {
 } from "../utils/modifierkeyHelper";
 import { setDynamicStyle } from "../utils/dynamicStyling";
 import { CustomEmbeddable, renderWebView } from "./components/CustomEmbeddable";
+import { TableManager } from "./managers/TableManager"; //ymjr
 import {
   addBackOfTheNoteCard,
   insertBackOfTheNoteContent,
@@ -539,6 +540,7 @@ export default class ExcalidrawView
   public obsidianMenu: ObsidianMenu | null = null;
   public embeddableMenu: EmbeddableMenu | null = null;
   public selectedElementActionsMenu: SelectedElementActionsMenu | null = null;
+  public tableManager: TableManager | null = null; //ymjr -- view-local composite tables
   private destroyers: Array<() => void> = [];
   private previousContentElHeight: number = 0;
   private resizeBatchTimer: number | null = null;
@@ -6243,6 +6245,7 @@ export default class ExcalidrawView
 
   public onChange(et: ExcalidrawElement[], st: AppState, files: BinaryFiles) {
     this.selectedElementActionsMenu?.update(et, st);
+    this.tableManager?.update(et, st); //ymjr
     if (st.activeTool?.type) {
       if (st.activeTool.type === "image") {
         if (
@@ -6390,6 +6393,11 @@ export default class ExcalidrawView
   ) {
     const api = this.excalidrawAPI;
     const ea = this.getHookServer();
+    //ymjr -- one parser/constructor for clipboard tables, before legacy script hooks.
+    if (!files?.length && !data?.elements?.length && data?.text && this.tableManager?.pasteMarkdown(data.text)) {
+      event?.preventDefault();
+      return false;
+    }
 
     if (
       files?.length ||
@@ -7968,7 +7976,13 @@ export default class ExcalidrawView
   }
 
   public setExcalidrawAPI(api: ExcalidrawImperativeAPI | null) {
+    //ymjr -- dispose the previous scene subscription before a runtime replacement.
+    if (this.excalidrawAPI !== api) {
+      this.tableManager?.destroy();
+      this.tableManager = null;
+    }
     this.excalidrawAPI = api;
+    if (api && !this.tableManager) this.tableManager = new TableManager(this); //ymjr
     // Chasing ghosts: https://github.com/zsviczian/obsidian-excalidraw-plugin/issues/2810
     if (!api || this.pendingUIMode === null) {
       return;

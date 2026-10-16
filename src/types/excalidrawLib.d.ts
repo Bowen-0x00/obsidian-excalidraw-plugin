@@ -28,6 +28,9 @@ import {
   Zoom,
 } from "@zsviczian/excalidraw/types/excalidraw/types";
 import { GlobalPoint } from "@zsviczian/excalidraw/types/math/src/types";
+import type { resizeMultipleElements as nativeResizeMultipleElements } from "@zsviczian/excalidraw/types/element/src/resizeElements"; //ymjr
+import type { newElementWith as nativeNewElementWith } from "@zsviczian/excalidraw/types/element/src/mutateElement"; //ymjr
+import type { updateBoundElements as nativeUpdateBoundElements } from "@zsviczian/excalidraw/types/element/src/binding"; //ymjr
 
 type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
 
@@ -81,6 +84,9 @@ type EmbeddedLink =
   | null;
 
 export declare namespace ExcalidrawLib {
+  const resizeMultipleElements: typeof nativeResizeMultipleElements; //ymjr
+  const newElementWith: typeof nativeNewElementWith; //ymjr
+  const updateBoundElements: typeof nativeUpdateBoundElements; //ymjr
   type ObsidianCommonHostUIMode = "full" | "compact" | "tray" | "mobile";
 
   type ObsidianCommonHostAdapter = Readonly<{
