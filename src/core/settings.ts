@@ -5515,19 +5515,9 @@ export class ExcalidrawSettingTab extends PluginSettingTab {
   }
 
   private getInstalledScriptNames(): string[] {
-    const { scriptEngine } = this.plugin;
-    const configured = Object.keys(this.plugin.settings.scriptEngineSettings);
-    // Obsidian can index declarative definitions before layout-ready creates
-    // ScriptEngine. Preserve discoverability during that early pass; once the
-    // engine exists, continue hiding settings for scripts no longer installed.
-    if (!scriptEngine) {
-      return configured;
-    }
-    const installed =
-      scriptEngine
-        ?.getListofScripts()
-        ?.map((file) => scriptEngine.getScriptName(file)) ?? [];
-    return configured.filter((scriptName) => installed.includes(scriptName));
+    //ymjr -- A saved settings group can belong to a shared feature, not a script filename.
+    // Keep every saved group discoverable; explicit hidden flags are handled below.
+    return Object.keys(this.plugin.settings.scriptEngineSettings);
   }
 
   private isVisibleScriptSetting(value: unknown): boolean {

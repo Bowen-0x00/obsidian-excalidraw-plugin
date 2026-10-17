@@ -230,6 +230,15 @@ All customizations in this repository adhere to the following principles:
   - `styles.css`: CSS rules for `.mobile-misc-tools-container` & `.tray-misc-tools-container`.
 - **Ownership**: **Plugin Source** & **Plugin Styles** (with companion component consuming slider/laser properties via window globals).
 
+#### Shared feature settings groups — 2.29.0-5
+
+<!-- ymjr -- Preserve feature-owned configuration without tying its key to script paths. -->
+- **ID / status / ownership:** `PLG-SCRIPT-SETTINGS-GROUPS`, active on plugin branch `ymjr`; no component changes or protocol change.
+- **Behavior:** `ExcalidrawSettingTab.getInstalledScriptNames` (`src/core/settings.ts:5517-5521`) enumerates every saved `scriptEngineSettings` group instead of filtering by installed script filenames. Groups such as `Mindmap_Engine`, `extra colors` and renamed/removed script paths remain editable. `isVisibleScriptSetting`, `hasInstalledScriptSettings` and `renderInstalledScriptControls` still omit explicit `hidden: true` entries and empty/all-hidden groups in declarative and legacy layouts.
+- **Persistence:** existing keys, metadata, script APIs and stable-snapshot settings writes are unchanged; no data migration, setting deletion or new UI string. Old settings groups deliberately remain visible even after their original script is removed.
+- **Source / pairing:** release working tree based on plugin `87910710fb27a69bdb938304748d5527808953f5`, upstream plugin Release `2.29.0` / `4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`, upstream component `0.18.143` / `b965b9f72227b9a0be31a6a74e4d477cea2c2a90`; custom component pin remains `a6fa16c94068dd5c46f6edcd5855ff9c78633dfa`. Final source and artifact hashes are recorded in the release receipt.
+- **Validation:** `scripts/testing/scriptSettings.test.mjs` covers both setting layouts, mismatched feature/old path names, hidden and empty groups, and editing without losing metadata. The previous Chromium real-method fixture confirmed expandable/editable groups; native release validation and platform limits must be recorded separately, not inferred from this fixture.
+
 ---
 
 ### 2.11 Universal File Insertion in InsertMDDialog

@@ -39,6 +39,8 @@ ${getYouTubeDiv("H64AW1l-ae4")}
 - Google Drive videos start playing when you activate their embeds. [#12246](${URLs.GITHUB_COM_EXCALIDRAW_EXCALIDRAW_PULL}/12246)
 
 ## Fixed
+<!-- ymjr -- 2.29.0-5 keeps shared feature settings discoverable without renaming saved keys. -->
+- **Shared script settings (ymjr 2.29.0-5).** Saved settings groups are now visible even when their names differ from installed script filenames, allowing multiple scripts to share feature-level configuration. Explicitly hidden settings remain hidden; saved groups from removed scripts also remain accessible.
 - **Optional ymjr mindmap scripts.** Update the engine and Action script files together. Deep trees and invalid cyclic/multiple-parent graphs no longer recurse indefinitely; pending edits stop when their drawing changes or closes. Mobile controls use larger touch targets and native multiline dialogs. Rescue/detach preserves other element metadata, and Markdown export asks before overwriting an existing file. Engine 1.1.1 fixes repeated errors from clicking ordinary shapes or blank canvas and from deleting unbound ordinary connectors.
 - **Text undo/redo.** Editing after undo or redo no longer restores outdated text, and closing an unchanged editor preserves redo history. [#2976](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2976)
 - **Markdown embeds.** Fixed blank or interrupted drawing embeds, nested and self-referencing drawing images, and back-of-the-note embeds showing the full drawing instead of the linked section. [#2953](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2953) [#2979](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2979) [#2931](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2931)
