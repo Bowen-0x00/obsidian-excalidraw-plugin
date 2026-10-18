@@ -1531,15 +1531,27 @@ export default class ExcalidrawView
       ea.copyViewElementsToEAforEditing([el]);
       ea.addAppendUpdateCustomData(el.id, { latex: formula });
 
-      const dataURL = await ea.tex2dataURL(equation);
+      //ymjr++ >> Measure the NEW formula, not the previous one, and self-heal a
+      // degenerate (zero-height) element so editing an empty template like
+      // "\color{blue}" into real content becomes visible again.
+      const dataURL = await ea.tex2dataURL(formula);
       if (dataURL && dataURL.size.height > 0 && dataURL.size.width > 0) {
+        const scaleX = el.width > 0 ? el.width / dataURL.size.width : 1;
+        const scaleY = el.height > 0 ? el.height / dataURL.size.height : 1;
         ea.addAppendUpdateCustomData(el.id, {
-          latexscale: {
-            scaleX: el.width / dataURL.size.width,
-            scaleY: el.height / dataURL.size.height,
-          },
+          latexscale: { scaleX, scaleY },
         });
+        // A degenerate element never repaints, so latexscale alone cannot heal it.
+        // Give it real geometry immediately; the load callback refines it later.
+        if (el.height <= 0 || el.width <= 0) {
+          const target = ea.getElement(el.id);
+          if (target) {
+            target.width = dataURL.size.width;
+            target.height = dataURL.size.height;
+          }
+        }
       }
+      //ymjr++
       await ea.addElementsToView(false, false, false, false);
       await this.save(false);
       await updateEquation(formula, fileId, this, (files, view) => {

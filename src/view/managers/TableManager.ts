@@ -193,6 +193,29 @@ export class TableManager {
       }
   }
 
+  //ymjr++ >> Keep the floating table UI scoped to the current selection.
+  /** Whether the current native selection still touches the given logical cell. */
+  private isCellSelected(
+    cell: ExcalidrawElement,
+    state: AppState,
+  ): boolean {
+    const elements = this.view.excalidrawAPI?.getSceneElements() ?? [];
+    const root = getTableData(cell)?.root;
+    const belongs = (element: ExcalidrawElement): boolean => {
+      if (element.id === cell.id) return true;
+      const data = getTableData(element);
+      if (data?.role === "content" && data.cellId === cell.id) return true;
+      if (data?.role === "cell" && element.id === cell.id) return true;
+      if (element.type === "text" && element.containerId)
+        return element.containerId === cell.id;
+      return false;
+    };
+    return elements.some(
+      (element) => state.selectedElementIds[element.id] && belongs(element),
+    );
+  }
+  //ymjr++
+
   /** Applies a complete palette/template in one undo entry without touching content or sizing. */
   applyTheme(cellId: string, theme: TableThemeId): void {
     this.editRoot(cellId, (table) => {
@@ -553,14 +576,18 @@ export class TableManager {
       }
     const cell = this.getCell();
     if (cell) this.activeCellId = cell.id;
-    const hasSelection = Object.values(state.selectedElementIds).some(Boolean);
-    this.toolbar.update(
-      cell ??
-        (hasSelection
-          ? this.getCell(this.activeCellId ?? undefined)
-          : undefined),
-      state,
-    );
+    //ymjr++ >> Only fall back to the remembered cell when the current selection
+    // still belongs to it. Otherwise selecting any unrelated element would keep
+    // showing the table toolbar for a cell that is no longer selected.
+    const remembered = this.activeCellId
+      ? this.getCell(this.activeCellId)
+      : undefined;
+    const rememberedSelected =
+      remembered &&
+      Object.values(state.selectedElementIds).some(Boolean) &&
+      this.isCellSelected(remembered, state);
+    this.toolbar.update(cell ?? (rememberedSelected ? remembered : undefined), state);
+    //ymjr++
     if (
       !this.migrating &&
       elements.some(
