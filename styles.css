@@ -2596,3 +2596,45 @@ button.excalidraw-font-picker {
 .excalidraw-table-theme-preview { width: 100%; overflow: hidden; border: 1px solid var(--background-modifier-border); border-radius: 3px; }
 .excalidraw-table-theme-preview > div { height: 18px; line-height: 18px; font-size: 10px; text-align: center; }
 @media (max-width: 520px) { .excalidraw-table-theme-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ymjr: match custom property panel sliders to native full-width Range slider */
+.excalidraw .selected-shape-actions fieldset input[type="range"],
+.excalidraw .Island fieldset input[type="range"],
+.excalidraw .context-menu fieldset input[type="range"] {
+  width: 100%;
+  margin-inline: 0;
+  height: 4px;
+  -webkit-appearance: none;
+  background: var(--button-bg);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  display: block;
+  box-sizing: border-box;
+}
+
+.excalidraw .selected-shape-actions fieldset input[type="range"]::-webkit-slider-thumb,
+.excalidraw .Island fieldset input[type="range"]::-webkit-slider-thumb,
+.excalidraw .context-menu fieldset input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--slider-thumb-size, 16px);
+  height: var(--slider-thumb-size, 16px);
+  background: var(--color-slider-thumb);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.excalidraw .selected-shape-actions fieldset input[type="range"]::-moz-range-thumb,
+.excalidraw .Island fieldset input[type="range"]::-moz-range-thumb,
+.excalidraw .context-menu fieldset input[type="range"]::-moz-range-thumb {
+  width: var(--slider-thumb-size, 16px);
+  height: var(--slider-thumb-size, 16px);
+  background: var(--color-slider-thumb);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}

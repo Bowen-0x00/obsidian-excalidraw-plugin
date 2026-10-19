@@ -285,6 +285,18 @@ All customizations in this repository adhere to the following principles:
   - `manifest.json` (`L2-10`): Custom plugin identity (`obsidian-excalidraw-plugin-ymjr`, `Excalidraw-ymjr`, `2.29.0-1`).
 - **Ownership**: **Plugin Source**.
 
+### 2.16 Full-Width Property Sliders & Arrowhead Sizing (2.29.0-7)
+- **Description**:
+  - Expanded all custom property panel sliders (`strokeWidth`, `arrowHeadSize`, `blockArrowWidth`, `roundnessValue`) to full 100% panel width in `styles.css` and component `styles.scss`, matching the native Opacity slider and increasing effective dragging distance by 43%.
+  - Upgraded `actionChangeArrowheadSize` in `actionProperties.tsx` to a power curve mapping ($u \in [0.5, 2.83] \implies S = u^2 \in [0.25\times, 8.0\times]$), providing 35.6% of slider travel and 83 granular steps for $4\times \sim 8\times$, $\pm 0.05$ snap to 100%, and double-click reset.
+  - Fixed state echo bug where non-customized arrows read un-mapped `appState.currentItemArrowHeadSize` into the range input.
+  - Added live value readouts in `<legend>` for all property sliders (`Stroke width (Xpx)`, `Arrowhead size (X%)`, `Block arrow width (Xpx)`, `Roundness value (X%)`).
+- **Exact Source Files & Functions**:
+  - `styles.css`: `.excalidraw .selected-shape-actions fieldset input[type="range"]` and `.Island fieldset input[type="range"]`.
+  - Component `packages/excalidraw/actions/actionProperties.tsx`: `actionChangeStrokeWidth`, `actionChangeArrowheadSize`, `actionChangeBlockArrowWidth`, `actionChangeRoundnessValue`.
+  - Component `packages/excalidraw/css/styles.scss`: `fieldset input[type="range"]`.
+- **Ownership**: **Plugin Styles** & **Component Actions/Styles**.
+
 ---
 
 ## 3. Source vs. Component Responsibility Matrix

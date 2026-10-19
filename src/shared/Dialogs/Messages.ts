@@ -40,6 +40,7 @@ ${getYouTubeDiv("H64AW1l-ae4")}
 
 ## Fixed
 <!-- ymjr -- 2.29.0-5 keeps shared feature settings discoverable without renaming saved keys. -->
+- **Enhanced property sliders & arrowhead sizing (ymjr 2.29.0-7).** Expanded all custom property panel sliders (stroke width, arrowhead size, block arrow shaft width, and roundness) to full panel width matching the native opacity slider, increasing physical travel distance by 43%. Arrowhead size now uses a power curve mapping for smooth, granular adjustment across 0.25x–8.0x without high-multiplier jumpiness, adds 100% snap and double-click reset, fixes state echo under default scaling, and displays live values on all sliders.
 - **Shared script settings (ymjr 2.29.0-5).** Saved settings groups are now visible even when their names differ from installed script filenames, allowing multiple scripts to share feature-level configuration. Explicitly hidden settings remain hidden; saved groups from removed scripts also remain accessible.
 - **LaTeX edit size (ymjr).** Editing a formula now measures the new expression instead of the previous one, so replacing an empty template such as \\color{blue} with real content makes it visible again instead of staying zero-height.
 - **Table toolbar scope (ymjr).** The floating table controls now appear only while a table cell or its content is selected; selecting unrelated elements no longer reopens the last table's toolbar.
