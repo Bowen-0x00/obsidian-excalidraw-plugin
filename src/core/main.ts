@@ -1,4 +1,5 @@
 import { ExcalidrawExtrasGateway } from "../utils/ExcalidrawExtrasGateway";
+import type { ExcalidrawElement } from "@zsviczian/excalidraw/types/element/src/types";
 import { ExcalidrawCLI } from "./managers/ExcalidrawCLI";
 import type { ExcalidrawCLIRequest, ExcalidrawCLIResult } from "src/types/excalidrawCliTypes";
 import type { ExactDrawingCreationOptions } from "src/types/drawingCreationTypes";
@@ -117,7 +118,13 @@ import { StencilLibraryManager } from "./managers/StencilLibraryManager";
 import type { StencilLibraryData } from "src/types/stencilLibraryTypes";
 import { PluginSettingsManager } from "./managers/PluginSettingsManager";
 import { FooterSafeAreaManager } from "./managers/FooterSafeAreaManager";
-import { FontManager } from "./managers/FontManager";
+import {
+  FontManager,
+  type FontRegistrationOptions,
+  type RegisteredFontData,
+  type SystemFontInfo,
+  type UnregisteredFontResult,
+} from "./managers/FontManager";
 import { StartupTimer } from "./managers/StartupTimer";
 import {
   ViewMigrationHandoffManager,
@@ -706,11 +713,46 @@ export default class ExcalidrawPlugin extends Plugin {
     );
   }
 
+  //ymjr
   /** Initializes configured CJK and custom fonts across open documents. */
-  public async initializeFonts(): Promise<void> {
-    await this.fontManager.initializeFonts();
+  public async initializeFonts(notify = false): Promise<void> {
+    await this.fontManager.initializeFonts(notify);
   }
 
+  /** Registers a custom font at runtime across open documents and Excalidraw. */
+  public async registerFont(options: FontRegistrationOptions): Promise<string> {
+    return await this.fontManager.registerFont(options);
+  }
+
+  /** Returns all font families currently registered in Excalidraw and FontManager. */
+  public getFontFamilies(): string[] {
+    return this.fontManager.getFontFamilies();
+  }
+
+  /** Returns metadata for all currently registered custom runtime fonts. */
+  public getRegisteredFonts(): RegisteredFontData[] {
+    return this.fontManager.getRegisteredFonts();
+  }
+
+  /** Scans all installed system fonts across the machine. */
+  public async getSystemFonts(refresh = false): Promise<SystemFontInfo[]> {
+    return await this.fontManager.getSystemFonts(refresh);
+  }
+  //ymjr
+  /** Ensures that all custom fonts referenced in scene elements are loaded. */
+  public async ensureSceneFonts(
+    elements: readonly ExcalidrawElement[],
+    saveToVault = false,
+  ): Promise<{ resolved: string[]; failed: string[] }> {
+    return await this.fontManager.ensureSceneFonts(elements, saveToVault);
+  }
+
+  /** Scans elements for any custom fonts that are not currently registered. */
+  public getUnregisteredSceneFonts(
+    elements: readonly ExcalidrawElement[],
+  ): UnregisteredFontResult[] {
+    return this.fontManager.getUnregisteredSceneFonts(elements);
+  }
   /** Removes plugin-owned runtime fonts from all open documents. */
   public removeFonts(): void {
     this.fontManager.removeFonts();

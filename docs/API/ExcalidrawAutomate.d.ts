@@ -15,6 +15,12 @@ import { Mutable } from "@zsviczian/excalidraw/types/common/src/utility-types";
 import { EmbeddableMDCustomProps } from "./Dialogs/EmbeddableSettings";
 import { AIRequest } from "../utils/AIUtils";
 import { AddImageOptions,ImageInfo,SVGColorInfo } from "src/types/excalidrawAutomateTypes";
+import type {
+  FontRegistrationOptions,
+  RegisteredFontData,
+  SystemFontInfo,
+  UnregisteredFontResult,
+} from "src/core/managers/FontManager";
 
 type ExcalidrawCustomDataValue =
     | string
@@ -299,7 +305,21 @@ export declare class ExcalidrawAutomate {
      * @param {number} val - The font family value (1: Virgil, 2: Helvetica, 3: Cascadia).
      * @returns {string} The font family string.
      */
-    setFontFamily(val: number): string;
+    setFontFamily(val: number | string): string;
+    /** Initializes configured CJK and custom fonts across all open documents. */
+    initializeFonts(notify?: boolean): Promise<void>;
+    /** Registers a font at runtime from a vault file, local system path, remote URL, or ArrayBuffer. */
+    registerFont(options: FontRegistrationOptions): Promise<string>;
+    /** Returns a list of all font family names currently registered and available in Excalidraw. */
+    getFontFamilies(): string[];
+    /** Returns metadata for all currently registered custom runtime fonts. */
+    getRegisteredFonts(): RegisteredFontData[];
+    /** Scans and returns all installed system fonts across the machine. */
+    getSystemFonts(refresh?: boolean): Promise<SystemFontInfo[]>;
+    /** Scans elements for any custom fonts that are not currently registered. */
+    getUnregisteredSceneFonts(elements?: readonly ExcalidrawElement[]): UnregisteredFontResult[];
+    /** Auto-resolves missing scene fonts on-the-fly from the local system or vault. */
+    ensureSceneFonts(elements?: readonly ExcalidrawElement[], saveToVault?: boolean): Promise<{ resolved: string[]; failed: string[] }>;
     /**
      * Sets the theme for the canvas.
      * @param {number} val - The theme value (0: "light", 1: "dark").

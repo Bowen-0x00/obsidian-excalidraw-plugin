@@ -284,6 +284,7 @@ export default {
   TEMPORARY_DISABLE_AUTOSAVE:
     "Desactivar autoguardado hasta el próximo inicio de Obsidian (solo haz esto si sabes lo que estás haciendo)",
   TEMPORARY_ENABLE_AUTOSAVE: "Activar autoguardado",
+  RELOAD_FONTS: "Recargar fuentes", //ymjr
   FONTS_LOADED: "Excalidraw: Fuentes CJK cargadas",
   FONTS_LOAD_ERROR:
     "Excalidraw: No se pudieron encontrar las fuentes CJK en la carpeta assets\n",

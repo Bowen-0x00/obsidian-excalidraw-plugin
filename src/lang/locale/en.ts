@@ -295,6 +295,7 @@ export default {
   TEMPORARY_ENABLE_AUTOSAVE: "Enable autosave",
   TEMPORARY_TOGGLE_VIEW_MODE_FOR_ALL_DRAWINGS:
     "Toggle view mode for all Excalidraw drawings until Obsidian restarts",
+  RELOAD_FONTS: "Reload fonts from font folder / custom sources", //ymjr
   FONTS_LOADED: "Excalidraw: CJK Fonts loaded",
   FONTS_LOAD_ERROR:
     "Excalidraw: Could not find CJK Fonts in the assets folder\n",

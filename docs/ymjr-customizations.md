@@ -109,20 +109,22 @@ All customizations in this repository adhere to the following principles:
 ---
 
 ### 2.4 Multi-Font Directory Loading & Font Metrics
-- **Description**: Extends Excalidraw's single custom 4th font mechanism by allowing a vault folder (`multiFontsFolder`) containing multiple font files (`.ttf`, `.woff`, `.woff2`, `.otf`) to be loaded simultaneously. Reads SFNT metrics through `src/utils/fontMetrics` (with a standard metrics fallback), registers families through `excalidrawLib.registerLocalFont`, and registers document-scoped `FontFace` objects across open Obsidian windows.
+- **Description**: Extends Excalidraw's font loading and runtime typography capabilities. Supports multi-font folder scanning (`multiFontsFolder`), runtime font registration from vault files, desktop system font discovery (600+ fonts), web font downloading with vault persistence, TTC / SFNT `name` table extraction, on-demand canvas font auditing, and command palette / Excalidraw Automate APIs.
 - **Exact Source Files & Functions**:
   - `src/core/managers/FontManager.ts`:
-    - `FontManager.prototype.initializeFonts()`: Scans `multiFontsFolder` for font files, loads binary buffers via `getFontDataURL`, parses metrics via `getFontMetrics(arrayBuffer)` (or fallback `{ unitsPerEm: 1000, ascender: 750, descender: -250, lineHeight: 1.2 }`), calls `excalidrawLib.registerLocalFont({ metrics }, font.dataURL, font.family, font.fileName)`, and registers `RuntimeFontFaceDefinition` into all open Obsidian document `FontFaceSet`s via `registerFontFaces(fontDefinitions, ownerDocument, FONTS_STYLE_ID, true)`.
-    - `registerFontFaces()`: Constructs `new FontFace(family, source, descriptors)` via the document's window object and adds them to `ownerDocument.fonts`.
+    - `FontManager.prototype.initializeFonts()`: Scans `multiFontsFolder` and configured fonts, parses metrics and true family names from SFNT metadata, registers into `excalidrawLib.registerLocalFont`, and adds `FontFace` objects across all open Obsidian windows.
+    - `FontManager.prototype.registerFont(options)`: Registers a font dynamically at runtime from vault files, system fonts, URLs, or binary buffers, with optional vault persistence.
+    - `FontManager.prototype.getSystemFonts()`: Fast header scanner for all 600+ installed desktop system fonts.
+    - `FontManager.prototype.ensureSceneFonts()` & `getUnregisteredSceneFonts()`: Scene font audit and auto-resolution.
+    - `registerFontFaces()`: Constructs `new FontFace(family, source, descriptors)` and manages document `FontFaceSet`.
+  - `src/utils/fontMetrics.ts`: Parses vertical metrics and extracts true font family names from OpenType/TrueType/TTC `name` tables via `getFontMetrics()` and `getFontFamilyFromBuffer()`.
   - `src/core/settingsDefaults.ts`: `multiFontsFolder: string` (default `""`).
   - `src/core/settings.ts`: Setting item "Multi font folder" under ymjr settings.
-  - `src/types/excalidrawLib.d.ts`: Extended `registerLocalFont` signature accepting `fontFamily?: string` and `fontName?: string`.
-  - `src/utils/embeddedAssetUtils.ts`: `getFontDataURL()` updated to accept `string | TFile` for direct file resolution.
-  - `src/shared/ExcalidrawAutomate.ts` & `src/utils/excalidrawAutomateUtils.ts`: `getFontFamily(val: number)` method added.
+  - `src/core/managers/CommandManager.ts`: Added command `excalidraw:reload-fonts`.
+  - `src/shared/ExcalidrawAutomate.ts`: Exposed `initializeFonts()`, `registerFont()`, `getFontFamilies()`, `getRegisteredFonts()`, `getSystemFonts()`, `getUnregisteredSceneFonts()`, `ensureSceneFonts()`, and updated `setFontFamily()` to accept string family names.
 - **Ownership**:
-  - **Plugin**: Scans vault folder, reads binary data, resolves font files, computes metrics via `fontMetrics`, registers `FontFace` on Obsidian windows.
+  - **Plugin**: Scans vault folder, parses binary font tables and metrics, registers `FontFace` on Obsidian windows, exposes automation APIs.
   - **Component**: Registers fonts in Excalidraw's internal font table (`registerLocalFont`), populates font selection controls, and performs canvas rendering.
-
 ---
 
 ### 2.5 SVG Text Element Import & ForeignObject Skipping

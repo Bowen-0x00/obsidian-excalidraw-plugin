@@ -260,6 +260,7 @@ export default {
   TEMPORARY_ENABLE_AUTOSAVE: "啟用自動儲存功能",
   TEMPORARY_TOGGLE_VIEW_MODE_FOR_ALL_DRAWINGS:
     "所有 Excalidraw 繪圖切換檢視模式，重啟 Obsidian 不延續狀態",
+  RELOAD_FONTS: "重新載入字型（從字型資料夾/自訂來源）", //ymjr
   FONTS_LOADED: "Excalidraw: CJK 字型已載入",
   FONTS_LOAD_ERROR: "Excalidraw: 在資原始檔夾下找不到 CJK 字型\n",
   TOGGLE_ENABLE_CONTEXT_MENU: "切換是否啟用上下文選單（在移動裝置上很有用）",

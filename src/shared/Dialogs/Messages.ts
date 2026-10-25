@@ -86,6 +86,16 @@ getFontFamily(val: number | string): string;
 \`\`\`
 - Unbound arrows created with Excalidraw Automate's \`addArrow()\` no longer contain incomplete binding data that could cause an error when selected.
 <!-- ymjr -->
+- Added runtime font loading, system font discovery, and scene font audit APIs to Excalidraw Automate:
+\`\`\`ts
+initializeFonts(notify?: boolean): Promise<void>;
+registerFont(options: FontRegistrationOptions): Promise<string>;
+getFontFamilies(): string[];
+getRegisteredFonts(): RegisteredFontData[];
+getSystemFonts(refresh?: boolean): Promise<SystemFontInfo[]>;
+getUnregisteredSceneFonts(elements?: readonly ExcalidrawElement[]): UnregisteredFontResult[];
+ensureSceneFonts(elements?: readonly ExcalidrawElement[], saveToVault?: boolean): Promise<{ resolved: string[]; failed: string[] }>;
+\`\`\`
 - \`onLinkClickHook\` now receives optional resolved-link context after the existing arguments:
 \`\`\`ts
 onLinkClickHook: (element: ExcalidrawElement, linkText: string, event: MouseEvent, view: ExcalidrawView, ea: ExcalidrawAutomate, subpath?: string, file?: TFile, keys?: ModifierKeys) => boolean;

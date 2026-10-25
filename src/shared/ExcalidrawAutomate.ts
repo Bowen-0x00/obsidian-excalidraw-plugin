@@ -1,5 +1,11 @@
 import type React from "react";
 import ExcalidrawPlugin from "src/core/main";
+import type {
+  FontRegistrationOptions,
+  RegisteredFontData,
+  SystemFontInfo,
+  UnregisteredFontResult,
+} from "src/core/managers/FontManager";
 import LZString from "lz-string";
 import type { ExcalidrawCLIRequest, ExcalidrawCLIResult } from "src/types/excalidrawCliTypes";
 import {
@@ -50,7 +56,6 @@ import {
   DEVICE,
   mermaidToExcalidraw,
   refreshTextDimensions,
-  getFontFamilyString,
   convertToExcalidrawElements,
   VIEW_TYPE_EXCALIDRAW,
 } from "src/constants/constants";
@@ -1251,9 +1256,73 @@ export class ExcalidrawAutomate {
    * @param {number} val - The font family value (1: Virgil, 2: Helvetica, 3: Cascadia).
    * @returns {string} The font family string.
    */
-  setFontFamily(val: number): string {
+  setFontFamily(val: ExcalidrawTextElement["fontFamily"]): string {
     this.setStyle({ fontFamily: val });
-    return getFontFamilyString({ fontFamily: val });
+    return getFontFamily(val);
+  }
+
+  //ymjr
+  /**
+   * Initializes configured CJK and custom fonts across all open documents.
+   * Can be called at runtime to reload fonts from the multi-font folder.
+   *
+   * @param notify - Whether to show a notice with loaded font count. Default true.
+   */
+  async initializeFonts(notify = true): Promise<void> {
+    await this.plugin.initializeFonts(notify);
+  }
+
+  /**
+   * Registers a font at runtime from a vault file, local system path, remote URL, or ArrayBuffer.
+   * The font is immediately available to Excalidraw canvas, element styles, and the font picker.
+   *
+   * @param options - Font registration options (file, path, url, data, name, saveToVault, etc.)
+   * @returns The registered font family name.
+   */
+  async registerFont(options: FontRegistrationOptions): Promise<string> {
+    return await this.plugin.registerFont(options);
+  }
+
+  /**
+   * Returns a list of all font family names currently registered and available in Excalidraw.
+   */
+  getFontFamilies(): string[] {
+    return this.plugin.getFontFamilies();
+  }
+
+  /**
+   * Returns metadata for all currently registered custom runtime fonts.
+   */
+  getRegisteredFonts(): RegisteredFontData[] {
+    return this.plugin.getRegisteredFonts();
+  }
+
+  /**
+   * Scans and returns all installed system fonts across the machine.
+   */
+  async getSystemFonts(refresh = false): Promise<SystemFontInfo[]> {
+    return await this.plugin.getSystemFonts(refresh);
+  }
+
+  /**
+   * Scans elements for any custom fonts that are not currently registered.
+   */
+  getUnregisteredSceneFonts(
+    elements?: readonly ExcalidrawElement[],
+  ): UnregisteredFontResult[] {
+    const els = elements || this.getElements();
+    return this.plugin.getUnregisteredSceneFonts(els);
+  }
+
+  /**
+   * Auto-resolves missing scene fonts on-the-fly from the local system or vault.
+   */
+  async ensureSceneFonts(
+    elements?: readonly ExcalidrawElement[],
+    saveToVault = false,
+  ): Promise<{ resolved: string[]; failed: string[] }> {
+    const els = elements || this.getElements();
+    return await this.plugin.ensureSceneFonts(els, saveToVault);
   }
 
   /**
@@ -1687,7 +1756,7 @@ export class ExcalidrawAutomate {
       const tagSet = new Set<string>();
       for (const el of tagElements) {
         for (const tag of el.customData.tags) {
-          tagSet.add(tag)
+          tagSet.add(String(tag));
         }
       }
       for (const tag of tagSet) {

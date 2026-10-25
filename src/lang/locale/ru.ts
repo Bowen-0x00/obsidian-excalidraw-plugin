@@ -267,6 +267,7 @@ export default {
   TEMPORARY_DISABLE_AUTOSAVE:
     "Отключить автосохранение до следующего запуска Obsidian (устанавливайте этот параметр, только если вы знаете, что делаете)",
   TEMPORARY_ENABLE_AUTOSAVE: "Включить автосохранение",
+  RELOAD_FONTS: "Перезагрузить шрифты", //ymjr
 
   //ReleaseNotes.ts
   RN_WELCOME: "Добро пожаловать в Excalidraw",

@@ -21,6 +21,7 @@ const SUPPORTED_SFNT_SIGNATURES = new Set([
   0x4f54544f, // OTTO: OpenType with CFF/CFF2 outlines
   0x74727565, // true: legacy Apple TrueType
   0x74797031, // typ1: legacy OpenType wrapper
+  0x74746366, //ymjr -- ttcf: TrueType Collection
 ]);
 
 /** Font metrics registered for Excalidraw's local font family. */
@@ -65,20 +66,34 @@ const findRequiredTables = (
   if (view.byteLength < SFNT_HEADER_SIZE) {
     return null;
   }
-  if (!SUPPORTED_SFNT_SIGNATURES.has(view.getUint32(0))) {
+  const sig = view.getUint32(0);
+  if (!SUPPORTED_SFNT_SIGNATURES.has(sig)) {
     return null;
   }
 
-  const tableCount = view.getUint16(4);
+  let baseOffset = 0;
+  if (sig === 0x74746366) {
+    // TrueType collection: first font starts at offset in header at byte 12
+    if (view.byteLength < 16) {
+      return null;
+    }
+    baseOffset = view.getUint32(12);
+  }
+
+  if (!isRangeAvailable(view.byteLength, baseOffset, SFNT_HEADER_SIZE)) {
+    return null;
+  }
+
+  const tableCount = view.getUint16(baseOffset + 4);
   const directoryLength = tableCount * TABLE_RECORD_SIZE;
-  if (!isRangeAvailable(view.byteLength, SFNT_HEADER_SIZE, directoryLength)) {
+  if (!isRangeAvailable(view.byteLength, baseOffset + SFNT_HEADER_SIZE, directoryLength)) {
     return null;
   }
 
   let head: SfntTable | null = null;
   let hhea: SfntTable | null = null;
   for (let index = 0; index < tableCount && (!head || !hhea); index++) {
-    const recordOffset = SFNT_HEADER_SIZE + index * TABLE_RECORD_SIZE;
+    const recordOffset = baseOffset + SFNT_HEADER_SIZE + index * TABLE_RECORD_SIZE;
     const tag = readTableTag(view, recordOffset);
     if (tag !== "head" && tag !== "hhea") {
       continue;
@@ -140,4 +155,110 @@ export function getFontMetrics(fontData: ArrayBuffer): FontMetrics | null {
     descender,
     lineHeight: (ascender - descender) / unitsPerEm,
   };
+}
+
+//ymjr
+/**
+ * Extracts the font family name from an SFNT (TrueType/OpenType/TTC) font buffer.
+ *
+ * @param fontData - Complete SFNT font data from a `.ttf`, `.otf`, or `.ttc` file.
+ * @returns Font family name, or `null` if unreadable.
+ */
+export function getFontFamilyFromBuffer(fontData: ArrayBuffer): string | null {
+  if (fontData.byteLength < SFNT_HEADER_SIZE) {
+    return null;
+  }
+  const view = new DataView(fontData);
+  const sig = view.getUint32(0);
+  if (!SUPPORTED_SFNT_SIGNATURES.has(sig)) {
+    return null;
+  }
+
+  let baseOffset = 0;
+  if (sig === 0x74746366) {
+    if (view.byteLength < 16) {
+      return null;
+    }
+    baseOffset = view.getUint32(12);
+  }
+
+  if (!isRangeAvailable(view.byteLength, baseOffset, SFNT_HEADER_SIZE)) {
+    return null;
+  }
+
+  const tableCount = view.getUint16(baseOffset + 4);
+  let nameOffset = -1;
+
+  for (let index = 0; index < tableCount; index++) {
+    const recordOffset = baseOffset + SFNT_HEADER_SIZE + index * TABLE_RECORD_SIZE;
+    if (!isRangeAvailable(view.byteLength, recordOffset, TABLE_RECORD_SIZE)) {
+      break;
+    }
+    const tag = readTableTag(view, recordOffset);
+    if (tag === "name") {
+      nameOffset = view.getUint32(recordOffset + TABLE_OFFSET_POSITION);
+      break;
+    }
+  }
+
+  if (nameOffset === -1 || !isRangeAvailable(view.byteLength, nameOffset, 6)) {
+    return null;
+  }
+
+  const count = view.getUint16(nameOffset + 2);
+  const stringOffset = nameOffset + view.getUint16(nameOffset + 4);
+  if (!isRangeAvailable(view.byteLength, stringOffset, 0)) {
+    return null;
+  }
+
+  let preferredName: string | null = null;
+  let fallbackName: string | null = null;
+
+  for (let i = 0; i < count; i++) {
+    const record = nameOffset + 6 + i * 12;
+    if (!isRangeAvailable(view.byteLength, record, 12)) {
+      break;
+    }
+    const platformID = view.getUint16(record);
+    const languageID = view.getUint16(record + 4);
+    const nameID = view.getUint16(record + 6);
+    const length = view.getUint16(record + 8);
+    const strOffset = stringOffset + view.getUint16(record + 10);
+
+    if (!isRangeAvailable(view.byteLength, strOffset, length)) {
+      continue;
+    }
+
+    // nameID: 1 = Font Family, 4 = Full Name, 16 = Typographic Family
+    if (nameID === 1 || nameID === 4 || nameID === 16) {
+      let str = "";
+      if (platformID === 3 || platformID === 0) {
+        // UTF-16BE
+        for (let b = 0; b < length; b += 2) {
+          str += String.fromCharCode(view.getUint16(strOffset + b));
+        }
+      } else if (platformID === 1) {
+        // Mac Roman / ASCII
+        for (let b = 0; b < length; b++) {
+          str += String.fromCharCode(view.getUint8(strOffset + b));
+        }
+      }
+      str = str.trim();
+      if (!str) {
+        continue;
+      }
+      // Prefer English (0x0409) or Unicode font family name (1 or 16)
+      if (nameID === 1 && (languageID === 0x0409 || platformID === 0)) {
+        return str;
+      }
+      if (nameID === 1 && !preferredName) {
+        preferredName = str;
+      }
+      if (!fallbackName) {
+        fallbackName = str;
+      }
+    }
+  }
+
+  return preferredName || fallbackName;
 }

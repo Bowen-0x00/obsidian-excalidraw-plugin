@@ -205,6 +205,15 @@ export class CommandManager {
       },
     });
 
+    //ymjr
+    this.addCommand({
+      id: "reload-fonts",
+      name: t("RELOAD_FONTS"),
+      callback: async () => {
+        await this.plugin.initializeFonts(true);
+      },
+    });
+
     const createNewAction = (e: MouseEvent | KeyboardEvent, file: TFile) => {
       let folderpath = file.path;
       if (file instanceof TFile) {

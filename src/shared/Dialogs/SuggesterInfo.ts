@@ -123,6 +123,49 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
     desc: "Returns the family string for a built-in font ID or a custom family registered in the current runtime.",
     after: "",
   },
+  //ymjr
+  {
+    field: "initializeFonts",
+    code: "initializeFonts(notify?: boolean): Promise<void>;",
+    desc: "Initializes and reloads configured CJK and custom fonts from the vault font folder across all open documents and Excalidraw.",
+    after: "",
+  },
+  {
+    field: "registerFont",
+    code: "registerFont(options: FontRegistrationOptions): Promise<string>;",
+    desc: "Registers a font at runtime from a vault file, local system path, remote URL, or ArrayBuffer. Immediately usable on canvas.",
+    after: "",
+  },
+  {
+    field: "getFontFamilies",
+    code: "getFontFamilies(): string[];",
+    desc: "Returns a list of all font family names currently registered and available in Excalidraw.",
+    after: "",
+  },
+  {
+    field: "getRegisteredFonts",
+    code: "getRegisteredFonts(): RegisteredFontData[];",
+    desc: "Returns metadata for all currently registered custom runtime fonts.",
+    after: "",
+  },
+  {
+    field: "getSystemFonts",
+    code: "getSystemFonts(refresh?: boolean): Promise<SystemFontInfo[]>;",
+    desc: "Scans and returns all installed system fonts across the machine with family names, paths, and loaded status.",
+    after: "",
+  },
+  {
+    field: "getUnregisteredSceneFonts",
+    code: "getUnregisteredSceneFonts(elements?: readonly ExcalidrawElement[]): UnregisteredFontResult[];",
+    desc: "Scans text elements and returns any custom fonts that are not currently registered.",
+    after: "",
+  },
+  {
+    field: "ensureSceneFonts",
+    code: "ensureSceneFonts(elements?: readonly ExcalidrawElement[], saveToVault?: boolean): Promise<{ resolved: string[]; failed: string[] }>;",
+    desc: "Auto-resolves missing scene fonts on-the-fly from the local system or vault.",
+    after: "",
+  },
   {
     field: "style.fontSize",
     code: "[number]",
