@@ -3,7 +3,7 @@ import type {
   ExcalidrawElement,
   ExcalidrawTextElement,
 } from "@zsviczian/excalidraw/types/element/src/types";
-import { Notice, normalizePath, TFile, requestUrl } from "obsidian";
+import { Notice, normalizePath, TFile, requestUrl, Platform } from "obsidian";
 import {
   CJK_STYLE_ID,
   DEVICE,
@@ -52,7 +52,7 @@ interface DesktopElectronRuntime {
 }
 
 const getDesktopRuntime = (): DesktopElectronRuntime | null => {
-  if (!DEVICE.isDesktop) {
+  if (!DEVICE.isDesktop && !Platform.isDesktop) {
     return null;
   }
   const electronWin = window as unknown as DesktopElectronRuntime;
@@ -791,16 +791,34 @@ export class FontManager {
     }
 
     const candidateDirs: string[] = [];
-    const env = runtime?.process?.env || {};
-    if (DEVICE.isWindows) {
-      const winDir = env.WINDIR || env.SYSTEMROOT || "C:\\Windows";
+    const nodeProcess =
+      typeof process !== "undefined" ? process : runtime?.process;
+    const env = nodeProcess?.env || {};
+    const isWin =
+      Platform.isWin ||
+      (typeof process !== "undefined" && process.platform === "win32") ||
+      DEVICE.isWindows;
+    const isMac =
+      Platform.isMacOS ||
+      (typeof process !== "undefined" && process.platform === "darwin") ||
+      DEVICE.isMacOS;
+
+    if (isWin) {
+      const winDir =
+        env.WINDIR ||
+        env.windir ||
+        env.SystemRoot ||
+        env.SYSTEMROOT ||
+        "C:\\Windows";
       candidateDirs.push(pathModule.join(winDir, "Fonts"));
-      if (env.LOCALAPPDATA) {
+      const localApp =
+        env.LOCALAPPDATA || env.LocalAppData || env.localappdata;
+      if (localApp) {
         candidateDirs.push(
-          pathModule.join(env.LOCALAPPDATA, "Microsoft", "Windows", "Fonts"),
+          pathModule.join(localApp, "Microsoft", "Windows", "Fonts"),
         );
       }
-    } else if (DEVICE.isMacOS) {
+    } else if (isMac) {
       candidateDirs.push(
         "/System/Library/Fonts",
         "/Library/Fonts",
@@ -994,21 +1012,34 @@ export class FontManager {
       }
 
       const candidateDirs: string[] = [];
-      const env = runtime?.process?.env || {};
-      if (DEVICE.isWindows) {
-        const winDir = env.WINDIR || env.SYSTEMROOT || "C:\\Windows";
+      const nodeProcess =
+        typeof process !== "undefined" ? process : runtime?.process;
+      const env = nodeProcess?.env || {};
+      const isWin =
+        Platform.isWin ||
+        (typeof process !== "undefined" && process.platform === "win32") ||
+        DEVICE.isWindows;
+      const isMac =
+        Platform.isMacOS ||
+        (typeof process !== "undefined" && process.platform === "darwin") ||
+        DEVICE.isMacOS;
+
+      if (isWin) {
+        const winDir =
+          env.WINDIR ||
+          env.windir ||
+          env.SystemRoot ||
+          env.SYSTEMROOT ||
+          "C:\\Windows";
         candidateDirs.push(pathModule.join(winDir, "Fonts"));
-        if (env.LOCALAPPDATA) {
+        const localApp =
+          env.LOCALAPPDATA || env.LocalAppData || env.localappdata;
+        if (localApp) {
           candidateDirs.push(
-            pathModule.join(
-              env.LOCALAPPDATA,
-              "Microsoft",
-              "Windows",
-              "Fonts",
-            ),
+            pathModule.join(localApp, "Microsoft", "Windows", "Fonts"),
           );
         }
-      } else if (DEVICE.isMacOS) {
+      } else if (isMac) {
         candidateDirs.push(
           "/System/Library/Fonts",
           "/Library/Fonts",
