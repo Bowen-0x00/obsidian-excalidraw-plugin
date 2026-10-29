@@ -141,6 +141,24 @@ export type ExcalidrawCustomDataValue =
   | ExcalidrawCustomDataValue[]
   | { [key: string]: ExcalidrawCustomDataValue };
 
+//ymjr -- multi-color & single-color custom SVG icon layers
+export type SVGLayer = {
+  d: string;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  fillStyle?: "solid" | "hachure" | "cross-hatch" | "dots" | "zigzag";
+  roughness?: number;
+  opacity?: number;
+};
+
+export type SVGViewBox = {
+  x?: number;
+  y?: number;
+  width: number;
+  height: number;
+};
+
 export type ExcalidrawCustomData = Record<
   string,
   ExcalidrawCustomDataValue | undefined
@@ -148,6 +166,11 @@ export type ExcalidrawCustomData = Record<
   tags?: string[];
   tableTextPaint?: string; //ymjr -- last explicitly applied table-label palette revision
   table?: TableData; //ymjr
+  svgPathShape?: string; //ymjr -- single-path vector shape
+  svgLayers?: SVGLayer[]; //ymjr -- multi-layer vector icon
+  svgViewBox?: SVGViewBox; //ymjr -- native viewBox
+  scaleX?: number; //ymjr -- horizontal flip/scale
+  scaleY?: number; //ymjr -- vertical flip/scale
 };
 
 export type ExcalidrawCustomDataPatch = Partial<ExcalidrawCustomData>;
