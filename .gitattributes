@@ -2,3 +2,5 @@
 tests/vault/** -text
 tests/vault/Assets/*.pdf binary
 tests/fixtures/*.json text eol=lf
+# ymjr -- Manifest release bytes must match raw Git downloads on Windows too.
+manifest.json text eol=lf

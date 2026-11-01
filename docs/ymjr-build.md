@@ -106,6 +106,9 @@ Upload them as individual assets named `main.js`, `styles.css`, and `manifest.js
 
 `manifest.json` supplies the custom plugin identity and the injected runtime version. The upstream `manifest-beta.json` is not the ymjr release manifest. Do not change the library/package version merely to change the Obsidian plugin release version.
 
+<!-- ymjr -- Keep tested installation files identical to committed/raw distribution bytes. -->
+`manifest.json` is checked out with LF line endings through `.gitattributes`, including on Windows. The independent distribution repository preserves the three generated artifacts as exact bytes (`-text`) so Release attachments, BRAT/raw downloads and automatic example-vault synchronization share one SHA-256 per file.
+
 <!-- ymjr -- Preserve all runtime features while meeting the three-file release size target. -->
 Production runtime payloads use zlib DEFLATE level 9 with `memLevel: 6`; the format and runtime decoder remain unchanged. On the native-table component payload, this reduces its embedded Base64 from 2,845,308 to 2,834,788 bytes compared with the default memory level 8. The build-time probe verifies an exact inflate round trip. This is lossless packaging, not omitted fonts, features or offline resources. Check the final `dist/main.js` against the 5 MiB target (5,242,880 bytes) after each release build.
 
