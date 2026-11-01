@@ -94,6 +94,10 @@ export const obsidianToExcalidrawMap: { [key: string]: string } = {
   "zh-tw": "zh-TW",
 };
 
+/** The paired runtime converter, explicitly named so library declarations remain portable. */
+export let mermaidToExcalidraw: typeof ExcalidrawLib.mermaidToExcalidraw =
+  excalidrawLib.mermaidToExcalidraw; //ymjr
+
 export let {
   sceneCoordsToViewportCoords,
   viewportCoordsToSceneCoords,
@@ -111,7 +115,6 @@ export let {
   mutateElement,
   restoreElements,
   restoreLibraryItems,
-  mermaidToExcalidraw,
   getFontFamilyString,
   getContainerElement,
   refreshTextDimensions,
@@ -122,7 +125,7 @@ export let {
   syncInvalidIndices,
   getDefaultColorPalette,
   convertToExcalidrawElements,
-}: typeof ExcalidrawLib = excalidrawLib; //ymjr -- Keep public declarations portable across sibling checkout paths.
+} = excalidrawLib;
 
 export function updateExcalidrawLib() {
   try {
