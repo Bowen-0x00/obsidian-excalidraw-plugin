@@ -122,7 +122,7 @@ export let {
   syncInvalidIndices,
   getDefaultColorPalette,
   convertToExcalidrawElements,
-} = excalidrawLib;
+}: typeof ExcalidrawLib = excalidrawLib; //ymjr -- Keep public declarations portable across sibling checkout paths.
 
 export function updateExcalidrawLib() {
   try {
