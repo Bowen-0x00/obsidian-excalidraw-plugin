@@ -12,7 +12,8 @@
 
 Keep the plugin ID `obsidian-excalidraw-plugin-ymjr`. Do not redirect existing BRAT installations to the source fork. Source branch pushes do not publish or replace a release.
 
-The plugin's upstream baseline is Release `2.29.0` (`4acaf9e375e1dfb731faec9c2dd3439bd52cc4cb`); the component's upstream baseline is `@zsviczian/excalidraw@0.18.143` (`b965b9f72227b9a0be31a6a74e4d477cea2c2a90`). `ymjr-component.json` is the authority for the exact custom component pin; the native-table release pins `a6fa16c94068dd5c46f6edcd5855ff9c78633dfa`.
+<!-- ymjr -- Release pairing follows the published plugin lockfile and npm provenance. -->
+The upstream baseline is plugin Release `2.29.1` (`5429408ad0e58ac3eb918439f463bde741357143`), paired with `@zsviczian/excalidraw@0.18.146` (`278ed4937dde5fd9e77c83a4e25e5a9b3d8028f7`, verified npm `gitHead`). `ymjr-component.json` is the authority for the exact customized component commit; it is not replaced by the plain upstream commit.
 
 ## Prerequisites
 
@@ -110,6 +111,9 @@ Production runtime payloads use zlib DEFLATE level 9 with `memLevel: 6`; the for
 
 
 MathJax rendering remains supplied by the installed Excalidraw Extras companion plugin. The custom formula editing UI remains in this plugin; building these two repositories does not build or publish Extras.
+
+<!-- ymjr -- Shared CLI pipes cannot select an isolated Windows profile safely. -->
+For release-specific Windows validation, use an isolated profile and disposable `excalidraw-test` vault. A second profile can report `EADDRINUSE` for Obsidian's shared CLI pipe while its renderer works normally; never route a CLI call into a personal/default profile to bypass that failure. Record guarded isolated-renderer testing separately from the native CLI runner, with exact source/artifact hashes, actual workflow checks and captured errors. Physical mobile, other desktop platforms and hosted CodeScanner remain separate gates.
 
 ## Source and dependency changes
 

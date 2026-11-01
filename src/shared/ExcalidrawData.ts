@@ -1012,7 +1012,6 @@ export class ExcalidrawData {
 
     //iterating through all the text elements in .md
     //Text elements always contain the raw value
-    const BLOCKREF_LEN: number = 12; // " ^12345678\n\n".length;
     const RE_TEXT_ELEMENT_LINK =
       /^%%\*\*\*>>>text element-link:(\[\[[^<*\]]*]])<<<\*\*\*%%/gm;
     let res = data.matchAll(/\s\^(.{8})[\n]+/g);
@@ -1064,7 +1063,7 @@ export class ExcalidrawData {
           }
         }
       }
-      position = parts.value.index + BLOCKREF_LEN;
+      position = parts.value.index + parts.value[0].length;
     }
 
     //In theory only non-text elements should be left in the elementLinkMap
@@ -1878,7 +1877,8 @@ export class ExcalidrawData {
       .filter((el) => el.type === "image" && el.crop && !el.isDeleted)
       .forEach((el: Mutable<ExcalidrawImageElement>) => {
         const ef = this.getFile(el.fileId);
-        if (!ef.file) {
+        // Local Markdown images and equations have no file-backed entry.
+        if (!ef?.file) {
           return;
         }
         if (ef.file.extension !== "pdf") {

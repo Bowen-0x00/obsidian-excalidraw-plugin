@@ -17,7 +17,32 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 
 <div class="ex-coffee-div"><a href="${URLs.KO_FI_COM_ZSOLT}"><img src="${URLs.CDN_KO_FI_COM_CDN_KOFI3_PNG}" border="0" alt="Buy Me a Coffee at ko-fi.com"  height=45></a></div>
 `,
-//ymjr -- Preserve release documentation for custom hooks and toolbar scrolling.
+"2.29.1": `
+## New and improved
+<!-- ymjr -- Integrate the stable upstream release without resetting custom drawings or settings. -->
+- **Excalidraw-ymjr 2.29.1-1.** Updated to upstream 2.29.1 and its matching component 0.18.146 while retaining native tables/themes, runtime custom fonts, script hooks, vector icon layers, custom arrows and formula editors.
+- **SVG text imports (ymjr).** The upstream typed SVG converter replaces the custom text importer, including editable SVG text and safe plain HTML labels. Existing atomic multi-color \`svgLayers\` icons remain a separate supported workflow.
+- **Choose new-file destinations.** The new-file dialog includes editable folder and filename fields. Companion plugins can also build template selectors through ExcalidrawAutomate.
+- **Editable Lucide icons.** Obsidian uses [Lucide](${URLs.LUCIDE_DEV}) icons, now available as editable Excalidraw strokes. Search and insert them from the command palette "Insert Lucide Icon" or image menu. Also available to CLI agents and scripts through \`ea.addLucideIcon()\`. [#3019](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_PULL}/3019)
+- **Mermaid diagrams.** Migrated to Obsidian's new [Pele](${URLs.GITHUB_COM_OBSIDIANMD_PELE}) library. Thank you, [kepano](${URLs.GITHUB_COM_OBSIDIANMD_PELE_COMMITS_AUTHOR_KEPANO})! The new SVG importer brings diagram types not yet supported by Mermaid-to-Excalidraw into your scene as editable Excalidraw strokes. Update **Excalidraw Extras** to use the updated converter.
+- **SVG imports.** Import editable shapes and text from the image menu, or convert an SVG image already in your drawing. [#3018](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/3018)
+- **CLI image previews.** Agents can inspect images and request smaller previews without changing the originals. [#3004](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/3004)
+- **Mindmap Builder.** Copy your K-Plex canvas as Mindmap Builder Markdown, ready to paste into Excalidraw. Mindmap Builder also accepts Mermaid mindmap syntax from the clipboard. [#2996](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2996) Its floating input hides in view mode and returns when editing resumes.
+
+## Fixed
+- Adding links to text or shape labels no longer breaks undo history.
+- Resized and cropped Markdown images retain their dimensions and crops when edited. [#2947](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2947)
+- Fullscreen works in nested workspace splits and restores the surrounding panes on exit. [#2743](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2743)
+- Image drops honor modifier-key actions, and YouTube thumbnails retain their video links. [#2967](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/2967)
+- Settings no longer create unnecessary backup or Git updates when nothing has changed.
+
+## Excalidraw Automate (ymjr)
+<!-- ymjr -- Keep the public workbench contract explicit after the upstream converter cutover. -->
+The synchronous SVG importer now supports the upstream converter's editable text and inert plain HTML labels. Insert or save the workbench separately:
+\`\`\`ts
+importSVG(svgString: string): boolean;
+\`\`\`
+`,
 "2.29.0": `
 ${getYouTubeDiv("H64AW1l-ae4")}
 ## New

@@ -30,6 +30,14 @@
   text-align: center;
 }
 
+.workspace-leaf-content[data-type="excalidraw"] > .view-content.excalidraw-fullscreen-content {
+  margin-top: 0;
+}
+
+.is-mobile .workspace-split.mod-root.excalidraw-fullscreen-root {
+  padding-top: 0;
+}
+
 svg.excalidraw-svg {
   width: 100%;
 }
@@ -389,6 +397,10 @@ textarea.excalidraw-wysiwyg {
 
 .excalidraw-folder-path-control {
   flex-wrap: wrap;
+}
+
+.excalidraw-new-file .setting-item-info {
+  flex: 0 1 auto;
 }
 
 .excalidraw-file-and-folder-selector__field {
@@ -1013,6 +1025,18 @@ End Obsidian Sheets Plus support
   background: var(--interactive-normal);
   border: none;
   border-radius: 4px;
+}
+
+pre.excalidraw-drawing-load-error-message,
+pre.excalidraw-drawing-load-error-message code {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.excalidraw-drawing-load-error-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
 }
 
 .excalidraw-multiOptionConfirmationPrompt-message {
@@ -2637,4 +2661,43 @@ button.excalidraw-font-picker {
   border-radius: 50%;
   cursor: pointer;
   border: none;
+}
+.excalidraw-lucide-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.excalidraw-lucide-picker input,
+.excalidraw-lucide-picker select {
+  width: 100%;
+}
+.excalidraw-lucide-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 6px;
+}
+.excalidraw-lucide-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  min-height: 64px;
+  padding: 8px 4px;
+  gap: 4px;
+  white-space: normal;
+}
+.excalidraw-lucide-icon svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.excalidraw-lucide-icon span,
+.excalidraw-lucide-status {
+  font-size: var(--font-ui-smaller);
+  overflow-wrap: break-word;
+}
+.excalidraw-lucide-pages {
+  display: flex;
+  justify-content: space-between;
 }

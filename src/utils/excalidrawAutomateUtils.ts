@@ -373,6 +373,7 @@ export async function getTemplate( //ymjr
   loader: EmbeddedFilesLoader,
   depth: number,
   convertMarkdownLinksToObsidianURLs: boolean = false,
+  cliFileIdAllowList?: Set<FileId>, // #3004 -- CLI export may load only images needed by its preview policy
 ): Promise<{
   elements: ExcalidrawElement[];
   appState: Partial<AppState>;
@@ -515,6 +516,11 @@ export async function getTemplate( //ymjr
         );
     }
 
+    if (cliFileIdAllowList) {
+      // #3004: intersect with existing group/frame filters; never broaden the loader scope.
+      fileIDWhiteList = new Set(fileIDWhiteList ? [...fileIDWhiteList].filter(id => cliFileIdAllowList.has(id)) : cliFileIdAllowList);
+    }
+
     if (loadFiles) {
       //debug({where:"getTemplate",template:file.name,loader:loader.uid});
       await loader.loadSceneFiles({
@@ -539,6 +545,7 @@ export async function getTemplate( //ymjr
         },
         depth,
         fileIDWhiteList,
+        validationConcurrency: loader.beforeFileRead ? 1 : undefined,
       });
     }
 

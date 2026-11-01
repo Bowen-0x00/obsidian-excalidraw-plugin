@@ -131,9 +131,23 @@ export default {
   INSERT_COMMAND: "Вставить команду Obsidian в качестве ссылки",
   INSERT_IMAGE:
     "Вставить изображение или рисунок Excalidraw из вашего хранилища",
+  SVG_IMPORT_ERROR: "Не удалось преобразовать SVG",
+  SVG_IMPORT_WARNING: "SVG импортирован с ограничениями:",
+  SVG_IMPORT_COMPOSITING: "Непрозрачность перекрывающихся объектов и групп передаётся приблизительно.",
+  SVG_IMPORT_STROKE: "Некоторые окончания, соединения, масштабирование и пунктиры передаются приблизительно.",
+  SVG_IMPORT_UNSUPPORTED: "Неподдерживаемые возможности, например изображения, градиенты и обрезка, пропущены.",
+  SVG_IMPORT_CSS: "Сложные правила CSS и внешние таблицы стилей не поддерживаются.",
+  SVG_IMPORT_PAINT: "Неподдерживаемые цвета SVG заменены текущим цветом SVG или чёрным.",
+  SVG_IMPORT_TEXT: "Текст импортирован с доступными шрифтами. Сложное форматирование и расположение могут отличаться.",
+  SVG_IMPORT_VIEWPORT: "Обрезка по области просмотра не воспроизводится.",
   IMPORT_SVG:
-    "Импорт SVG-файла в виде штрихов Excalidraw (поддержка SVG ограничена, TEXT в настоящее время не поддерживается)",
-  IMPORT_SVG_CONTEXTMENU: "Преобразование SVG в штрихи - с ограничениями",
+    "Импорт SVG-файла в виде редактируемых элементов (ограниченная поддержка SVG)",
+  IMPORT_SVG_CONTEXTMENU: "Преобразовать SVG в редактируемые элементы - с ограничениями",
+  IMPORT_SVG_AS_ELEMENTS: "Импортировать SVG как Excalidraw",
+  SVG_CONVERT_ELEMENTS: "Преобразовать в элементы",
+  SVG_KEEP_IMAGE: "Оставить SVG-изображение",
+  MERMAID_SVG_CONVERSION_PROMPT: "Эта диаграмма — SVG-изображение. Преобразовать её в редактируемые фигуры и текст? Шрифты, оформление и некоторые эффекты могут отличаться.",
+  SVG_CONVERSION_CROP: "Перед преобразованием в элементы сбросьте обрезку изображения.",
   INSERT_MD: "Вставка файла markdown из хранилища",
   INSERT_MARKDOWN_IMAGE: "Вставить редактируемое Markdown-изображение",
   EDIT_MARKDOWN_IMAGE: "Редактировать Markdown-изображение",
@@ -194,6 +208,7 @@ export default {
   MARKDOWN_IMAGE_CHANGE_SOURCE_ERROR: "Не удалось изменить источник Markdown-изображения",
   MARKDOWN_IMAGE_LOCAL_COPY_ERROR: "Не удалось создать локальную копию Markdown",
   MARKDOWN_IMAGE_EXTRACT_TITLE: "Извлечь Markdown-изображение в заметку",
+  PROMPT_ERROR_INVALID_FILE_PATH: "Укажите допустимое имя файла и папку хранилища.",
   FILE_AND_FOLDER_SELECTOR_FOLDER: "Папка",
   FILE_AND_FOLDER_SELECTOR_FILENAME: "Имя файла",
   FILE_AND_FOLDER_SELECTOR_EXPORT_TITLE: "Экспорт в хранилище",
@@ -239,6 +254,19 @@ export default {
   UNIVERSAL_ADD_FILE: "Вставка ЛЮБОГО файла",
   // Compatibility keys consumed by upstream Excalidraw via ExcalidrawPlugin.getLabel().
   // Keep this group in sync across maintained locales.
+  // Lucide icon picker
+  INSERT_LUCIDE_ICON: "Вставить значок Lucide",
+  LUCIDE_SEARCH: "Поиск значков",
+  LUCIDE_SIZE: "Размер значка",
+  LUCIDE_SMALL: "Маленький (48)",
+  LUCIDE_MEDIUM: "Средний (96)",
+  LUCIDE_LARGE: "Большой (192)",
+  LUCIDE_PREVIOUS: "Назад",
+  LUCIDE_NEXT: "Далее",
+  LUCIDE_EMPTY: "Подходящих значков нет.",
+  LUCIDE_NO_DRAWING: "Выберите редактируемый рисунок Excalidraw для вставки значка.",
+  LUCIDE_APPROXIMATION: "Значок использует приближённое представление обводки или прозрачности.",
+  LUCIDE_INSERT_FAILED: "Не удалось завершить вставку значка. Проверьте рисунок и сохраните изменения перед повторной попыткой.",
   INSERT_CARD: "Добавить сноски",
   CONVERT_CARD_TO_FILE: "Переместить сноску в файл",
   ERROR_TRY_AGAIN: "Пожалуйста, попробуйте еще раз.",
@@ -352,6 +380,15 @@ export default {
   COMPATIBILITY_MODE:
     "Файл *.excalidraw открыт в режиме совместимости. Конвертируйте в новый формат для полной функциональности плагина.",
   CONVERT_FILE: "Преобразование в новый формат",
+  DRAWING_LOAD_ERROR_TITLE: "Не удалось загрузить рисунок: {filename}",
+  DRAWING_LOAD_ERROR_MESSAGE: "Этот файл не удалось загрузить как рисунок Excalidraw.",
+  DRAWING_LOAD_ERROR_NO_BACKUP: "На этом устройстве нет локальной резервной копии.",
+  DRAWING_LOAD_ERROR_CACHE_WAIT: "Кэш локальных резервных копий ещё загружается. Выберите OK, чтобы проверить снова, или Отмена, чтобы продолжить.",
+  DRAWING_LOAD_ERROR_BACKUP_AVAILABLE: "Доступна локальная резервная копия. Загрузить её?",
+  DRAWING_LOAD_ERROR_MORE_INFO: "Подробнее",
+  DRAWING_LOAD_ERROR_DISMISS: "Закрыть",
+  DRAWING_LOAD_ERROR_REPORTED_ERROR: "Сообщение об ошибке",
+  DRAWING_LOAD_ERROR_DETAILS: "Заметка со свойством excalidraw-plugin в метаданных frontmatter рассматривается как рисунок Excalidraw. Если раздел данных рисунка отсутствует или повреждён, рисунок невозможно загрузить. Обычная заметка Markdown может содержать это свойство по ошибке.\n\nКонфликт синхронизации или прерванное согласование данных между устройствами — одна из возможных причин повреждения JSON рисунка. Само сообщение об ошибке не устанавливает причину.\n\nЛокальная резервная копия может содержать читаемую предыдущую версию рисунка. Резервные копии хранятся отдельно на каждом устройстве, поэтому на устройстве, где вы редактировали рисунок в последний раз, может быть более свежая копия. Загрузка резервной копии заменяет файл рисунка. Это информационное окно не изменяет файл.",
   BACKUP_AVAILABLE:
     "Мы столкнулись с ошибкой при загрузке вашего рисунка. Это могло произойти, если Obsidian неожиданно закрылся во время операции сохранения. Например, если вы случайно закрыли Obsidian на своем мобильном устройстве во время сохранения.<br><br><b>ХОРОШАЯ НОВОСТЬ:</b> К счастью, доступна локальная резервная копия. Однако учтите, что если вы последний раз изменяли этот рисунок на другом устройстве (например, на планшете), а сейчас находитесь на рабочем столе, то на другом устройстве, скорее всего, имеется более свежая резервная копия.<br><br>Я рекомендую сначала попробовать открыть рисунок на другом устройстве и восстановить резервную копию из его локального хранилища.<br><br>Хотите загрузить резервную копию?",
   CACHE_NOT_READY:
@@ -1465,6 +1502,7 @@ export default {
   PROMPT_BUTTON_INSERT_LINK: "Вставить ссылку на файл в формате markdown",
   PROMPT_BUTTON_UPPERCASE: "Прописные буквы",
   PROMPT_SELECT_TEMPLATE: "Выберите шаблон",
+  PROMPT_BLANK_DRAWING: "Пустой рисунок",
   LATEX_SUITE_PLUGIN_SUGGESTION:
     "Install the 'Latex Suite' plugin from Obsidian Community Plugins to enable live preview as you type your equation.",
 

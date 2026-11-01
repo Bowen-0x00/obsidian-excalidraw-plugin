@@ -38,9 +38,6 @@ type JsonObject = {
   [key: string]: JsonValue;
 };
 
-type MermaidToExcalidrawLibProps =
-  import("@zsviczian/excalidraw/types/excalidraw/components/TTDDialog/types").MermaidToExcalidrawLibProps;
-
 interface MermaidConfig {
   /**
    * Whether to start the diagram automatically when the page loads.
@@ -116,32 +113,9 @@ export declare namespace ExcalidrawLib {
     ) => string;
   }>;
 
-  type ObsidianExcalidrawHostAdapter = Readonly<{
-    protocolVersion: 2;
-    isDoubleTapEraserEnabled: () => boolean;
-    getZoomToFitMaxLevel: () => number;
-    isPenModeCrosshairVisible: () => boolean;
-    isSingleFingerPanningEnabled: () => boolean;
-    isDoubleClickTextEditingDisabled: () => boolean;
-    getZoomStep: () => number;
-    getZoomMin: () => number;
-    getZoomMax: () => number;
-    isContextMenuDisabled: () => boolean;
-    shouldSyncElementLinkWithText: () => boolean;
-    loadFontFromFile: (filename: string) => Promise<ArrayBuffer | undefined>;
-    getMermaid: () => Promise<MermaidToExcalidrawLibProps>;
-    runAction: (action: "anyFile" | "LaTeX" | "card") => void;
-    getLabel: (key: string) => string;
-    attachInlineLinkSuggester: (
-      inputEl: HTMLInputElement | HTMLTextAreaElement,
-      widthWrapper?: HTMLElement,
-      container?: HTMLDivElement | null,
-      suppressPlaceholder?: boolean,
-    ) => Readonly<{
-      isBlockingKeys: () => boolean;
-      close: () => void;
-    }>;
-  }>;
+  /** The fork owns the host service contract; dialog loading state is separate. */
+  type ObsidianExcalidrawHostAdapter =
+    import("@zsviczian/excalidraw/types/excalidraw/obsidianExcalidrawHost").ObsidianExcalidrawHostAdapter;
 
 
   type ExportOpts = {
@@ -320,10 +294,8 @@ export declare namespace ExcalidrawLib {
   function configureObsidianCommonHost(
     adapter: ObsidianCommonHostAdapter,
   ): () => void;
-  const OBSIDIAN_EXCALIDRAW_HOST_PROTOCOL_VERSION: 2;
-  function configureObsidianExcalidrawHost(
-    adapter: ObsidianExcalidrawHostAdapter,
-  ): () => void;
+  const OBSIDIAN_EXCALIDRAW_HOST_PROTOCOL_VERSION: typeof import("@zsviczian/excalidraw/types/excalidraw/obsidianExcalidrawHost").OBSIDIAN_EXCALIDRAW_HOST_PROTOCOL_VERSION;
+  const configureObsidianExcalidrawHost: typeof import("@zsviczian/excalidraw/types/excalidraw/obsidianExcalidrawHost").configureObsidianExcalidrawHost;
   function registerLocalFont( //ymjr
     fontMetrics: FontMetadata,
     uri: string,
@@ -342,7 +314,7 @@ export declare namespace ExcalidrawLib {
   function loadSceneFonts(
     elements: NonDeletedExcalidrawElement[],
   ): Promise<void>;
-  function loadMermaid(): Promise<MermaidToExcalidrawLibProps>;
+  const loadMermaid: typeof import("@zsviczian/excalidraw/types/excalidraw/obsidianUtils").loadMermaid;
   function syncInvalidIndices(
     elements: readonly ExcalidrawElement[],
   ): OrderedExcalidrawElement[];

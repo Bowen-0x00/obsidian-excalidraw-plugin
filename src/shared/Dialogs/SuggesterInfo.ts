@@ -15,6 +15,18 @@ const EMBEDDABLE_MDCUSTOMPROPS = `type EmbeddableMDCustomProps = {<br>useObsidia
 
 export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
   {
+    field: "addLucideIcon",
+    after: "",
+    code: "addLucideIcon(options: LucideIconOptions): LucideIconResult;",
+    desc: "Synchronously appends one installed Lucide icon (database or lucide-database) to this workbench as a fresh outer group. Options: icon, x/y (nominal viewport origin, default 0), size (longest side, default 96), strokeColor/roughness/opacity (EA style defaults), strokeWidth (optional final scene units). Returns canonical icon, groupId, elementIds, warnings and viewport. Throws atomically for invalid/unknown/empty/omitted geometry. Does not insert, save, clear, change style or create image assets; call addElementsToView separately. Later resizing follows normal group behavior.",
+  },
+  {
+    field: "importSVG",
+    code: "importSVG(svgString: string): boolean;",
+    desc: "Synchronously appends editable SVG geometry and text (including plain Mermaid HTML labels) to this EA workbench. Does not insert, save or clear existing elements. Returns false without appending on malformed, unsafe or excessive input. Fonts, complex text layout and other limited SVG features import with approximation/omission notices: see src/shared/svgToExcalidraw/readme.md. Call addElementsToView() separately to insert.",
+    after: "",
+  },
+  {
     field: "executeCLI",
     code: "executeCLI(request: ExcalidrawCLIRequest): Promise<ExcalidrawCLIResult>;",
     desc: "Runs the versioned native CLI protocol in-process with explicit targets. Does not use this EA's workbench or target view. Check ok, mutation and persistence. Use schema for fields; receipts expire after 15 minutes or plugin reload.",
@@ -1021,6 +1033,18 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
     after: "",
   },
   {
+    field: "templateFilePath",
+    code: "readonly templateFilePath: string;",
+    desc: "Live configured template file or folder path. Use getListOfTemplateFiles() to resolve its drawings.",
+    after: "",
+  },
+  {
+    field: "getDrawingFilePath",
+    code: 'getDrawingFilePath(filename: string, foldername?: string): string;',
+    desc: "Resolve a filename stem in an explicit vault folder using current compatibility/extension settings. Empty folder means vault root. No file is created or collision suffix added. Pass the result to create({ exactPath }).",
+    after: "",
+  },
+  {
     field: "getListOfTemplateFiles",
     code: "getListOfTemplateFiles(): TFile[] | null",
     desc:
@@ -1194,7 +1218,7 @@ export const EXCALIDRAW_AUTOMATE_INFO: SuggesterInfo[] = [
   {
     field: "newFilePrompt",
     code: "async newFilePrompt(newFileNameOrPath: string, shouldOpenNewFile: boolean, targetPane?: PaneTarget, parentFile?: TFile): Promise<TFile | null>;",
-    desc: "",
+    desc: "The dialog offers editable folder and filename fields and never overwrites an existing file.",
     after: "",
   },
   {

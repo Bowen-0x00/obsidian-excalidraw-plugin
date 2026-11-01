@@ -13,6 +13,7 @@ import {
   HoverPopover,
   debounce, //ymjr
 } from "obsidian";
+import { convertSVGImage, getSVGImageData } from "src/shared/svgConversionActions";
 import {
   ExcalidrawElement,
   ExcalidrawImageElement,
@@ -141,6 +142,10 @@ import {
   NewFileActions,
   linkPrompt,
 } from "../shared/Dialogs/Prompt";
+import {
+  createDrawingLoadErrorPrompt,
+  showDrawingLoadErrorNotice,
+} from "../shared/Dialogs/DrawingLoadErrorInfo";
 import {
   ClipboardData,
   ParsedDataTransferFile,
@@ -401,6 +406,9 @@ export const addFiles = async (
       appState: s.scene.appState,
       captureUpdate: CaptureUpdateAction.NEVER,
     });
+    if (s.markdownImageChanged) {
+      view.setDirty();
+    }
   }
   for (const f of files) {
     if (view.excalidrawData.hasFile(f.id)) {
@@ -2094,6 +2102,15 @@ export default class ExcalidrawView
           const f = this.file;
           const l = this.leaf;
           const plugin = this.plugin;
+          const migrationTargetIsCurrent = () =>
+            !destinationWindow.closed &&
+            !this.semaphores?.viewunload &&
+            this.file === f &&
+            l.view === this;
+          const abandonMigration = () => {
+            plugin.discardViewMigrationPersistenceHandoff(l.id);
+            plugin.completeMigrationAutoexport(l.id, f.path, false);
+          };
           const activeSetViewDataLoad = this.activeSetViewDataLoad?.promise;
           this.invalidateSetViewDataLoad();
           const sameFileEditWasBlocked = this.isSameFileEditingActive();
@@ -2106,6 +2123,7 @@ export default class ExcalidrawView
           // unload callbacks select detached-view persistence. Capture every
           // API-owned value synchronously, then unmount before the first await.
           this.semaphores.windowMigrating = true;
+          this.markdownImageController.cancelPendingConversion();
           this.clearExcalidrawInitializeTimer();
           this.sceneFileManager.terminateActiveLoaders();
           this.windowMigrationSaveSnapshot = null;
@@ -2125,6 +2143,10 @@ export default class ExcalidrawView
           this.unmountExcalidrawRoot();
           if (markdownImageEditorUnload !== null) {
             await markdownImageEditorUnload;
+            if (!migrationTargetIsCurrent()) {
+              abandonMigration();
+              return;
+            }
           }
           if (migrationSaveRequired) {
             if (mustRefreshMigrationSourceText) {
@@ -2136,18 +2158,31 @@ export default class ExcalidrawView
               // then read after the mandatory synchronous source unmount.
               if (sameFileEditWasBlocked) {
                 await new Promise<void>((resolve) => {
-                  destinationWindow.setTimeout(
+                  window.setTimeout(
                     resolve,
                     EMBEDDABLE_SEMAPHORE_TIMEOUT,
                   );
                 });
+                if (!migrationTargetIsCurrent()) {
+                  abandonMigration();
+                  return;
+                }
               }
-              this.data = await plugin.app.vault.read(f);
+              const sourceText = await plugin.app.vault.read(f);
+              if (!migrationTargetIsCurrent()) {
+                abandonMigration();
+                return;
+              }
+              this.data = sourceText;
             }
             await this.saveCoordinator.flush();
           }
           if (activeSetViewDataLoad !== undefined) {
             await activeSetViewDataLoad;
+          }
+          if (!migrationTargetIsCurrent()) {
+            abandonMigration();
+            return;
           }
           if (this.isDirty()) {
             this.semaphores.windowMigrating = false;
@@ -2160,11 +2195,18 @@ export default class ExcalidrawView
           this.windowMigrationSaveSnapshot = null;
           // "Open in popout" invokes this callback while the new leaf's own
           // setViewData() is still loading. Wait for that concrete load, then
-          // yield one destination task so its surrounding view-state
+          // yield one task so its surrounding view-state
           // transition can settle before closing and recreating this view.
           await new Promise<void>((resolve) => {
-            destinationWindow.setTimeout(resolve, 0);
+            window.setTimeout(resolve, 0);
           });
+          // The destination may have closed while the main-window timer ran.
+          // Never reconstruct a view in a retired leaf; the plugin-owned
+          // persistence coordinator releases abandoned reservations explicitly.
+          if (!migrationTargetIsCurrent()) {
+            abandonMigration();
+            return;
+          }
           try {
             await closeLeafView(l);
           } catch (error: unknown) {
@@ -2173,6 +2215,10 @@ export default class ExcalidrawView
             this.setDirty();
             this.semaphores.windowMigrating = false;
             throw error;
+          }
+          if (destinationWindow.closed) {
+            abandonMigration();
+            return;
           }
           const handoffToken = migrationDrawingState
             ? plugin.registerViewMigrationHandoff({
@@ -2552,6 +2598,7 @@ export default class ExcalidrawView
   async onUnloadFile(): Promise<void> {
     //deliberately not calling super.onUnloadFile() to avoid autosave (saved in unload)
     this.invalidateSetViewDataLoad();
+    this.markdownImageController.cancelPendingConversion();
     await handleMarkdownImageEditorViewUnload(this);
     let counter = 0;
     while (
@@ -3454,37 +3501,19 @@ export default class ExcalidrawView
             const file = targetFile;
             const leaf = this.leaf;
             let confirmation: boolean | null = true;
-            let counter = 0;
-            const timestamp = Date.now();
             while (
               isCurrentLoad() &&
               !getImageCache().isReady() &&
               confirmation
             ) {
-              const message = `You've been now waiting for <b>${Math.round((Date.now() - timestamp) / 1000)}</b> seconds. `;
               getImageCache().initializationNotice = true;
-              const confirmationPrompt = new MultiOptionConfirmationPrompt(
+              const confirmationPrompt = createDrawingLoadErrorPrompt(
                 plugin,
-                `${
-                  counter > 0
-                    ? counter % 4 === 0
-                      ? `${message}The CACHE is still loading.<br><br>`
-                      : counter % 4 === 1
-                        ? `${
-                            message
-                          }Watch the top right corner for the notification.<br><br>`
-                        : counter % 4 === 2
-                          ? `${
-                              message
-                            }I really, really hope the backup will work for you! <br><br>`
-                          : `${
-                              message
-                            }I am sorry, it is taking a while, there is not much I can do... <br><br>`
-                    : ""
-                }${t("CACHE_NOT_READY")}`,
+                file,
+                t("DRAWING_LOAD_ERROR_CACHE_WAIT"),
+                e,
               );
               confirmation = await confirmationPrompt.waitForClose;
-              counter++;
             }
             if (!isCurrentLoad()) {
               return;
@@ -3497,21 +3526,15 @@ export default class ExcalidrawView
               return;
             }
             if (!drawingBAK) {
-              new Notice(
-                `Error loading drawing:\n${(e as Error).message}${
-                  (e as Error).message ===
-                  "Cannot read property 'index' of undefined"
-                    ? "\n'# Drawing' section is likely missing"
-                    : ""
-                }\n\nTry manually fixing the file or restoring an earlier version from sync history.`,
-                10000,
-              );
+              showDrawingLoadErrorNotice(plugin.app, file, e);
               await this.setMarkdownView();
               return;
             }
-            const confirmationPrompt = new MultiOptionConfirmationPrompt(
+            const confirmationPrompt = createDrawingLoadErrorPrompt(
               plugin,
-              t("BACKUP_AVAILABLE"),
+              file,
+              t("DRAWING_LOAD_ERROR_BACKUP_AVAILABLE"),
+              e,
             );
             const confirmed = await confirmationPrompt.waitForClose;
             if (!isCurrentLoad()) {
@@ -4923,8 +4946,12 @@ export default class ExcalidrawView
     })();
   }
 
-  async addYouTubeThumbnail(link: string) {
+  async addYouTubeThumbnail(link: string, saveToVault = false) {
     const thumbnailLink = await getYouTubeThumbnailLink(link);
+    if (saveToVault) {
+      await this.addImageSaveToVault(thumbnailLink, link);
+      return;
+    }
     const ea = getEA(this);
     const id = await ea.addImage(0, 0, thumbnailLink);
     ea.getElement(id).link = link;
@@ -4939,7 +4966,7 @@ export default class ExcalidrawView
     ea.destroy();
   }
 
-  async addImageSaveToVault(link: string) {
+  async addImageSaveToVault(link: string, sourceLink?: string) {
     const ea = getEA(this);
     const mimeType = getMimeType(getURLImageExtension(link));
     const dataURL = await getDataURLFromURL(link, mimeType, 3000);
@@ -4956,7 +4983,10 @@ export default class ExcalidrawView
       ea.destroy();
       return;
     }
-    await ea.addImage(0, 0, file);
+    const id = await ea.addImage(0, 0, file);
+    if (sourceLink) {
+      ea.getElement(id).link = sourceLink;
+    }
     await ea.addElementsToView(true, true, true);
     ea.destroy();
   }
@@ -5357,6 +5387,7 @@ export default class ExcalidrawView
     shouldRestoreElements = false,
     captureUpdate = CaptureUpdateAction.IMMEDIATELY,
     validateBeforePublish,
+    insertAtElementId,
   }: {
     newElements: ExcalidrawElement[];
     repositionToCursor?: boolean;
@@ -5366,6 +5397,8 @@ export default class ExcalidrawView
     shouldRestoreElements?: boolean;
     captureUpdate?: CaptureUpdateActionType;
     validateBeforePublish?: () => void;
+    /** Place newly staged geometry at an existing element's layer (for image conversion). */
+    insertAtElementId?: string;
   }): Promise<boolean> {
     const api = this.excalidrawAPI;
     if (!api) {
@@ -5437,9 +5470,14 @@ export default class ExcalidrawView
     }
 
     const newElementsToInsert = newElements.filter((e) => !removeSet.has(e.id));
-    const elements = newElementsOnTop
+    let elements = newElementsOnTop
       ? updatedSceneElements.concat(newElementsToInsert)
       : newElementsToInsert.concat(updatedSceneElements);
+    if (insertAtElementId) {
+      const index = updatedSceneElements.findIndex(e => e.id === insertAtElementId);
+      if (index < 0) return false;
+      elements = [...updatedSceneElements.slice(0, index), ...newElementsToInsert, ...updatedSceneElements.slice(index)];
+    }
 
     if (!shouldRefreshArrows) {
       shouldRefreshArrows = newElements.some(
@@ -7029,10 +7067,8 @@ export default class ExcalidrawView
           }
           return { updatedNextOriginalText: null, nextLink: textElement.link };
         } //There were no links to parse, raw text and parsed text are equivalent
-        // Updating only the cache after undo must not discard the redo stack.
-        if (textChanged) {
-          api.history.clear();
-        }
+        // The fork records raw Markdown and parsed display text in the same edit.
+        // Preserve earlier drawing actions as well as redo on cache-only updates.
         return { updatedNextOriginalText: parseResultOriginal, nextLink: link };
       }
       return { updatedNextOriginalText: null, nextLink: textElement.link };
@@ -7604,32 +7640,13 @@ export default class ExcalidrawView
         ]);
       }
 
-      if (
-        img?.embeddedFile?.mimeType === "image/svg+xml" &&
-        (!img.embeddedFile.file ||
-          (img.embeddedFile.file &&
-            !this.plugin.isExcalidrawFile(img.embeddedFile.file)))
-      ) {
+      if (img && !img.imageEl.locked && getSVGImageData(this, img.imageEl)) {
         contextMenuActions.push([
           renderContextMenuAction(
             React,
             t("IMPORT_SVG_CONTEXTMENU"),
             () => {
-              void (async () => {
-                const base64Content = img.embeddedFile
-                  .getImage(false)
-                  .split(",")[1];
-                // Decoding the base64 content
-                const svg = atob(base64Content);
-                if (!svg || svg === "") {
-                  return;
-                }
-                const ea = getEA(this);
-                ea.importSVG(svg);
-                ea.addToGroup(ea.getElements().map((el) => el.id));
-                await ea.addElementsToView(true, true, true, true);
-                ea.destroy();
-              })();
+              void convertSVGImage(this, img.imageEl.id);
             },
             onClose,
             "convertSvgToStrokes",

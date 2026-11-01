@@ -1,0 +1,55 @@
+name: Plugin tests
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      EXCALIDRAW_FORK_ROOT: ${{ github.workspace }}/.test-work/checkouts/fork
+      EXCALIDRAW_EXTRAS_ROOT: ${{ github.workspace }}/.test-work/checkouts/extras
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: zsviczian/excalidraw
+          ref: 801c17c372cf3f9f18b3f253844348b8b9a67570
+          path: .test-work/checkouts/fork
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: zsviczian/obsidian-excalidraw-extras
+          ref: df1f2b5659259c43780c5ef07cd433fa6c3e14fa
+          path: .test-work/checkouts/extras
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.3'
+          cache: npm
+      - run: npm ci
+      - run: corepack enable
+      - run: yarn --cwd .test-work/checkouts/fork install --frozen-lockfile
+      - run: npm ci --prefix .test-work/checkouts/extras
+      - run: yarn --cwd .test-work/checkouts/fork playwright install --with-deps chromium
+      - name: Independent portable regression
+        run: npm run test:regression:portable
+      - name: Verify the ordinary build and paired declarations
+        run: |
+          npm run build
+          npm run test:contracts
+      - run: npm run test:features
+      - run: node --check dist/main.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: plugin-portable-evidence
+          path: |
+            .test-work/reports
+            .test-work/frozen/**/combination.json
+            .test-work/frozen/**/artifacts.json
+          if-no-files-found: error
