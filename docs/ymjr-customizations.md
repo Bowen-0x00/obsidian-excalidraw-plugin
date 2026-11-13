@@ -1,7 +1,7 @@
 # ymjr Customizations Inventory (Obsidian Excalidraw Plugin)
 
 <!-- ymjr -- Release baselines are verified published commits, never moving branch heads. -->
-This document inventories the `obsidian-excalidraw-plugin-source` ymjr fork against upstream Release [`2.29.1`](https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.29.1), lightweight tag commit `5429408ad0e58ac3eb918439f463bde741357143`, paired with `@zsviczian/excalidraw@0.18.146` at npm `gitHead` `278ed4937dde5fd9e77c83a4e25e5a9b3d8028f7`. The exact customized component source is pinned in `ymjr-component.json`. Earlier versioned sections are historical snapshots, not current pins or claims of new validation.
+This document inventories the `obsidian-excalidraw-plugin-source` ymjr fork against upstream Release [`2.29.2`](https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/tag/2.29.2), tag commit `9c209a82cbfa5e829a12a999c3bea13c1de6f97d`, paired with `@zsviczian/excalidraw@0.18.147` at `9108457500f24844456a3d354eb395976cef3824`. The exact customized component source is pinned in `ymjr-component.json`. Earlier versioned sections are historical snapshots, not current pins or claims of new validation.
 
 ---
 

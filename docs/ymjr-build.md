@@ -13,7 +13,7 @@
 Keep the plugin ID `obsidian-excalidraw-plugin-ymjr`. Do not redirect existing BRAT installations to the source fork. Source branch pushes do not publish or replace a release.
 
 <!-- ymjr -- Release pairing follows the published plugin lockfile and npm provenance. -->
-The upstream baseline is plugin Release `2.29.1` (`5429408ad0e58ac3eb918439f463bde741357143`), paired with `@zsviczian/excalidraw@0.18.146` (`278ed4937dde5fd9e77c83a4e25e5a9b3d8028f7`, verified npm `gitHead`). `ymjr-component.json` is the authority for the exact customized component commit; it is not replaced by the plain upstream commit.
+The upstream baseline is plugin Release `2.29.2` (`9c209a82cbfa5e829a12a999c3bea13c1de6f97d`), paired with `@zsviczian/excalidraw@0.18.147` (`9108457500f24844456a3d354eb395976cef3824`). `ymjr-component.json` is the authority for the exact customized component commit; it is not replaced by the plain upstream commit.
 
 ## Prerequisites
 

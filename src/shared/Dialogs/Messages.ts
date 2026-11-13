@@ -19,6 +19,9 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 `,
 "2.29.2": `
 ## New and improved
+<!-- ymjr -- Integrate the stable upstream release without resetting custom drawings or settings. -->
+- **Excalidraw-ymjr 2.29.2-1.** Updated to upstream 2.29.2 and its matching component 0.18.147 while retaining native tables/themes, runtime custom fonts, script hooks, vector icon layers, custom arrows and formula editors.
+- **Sharp mitered arrowheads & arrow cap/join controls (ymjr).** Exposed **Stroke line cap** and **Stroke line join** controls for arrows and all stroked shapes across full and compact panels, and joined/closed arrowhead stroke geometry so **Miter** + **Butt** renders crisp pointed tips on canvas and in SVG exports.
 - Resize exclidraw embeds in Live Preview, edit their embed syntax, or open a fullscreen preview and the editable drawing.
 - Mermaid now converts Gantt, quadrant and timeline charts to editable elements and uses elbow connectors for flowcharts. Update **Excalidraw Extras** to use the new converter.
 - With K-Plex 0.4.2 or newer enabled, complete k-plex ontology fields in element links and text element using your configured triggers (e.g.: ":::"), then continue with \`[[note]]\` completion inside parentheses or square brackets for inline ontology.
