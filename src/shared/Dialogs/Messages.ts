@@ -20,7 +20,7 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 "2.29.2": `
 ## New and improved
 <!-- ymjr -- Integrate the stable upstream release without resetting custom drawings or settings. -->
-- **Excalidraw-ymjr 2.29.2-2.** Updated to upstream 2.29.2 and its matching component 0.18.147 while retaining native tables/themes, runtime custom fonts, script hooks, vector icon layers, custom arrows and formula editors.
+- **Excalidraw-ymjr 2.29.2-3.** Updated to upstream 2.29.2 and its matching component 0.18.147 while retaining native tables/themes, runtime custom fonts, script hooks, vector icon layers, custom arrows and formula editors.
 - **Sharp mitered arrowheads & arrow cap/join controls (ymjr).** Exposed **Stroke line cap** and **Stroke line join** controls for arrows and all stroked shapes across full and compact panels, and joined/closed arrowhead stroke geometry so **Miter** + **Butt** renders crisp pointed tips on canvas and in SVG exports.
 - **Fixed/Auto arrowhead size toggle (ymjr 2.29.2-2).** Added an inline **Auto / Fixed** toggle in the **Arrowhead size** header so short-segment arrowheads can keep full configured size instead of shrinking automatically.
 - Resize exclidraw embeds in Live Preview, edit their embed syntax, or open a fullscreen preview and the editable drawing.
@@ -30,6 +30,7 @@ I build this plugin as a labor of love. Curious about the philosophy behind it? 
 - Paste code blocks as interactive embeddables or editable Markdown images, and optionally remember your choice. Code images adapt to their content up to 800 px wide and wrap long lines without scrollbars.
 
 ## Fixed
+- **Dynamic palette crash fix (ymjr 2.29.2-3).** Deduplicated \`ownKeys\` across dynamic color palette proxies so duplicate or colliding extra-color names no longer crash the color picker when inspecting custom hex values.
 - Exporting Markdown notes with embedded Excalidraw frames to PDF no longer hangs while preparing the document.
 - Empty settings records now trigger recovery instead of silently resetting preferences and script settings.
 - Extracting a local Markdown image to a note now defaults to the drawing's folder. You can still choose another destination. [#3009](${URLs.GITHUB_COM_ZSVICZIAN_OBSIDIAN_EXCALIDRAW_PLUGIN_ISSUES}/3009)
