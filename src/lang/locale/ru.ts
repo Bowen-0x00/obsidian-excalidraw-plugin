@@ -14,6 +14,23 @@ import {
 
 // русский
 export default {
+  // Drawing embed controls (#3036)
+  EMBED_OPEN_MODIFIER: "{keys}+щелчок: {action}",
+  EMBED_ACTIONS: "Действия со встроенным рисунком",
+  EMBED_OPEN_DRAWING: "Открыть рисунок",
+  EMBED_EDIT_SOURCE: "Изменить синтаксис вставки",
+  EMBED_RESET_SIZE: "Сбросить размер вставки",
+  EMBED_RESIZE: "Изменить размер вставки. Стрелки — размер, Home — сброс, Escape — отмена.",
+  EMBED_SOURCE_CHANGED: "Вставка изменилась. Дождитесь обновления предпросмотра и повторите попытку.",
+  EMBED_PREVIEW_TITLE: "Просмотр рисунка",
+  EMBED_PREVIEW_ZOOM_OUT: "Уменьшить",
+  EMBED_PREVIEW_ZOOM_IN: "Увеличить",
+  EMBED_PREVIEW_FIT: "Вписать в окно",
+  EMBED_PREVIEW_CLOSE: "Закрыть просмотр",
+  EMBED_PREVIEW_PAN: "Предпросмотр рисунка. Перетаскивайте для перемещения. + и - — масштаб, 0 — вписать, Escape — закрыть.",
+  EMBED_PREVIEW_LOADING: "Загрузка предпросмотра…",
+  EMBED_PREVIEW_FAILED: "Не удалось загрузить предпросмотр рисунка.",
+
   // Native CLI and agent discovery
   CLI_HELP: "Показать инструкции CLI и для агентов",
   CLI_COPY_SKILL: "Копировать инструкции для агентов",
@@ -271,6 +288,18 @@ export default {
   CONVERT_CARD_TO_FILE: "Переместить сноску в файл",
   ERROR_TRY_AGAIN: "Пожалуйста, попробуйте еще раз.",
   PASTE_CODEBLOCK: "Вставить блок кода",
+  PASTE_CODEBLOCK_AS: "Вставлять блок кода как",
+  PASTE_CODEBLOCK_AS_DESC: "Выберите способ вставки кода из буфера обмена или через пункт меню «Вставить блок кода».",
+  PASTE_CODEBLOCK_ASK: "Всегда спрашивать",
+  PASTE_CODEBLOCK_EMBEDDABLE: "Интерактивное встраивание",
+  PASTE_CODEBLOCK_CHOOSE: "Вставить этот блок кода как интерактивное встраивание или изображение Markdown?",
+  PASTE_CODEBLOCK_REMEMBER: "Запомнить мой выбор",
+  PASTE_CODEBLOCK_REMEMBER_DESC: "Это можно изменить в настройках Excalidraw в разделе «Встраивание файлов в Excalidraw».",
+  PASTE_CODEBLOCK_LANGUAGE: "Язык блока кода",
+  PASTE_CODEBLOCK_LANGUAGE_PLACEHOLDER: "javascript, html, python и т. д.",
+  PASTE_CODEBLOCK_TITLE: "Заголовок блока кода",
+  PASTE_CODEBLOCK_TITLE_PLACEHOLDER: "Введите заголовок или оставьте пустым для автоматического названия",
+  PASTE_CODEBLOCK_DEFAULT_TITLE: "Блок кода",
   INSERT_LATEX: `Вставьте формулу LaTeX (например, \\\binom{n}{k} = \\\frac{n!}{k!(n-k)!}).`,
   ENTER_LATEX: "Введите правильное выражение LaTeX",
   READ_RELEASE_NOTES: "Прочитать последние заметки о выпуске",

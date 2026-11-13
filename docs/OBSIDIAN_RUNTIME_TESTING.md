@@ -1,5 +1,16 @@
 # Obsidian runtime testing on macOS and Windows
 
+The optional [K-Plex ontology completion lane](KPLEX_ONTOLOGY_COMPLETION.md)
+builds and stages the companion K-Plex alongside the selected plugin/fork/Extras
+artifacts. Use `npm run test:kplex-ontology` for focused main/popout coverage;
+add `-- --devices --device-profiles=phone-portrait-light,tablet-portrait-full-light`
+for the two responsive integration layouts. Full/regression profiles require
+both. `EXCALIDRAW_KPLEX_ROOT` selects a non-sibling source checkout. The guarded
+runner supplies and verifies all three `KPLEX_TEST_*` vault identity variables.
+Build manifests and baseline restoration include K-Plex; missing capability or
+producer artifacts cannot satisfy these cases. Source worktrees share only their
+verified primary checkout's marker-owned test vault, under the same host lock.
+
 Current acceptance is **2/2 complete matching-build passes**, each with all
 **357 required native cases**, including 258 behavioral obligations and 40
 device/layout profiles. Final portable validation passes **666 cases** and the
@@ -114,10 +125,10 @@ full-profile result.
    use the normal coordinator to deploy/hash-verify them, enable services and
    check the actual live API versions against the plugin gateway. Do not fake a
    version or relax a version handshake to accept mismatched components.
-   The converter package version and Extras service-contract version are distinct:
-   current Extras bundles converter 3.1.0 while advertising service contract 3.0.0.
-   Verify each at its own boundary rather than changing the handshake to match a
-   package version.
+   The converter package version and Extras service-contract version are distinct.
+   The coordinated 3.6 upgrade bundles converter 3.6.0 and advertises service
+   contract 3.6.0. Verify both boundaries and keep the producer advertisement and
+   consumer requirement paired.
 2. For `Concurrent host requests`, inspect the outstanding request ID, method,
    target renderer, acknowledgement and original error. Distinguish UI-readiness
    waits from transport completion. Settle or explicitly cancel the exact owned
@@ -139,6 +150,10 @@ full-profile result.
    deadline waiting for a lost acknowledgement. A timed-out error-buffer clear
    may be accepted only after reading an empty buffer; never clear again and erase
    newly captured errors. Known read-only CLI commands use bounded read retries.
+   This includes only the exact exported `nativeReadyCode` reload probe: its
+   renderer may disappear during mobile-mode reload, so it must not depend on
+   that renderer retaining an operation receipt. Other evals and lookalikes
+   retain strict receipt ownership and are never replayed as readiness reads.
    A screenshot reply may be recovered only from its uniquely owned, previously
    absent artifact after the native image decoder confirms a complete image.
    Never capture again to obtain a replacement acknowledgement, and never treat
@@ -230,6 +245,31 @@ not physical Android/iOS, native OS drag or stylus evidence.
 
 The following scenario notes retain their feature-specific assertions. Their
 native execution now uses the preparation and local vault contract above.
+
+For the workflow fixes in PR #3030, run `npm.cmd run verify:obsidian -- --workflow-bundle --diagnostics`.
+The extraction case checks the actual dialog, root/nested/Unicode drawing folders,
+another active drawing, explicit destination changes, cancellation, collisions,
+content and external-source persistence after reopen, and a popout. The same
+cases are required by the complete native profile.
+The Zen case measures exit/zoom bounds inside the editor and hit targets,
+repeatedly activates both controls in LTR/RTL at wide/narrow widths and 125% UI
+scale in main/popout windows. Device
+profiles also exercise applicable full/compact footers in both directions with
+trusted mouse/touch input; phone/tray chrome retains its existing separate controls.
+The text-save cases use trusted keyboard input with autosave disabled and read
+the physical drawing: raw/parsed and bound/plain text, undo/redo, canvas save,
+save/reopen and main/popout ownership. Standalone save attempts are intercepted
+in memory, both as a failing-before guard for Ctrl/Cmd+S and to prove Shift+S
+still uses its existing route without opening an OS dialog or creating a file.
+Use `--text-save-shortcut` to run those cases independently during diagnosis;
+the complete native profiles always include them.
+Use `--code-cards` for native pasted-code sizing: short/multiple/long lines,
+bounded long blocks and scrolling, plain/fenced input, CR/LF normalization,
+duplicate titles, unchanged EA/shared-card defaults, and initial/manual dimensions
+after save/reopen in main/popout windows. Initial fitting runs only from the
+paste-code command, preserves the insertion center and width, and stops after a
+user resize or a file/API/lifecycle change. Desktop testing does not establish
+physical mobile keyboard, touch or WebView behavior.
 
 ## Troubleshooting and further coverage
 
@@ -447,6 +487,9 @@ and JavaScript error checks. The scenario uses the toolbar's stable test IDs, so
 labels may be localized. Physical mobile and popout checks remain separate.
 
 For settings teardown changes, run `npm.cmd run verify:obsidian -- --lifecycle --diagnostics`.
+The reload case also replaces `data.json` with `{}` while the plugin is disabled,
+then verifies startup recovery from real device-local IndexedDB, byte-identical
+settings on disk, wheel zoom, pinned tools, custom note types and unknown keys.
 Its plugin-reload case persists non-default values and unknown
 nested settings, checks late retired-instance saves before/after replacement,
 and verifies disk and loaded preferences alongside the existing drawing/runtime

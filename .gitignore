@@ -31,6 +31,7 @@ repository.zip
 .test-work/
 !tests/vault/.obsidian/plugins/obsidian-excalidraw-plugin/data.json
 !tests/vault/.obsidian/plugins/excalidraw-extras/data.json
+!tests/fixtures/kplex-ontology/data.json
 
 # ymjr -- Keep private prompts, local archives, and generated diagnostics out of source.
 /prompt

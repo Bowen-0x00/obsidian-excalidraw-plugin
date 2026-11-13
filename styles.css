@@ -325,7 +325,7 @@ button.ToolIcon_type_button[title="Export"] {
 
 .excalidraw-scriptengine-install tbody>tr>td>div>img {
   height: 20px;
-  background-color: silver;
+  background-color: #c0c0c0;
   padding: 2px;
 }
 
@@ -717,7 +717,7 @@ hr.excalidraw-setting-hr {
 
 img.excalidraw-cropped-pdfpage,
 .excalidraw-cropped-pdfpage svg {
-  background-color: white;
+  background-color: #fff;
 }
 
 .excalidraw .pdf-toolbar,
@@ -2200,6 +2200,35 @@ button.excalidraw-font-picker {
   color: var(--interactive-accent);
 }
 
+/* #3000: keep the Zen exit in the footer's flow, alongside the visible zoom UI.
+   Wrapping handles narrow panes without a fixed offset or overlapping hit areas. */
+.excalidraw .layer-ui__wrapper .layer-ui__wrapper__footer {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  z-index: 1;
+}
+
+.excalidraw .layer-ui__wrapper .layer-ui__wrapper__footer > .disable-zen-mode {
+  position: static;
+  margin-inline-start: auto;
+  align-self: flex-end;
+  max-width: 100%;
+}
+
+.excalidraw .layer-ui__wrapper .layer-ui__wrapper__footer > .disable-zen-mode:not(.disable-zen-mode--visible) {
+  display: none;
+}
+
+/* Hidden zoom buttons must not retain hit-test slots under the shifted label. */
+.excalidraw.excalidraw--zen-mode .zoom-out-button-wrapper,
+.excalidraw.excalidraw--zen-mode .zoom-in-button-wrapper {
+  display: none;
+}
+
+:root .excalidraw.excalidraw--zen-mode .layer-ui__wrapper .reset-zoom-button-wrapper {
+  transform: none;
+}
+
 .excalidraw-script-store__card-footer {
   display: flex;
   align-items: center;
@@ -2700,4 +2729,245 @@ button.excalidraw-font-picker {
 .excalidraw-lucide-pages {
   display: flex;
   justify-content: space-between;
+}
+/* Drawing embed controls (#3036). The CodeMirror widget root stays untouched. */
+.excalidraw-embed-controls-frame {
+  position: relative;
+  max-width: 100%;
+}
+.excalidraw-embed-toolbar {
+  position: absolute;
+  right: var(--excalidraw-embed-toolbar-right, 4px);
+  top: var(--excalidraw-embed-control-top, 0px);
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  width: max-content;
+  max-width: var(--excalidraw-embed-toolbar-width, calc(100vw - 32px));
+  gap: 0;
+  padding: 2px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary-alt);
+  opacity: 0;
+  pointer-events: none;
+}
+.excalidraw-embed-controls-below > .excalidraw-embed-toolbar {
+  position: relative;
+  bottom: auto;
+  top: auto;
+  right: auto;
+  clear: both;
+  margin-top: 4px;
+  margin-left: auto;
+}
+.excalidraw-embed-toolbar button,
+.excalidraw-embed-preview-toolbar button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 4px;
+  color: var(--icon-color);
+}
+.excalidraw-embed-resize-handle {
+  position: absolute;
+  right: var(--excalidraw-embed-control-right, 2px);
+  bottom: var(--excalidraw-embed-control-bottom, 2px);
+  z-index: 11;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  cursor: nwse-resize;
+  opacity: 0;
+  pointer-events: none;
+}
+.excalidraw-embed-resize-handle::after {
+  content: "";
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--color-base-50, #888);
+  border-bottom: 2px solid var(--color-base-50, #888);
+  border-bottom-right-radius: 3px;
+  pointer-events: none;
+}
+.excalidraw-embed-resize-handle.clickable-icon:hover {
+  background: transparent;
+}
+.excalidraw-embed-resizing > .excalidraw-embed-resize-handle::after {
+  border-color: var(--interactive-accent);
+}
+.excalidraw-embed-accessible-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+/* Outrank the host's body.emulate-mobile .clickable-icon touch rule. */
+.excalidraw-embed-controls-frame > .excalidraw-embed-resize-handle.clickable-icon {
+  touch-action: none;
+}
+.excalidraw-embed-controls-frame:hover > .excalidraw-embed-toolbar,
+.excalidraw-embed-controls-frame:focus-within > .excalidraw-embed-toolbar,
+.excalidraw-embed-controls-frame:hover > .excalidraw-embed-resize-handle,
+.excalidraw-embed-controls-frame:focus-within > .excalidraw-embed-resize-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+.excalidraw-embed-controls-frame.excalidraw-embed-resizing {
+  /* Alignment uses table layout normally; its intrinsic toolbar width must
+     not become the minimum image width during a resize preview. */
+  display: block;
+  width: var(--excalidraw-embed-resize-width);
+  --excalidraw-embed-image-width: var(--excalidraw-embed-resize-width);
+  --excalidraw-embed-image-height: var(--excalidraw-embed-resize-height);
+  --excalidraw-embed-image-max-width: 100%;
+  --excalidraw-embed-image-max-height: none;
+  --excalidraw-embed-image-min-height: 0;
+}
+.excalidraw-embed-controls-frame.excalidraw-embed-controls-below.excalidraw-embed-resizing {
+  width: max(var(--excalidraw-embed-resize-width), var(--excalidraw-embed-toolbar-row-width));
+}
+.markdown-source-view .cm-content .excalidraw-embed-controls-frame.excalidraw-embed-resizing > .excalidraw-embedded-img {
+  display: block;
+  float: none;
+  width: var(--excalidraw-embed-image-width);
+  height: var(--excalidraw-embed-image-height);
+  max-width: var(--excalidraw-embed-image-max-width);
+  max-height: var(--excalidraw-embed-image-max-height);
+  min-height: var(--excalidraw-embed-image-min-height);
+}
+.excalidraw-embed-controls-frame.excalidraw-svg-right.excalidraw-embed-resizing > .excalidraw-embedded-img {
+  margin-left: auto;
+}
+.markdown-source-view .cm-content .excalidraw-embed-controls-frame.excalidraw-embed-resizing > .excalidraw-embedded-img > svg {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+}
+.excalidraw-embed-preview-container {
+  padding: 0;
+}
+.excalidraw-embed-preview-container .modal.excalidraw-embed-preview-modal {
+  position: absolute;
+  left: var(--excalidraw-preview-left, 0px);
+  top: var(--excalidraw-preview-top, 0px);
+  width: 100vw;
+  height: 100vh;
+  max-width: calc(100vw - var(--excalidraw-preview-left, 0px));
+  max-height: calc(100vh - var(--excalidraw-preview-top, 0px));
+  min-width: min(280px, 100vw);
+  min-height: min(200px, 100vh);
+  margin: 0;
+  padding: 12px;
+  transform: none;
+  box-sizing: border-box;
+  border-radius: 0;
+  overflow: hidden;
+  resize: both;
+  display: flex;
+  flex-direction: column;
+}
+.excalidraw-embed-preview-modal .modal-header {
+  flex: 0 0 auto;
+}
+.excalidraw-embed-preview-titlebar {
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+  padding-right: 32px;
+}
+.excalidraw-embed-preview-modal .modal-content {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+.excalidraw-embed-preview-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+.excalidraw-embed-preview-stage {
+  position: relative;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  touch-action: none;
+  cursor: grab;
+}
+.excalidraw-embed-preview-surface {
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  pointer-events: none;
+  --excalidraw-embed-image-width: 100%;
+  --excalidraw-embed-image-height: 100%;
+  --excalidraw-embed-image-max-width: 100%;
+  --excalidraw-embed-image-max-height: 100%;
+  --excalidraw-embed-image-min-height: 0;
+}
+.excalidraw-embed-preview-container .excalidraw-embed-preview-modal .excalidraw-embed-preview-surface > .excalidraw-embedded-img,
+.excalidraw-embed-preview-container .excalidraw-embed-preview-modal .excalidraw-embed-preview-surface > .excalidraw-embedded-img > svg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  pointer-events: none;
+}
+.excalidraw-embed-preview-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+@media (hover: none), (pointer: coarse) {
+  .excalidraw-embed-controls-frame > .excalidraw-embed-toolbar {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    margin-top: 4px;
+  }
+  .excalidraw-embed-controls-frame > .excalidraw-embed-toolbar,
+  .excalidraw-embed-controls-frame > .excalidraw-embed-resize-handle {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.is-mobile .excalidraw-embed-toolbar button,
+.is-mobile .excalidraw-embed-preview-toolbar button,
+.is-mobile .excalidraw-embed-resize-handle {
+  min-width: 44px;
+  min-height: 44px;
+}
+.is-mobile .excalidraw-embed-toolbar,
+.is-mobile .excalidraw-embed-resize-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+.is-mobile .excalidraw-embed-controls-frame > .excalidraw-embed-toolbar {
+  position: relative;
+  top: auto;
+  bottom: auto;
+  margin-top: 4px;
 }

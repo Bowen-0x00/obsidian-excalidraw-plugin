@@ -16,6 +16,23 @@ declare const PLUGIN_VERSION: string;
 
 // Español
 export default {
+  // Drawing embed controls (#3036)
+  EMBED_OPEN_MODIFIER: "{keys}+clic: {action}",
+  EMBED_ACTIONS: "Acciones del dibujo incrustado",
+  EMBED_OPEN_DRAWING: "Abrir dibujo",
+  EMBED_EDIT_SOURCE: "Editar sintaxis de la inserción",
+  EMBED_RESET_SIZE: "Restablecer tamaño",
+  EMBED_RESIZE: "Cambiar el tamaño del dibujo. Usa las flechas para ajustar, Inicio para restablecer o Escape para cancelar.",
+  EMBED_SOURCE_CHANGED: "Esta inserción ha cambiado. Espera a que se actualice la vista previa y vuelve a intentarlo.",
+  EMBED_PREVIEW_TITLE: "Vista previa del dibujo",
+  EMBED_PREVIEW_ZOOM_OUT: "Alejar",
+  EMBED_PREVIEW_ZOOM_IN: "Acercar",
+  EMBED_PREVIEW_FIT: "Ajustar vista previa",
+  EMBED_PREVIEW_CLOSE: "Cerrar vista previa",
+  EMBED_PREVIEW_PAN: "Vista previa del dibujo. Arrastra para desplazar. Usa + o - para el zoom, 0 para ajustar o Escape para cerrar.",
+  EMBED_PREVIEW_LOADING: "Cargando vista previa…",
+  EMBED_PREVIEW_FAILED: "No se pudo cargar la vista previa del dibujo.",
+
   // Native CLI and agent discovery
   CLI_HELP: "Mostrar instrucciones de CLI y agentes",
   CLI_COPY_SKILL: "Copiar instrucciones para agentes",
@@ -290,6 +307,18 @@ export default {
   CONVERT_CARD_TO_FILE: "Mover tarjeta del reverso-de-la-nota a un Archivo",
   ERROR_TRY_AGAIN: "Por favor, inténtalo de nuevo.",
   PASTE_CODEBLOCK: "Pegar un Bloque de Código",
+  PASTE_CODEBLOCK_AS: "Pegar bloque de código como",
+  PASTE_CODEBLOCK_AS_DESC: "Elige cómo insertar código desde el portapapeles o desde la opción Pegar un Bloque de Código del menú.",
+  PASTE_CODEBLOCK_ASK: "Preguntar siempre",
+  PASTE_CODEBLOCK_EMBEDDABLE: "Elemento incrustado interactivo",
+  PASTE_CODEBLOCK_CHOOSE: "¿Insertar este bloque de código como elemento incrustado interactivo o como imagen Markdown?",
+  PASTE_CODEBLOCK_REMEMBER: "Recordar mi elección",
+  PASTE_CODEBLOCK_REMEMBER_DESC: "Puedes cambiarlo después en los ajustes de Excalidraw, en Incrustar archivos en Excalidraw.",
+  PASTE_CODEBLOCK_LANGUAGE: "Lenguaje del bloque de código",
+  PASTE_CODEBLOCK_LANGUAGE_PLACEHOLDER: "javascript, html, python, etc.",
+  PASTE_CODEBLOCK_TITLE: "Título del bloque de código",
+  PASTE_CODEBLOCK_TITLE_PLACEHOLDER: "Introduce un título o déjalo vacío para usar uno automático",
+  PASTE_CODEBLOCK_DEFAULT_TITLE: "Bloque de código",
   INSERT_LATEX: `Insertar fórmula LaTeX (ej. \\binom{n}{k} = \\frac{n!}{k!(n-k)!}).`,
   ENTER_LATEX: "Ingresa una expresión LaTeX válida",
   READ_RELEASE_NOTES: "Leer las notas de la última versión",

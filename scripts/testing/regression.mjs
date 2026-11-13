@@ -18,13 +18,23 @@ import { runPackageConsumer } from "./packageConsumers.mjs";
 import { deviceProfiles, breakpointProfiles } from "./host/deviceProfiles.mjs";
 import { behavioralCases } from "./behaviorPlan.mjs";
 import { coverageChanges } from "./coverageChanges.mjs";
+import { workflowBundleCaseIds } from "./host/workflowBundle.mjs";
+import { textSaveShortcutCaseIds } from "./host/textSaveShortcut.mjs";
+import { codeCardCaseIds } from "./host/codeCards.mjs";
+import { embedControlCaseIds, embedControlDeviceCaseIds } from "./host/embedControls.mjs";
+import { kplexOntologyCaseIds, kplexOntologyDeviceCaseIds } from "./host/kplexOntology.mjs";
 
 export const requiredDeviceCases = [
   ...deviceProfiles(),
   ...breakpointProfiles(),
-].map((profile) => "native:device:" + profile.id);
+].map((profile) => "native:device:" + profile.id).concat(kplexOntologyDeviceCaseIds, embedControlDeviceCaseIds);
 
 export const requiredNativeCases = [
+  ...workflowBundleCaseIds,
+  ...textSaveShortcutCaseIds,
+  ...codeCardCaseIds,
+  ...embedControlCaseIds,
+  ...kplexOntologyCaseIds,
   ...behavioralCases().map((row) => row.testId),
   ...["image-url", "image-import"].flatMap((action) =>
     ["uri", "linked-image", "extensionless", "blob"].map(

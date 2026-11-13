@@ -54,7 +54,8 @@
           "cases": [
             "late save after settings teardown cannot replace a custom configuration with an empty record",
             "teardown during recovery persistence prevents an old instance from overwriting replacement settings",
-            "active storage errors still reject and a later retry preserves custom settings"
+            "active storage errors still reject and a later retry preserves custom settings",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::code block format defaults to asking and remembered formats survive a fresh settings manager"
           ]
         },
         {
@@ -115,6 +116,21 @@
             "native:data-write-failure",
             "native:data-rename-delete",
             "native:data-backup"
+          ]
+        },
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/textSaveShortcut.mjs",
+          "cases": ["native:workflow-text-save-2941:main", "native:workflow-text-save-2941:popout"]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/textSaveShortcut.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/textSaveShortcut.source.test.mjs::ctrlKey save submits and commits before forced persistence, waiting for busy saves",
+            "node:scripts/testing/textSaveShortcut.source.test.mjs::metaKey save submits and commits before forced persistence, waiting for busy saves",
+            "node:scripts/testing/textSaveShortcut.source.test.mjs::unrelated shortcuts, Shift+S and embedded Markdown editors retain their handlers",
+            "node:scripts/testing/textSaveShortcut.source.test.mjs::submission cannot save a replacement file, API or retiring view"
           ]
         },
         {
@@ -217,11 +233,68 @@
       "name": "Text, links and history",
       "anchors": [
         {
+          "path": "src/shared/Suggesters/InlineLinkSuggester.ts",
+          "symbol": "class InlineLinkSuggester"
+        },
+        {
           "path": "src/view/ExcalidrawView.ts",
           "symbol": "ExcalidrawView"
         }
       ],
       "tests": [
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/kplexOntology.mjs",
+          "cases": [
+            "native:kplex-ontology-passive:main",
+            "native:kplex-ontology-links:main",
+            "native:kplex-ontology-configuration:main",
+            "native:kplex-ontology-provider:main",
+            "native:kplex-ontology-markdown:main",
+            "native:kplex-ontology-passive:popout",
+            "native:kplex-ontology-links:popout",
+            "native:kplex-ontology-configuration:popout",
+            "native:kplex-ontology-provider:popout",
+            "native:kplex-ontology-markdown:popout",
+            "native:kplex-ontology-passive:phone",
+            "native:kplex-ontology-links:phone",
+            "native:kplex-ontology-configuration:phone",
+            "native:kplex-ontology-provider:phone",
+            "native:kplex-ontology-markdown:phone",
+            "native:kplex-ontology-passive:tablet",
+            "native:kplex-ontology-links:tablet",
+            "native:kplex-ontology-configuration:tablet",
+            "native:kplex-ontology-provider:tablet",
+            "native:kplex-ontology-markdown:tablet"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/inlineLinkSuggester.test.mjs",
+          "cases": [
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::configured public ontology completion uses the existing inline popup owner",
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::ontology insertion preserves exact names, wrappers, closers, suffixes and caret",
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::ontology completion continues into the existing wikilink mode and bracket-containing names",
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::a bracket in a queried filename cannot consume the square ontology wrapper",
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::wrapped bracket filenames retain real alias, heading, block, frame and clipped-frame parsing",
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::provider/configuration/input changes retire captured ontology rows without mutation",
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::missing or incompatible providers leave normal editing and existing suggestion precedence intact",
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::composition and selections do not call the provider or submit link-editor Enter",
+            "node:scripts/testing/inlineLinkSuggester.test.mjs::ontology annotations render as inert text and two inputs cannot choose each other's rows"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/kplexOntology.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/kplexOntology.source.test.mjs::optional completion reads only the public owning-window API and returns detached inert fields",
+            "node:scripts/testing/kplexOntology.source.test.mjs::missing, incompatible and throwing optional providers never escape into editing",
+            "node:scripts/testing/kplexOntology.source.test.mjs::bad ranges, oversized results and disabled/unavailable envelopes cannot become offers",
+            "node:scripts/testing/kplexOntology.source.test.mjs::input bounds and noncollapsed or detached selections refuse before the optional call",
+            "node:scripts/testing/kplexOntology.source.test.mjs::selection fences provider, method, configuration and input while ignoring unrelated graph revisions",
+            "node:scripts/testing/kplexOntology.source.test.mjs::wrapper edits preserve suffixes and balanced closers with exact UTF-16 carets"
+          ]
+        },
         {
           "layer": "native",
           "path": "scripts/testing/host/textUndo.mjs",
@@ -293,6 +366,14 @@
             "native:behavior:tablet:markdown-source-edit",
             "native:behavior:tablet:raw-parsed-text"
           ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/host/nativeKeyboard.test.mjs",
+          "cases": [
+            "node:scripts/testing/host/nativeKeyboard.test.mjs::macOS native editing shortcuts carry browser commands while preserving trusted key parameters",
+            "node:scripts/testing/host/nativeKeyboard.test.mjs::native keyboard transport preserves releases, app shortcuts, other platforms and explicit commands"
+          ]
         }
       ],
       "fixtures": [
@@ -319,6 +400,18 @@
         {
           "path": "src/utils/ExcalidrawExtrasGateway.ts",
           "symbol": "export class ExcalidrawExtrasGateway"
+        },
+        {
+          "path": "src/core/editor/drawingEmbedExtension.ts",
+          "symbol": "createDrawingEmbedExtension"
+        },
+        {
+          "path": "src/core/managers/DrawingEmbedControls.ts",
+          "symbol": "export class DrawingEmbedControls"
+        },
+        {
+          "path": "src/shared/Dialogs/DrawingEmbedPreviewModal.ts",
+          "symbol": "export class DrawingEmbedPreviewModal"
         }
       ],
       "tests": [
@@ -327,6 +420,27 @@
           "path": "scripts/testing/host/imageGeometry.mjs",
           "cases": [
             "image-geometry-real-3014"
+          ]
+        },
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/workflowBundle.mjs",
+          "cases": ["native:workflow-markdown-extraction-3009"]
+        },
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/codeCards.mjs",
+          "cases": ["native:workflow-code-card-2894:main", "native:workflow-code-card-2894:popout"]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/pastedCodeCardSizing.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/pastedCodeCardSizing.source.test.mjs::initial code fit clamps short and long content and preserves width, other cards and insertion history",
+            "node:scripts/testing/pastedCodeCardSizing.source.test.mjs::initial code fit accounts for owning preview scale and scroll",
+            "node:scripts/testing/pastedCodeCardSizing.source.test.mjs::manual resizing before or during rendering cancels the initial fit",
+            "node:scripts/testing/pastedCodeCardSizing.source.test.mjs::retired APIs, changed files and closing views cannot resize a replacement editor",
+            "node:scripts/testing/pastedCodeCardSizing.source.test.mjs::missing or detached previews have a bounded wait and no resize side effects"
           ]
         },
         {
@@ -426,6 +540,153 @@
             "fork-owned:tests/obsidian/unit/coreRegression.test.tsx::bundled font CSS still embeds the registered font content",
             "fork-owned:tests/obsidian/unit/coreRegression.test.tsx::vault-provided Local Font content remains embedded"
           ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/codeBlockInsertion.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/codeBlockInsertion.source.test.mjs::code insertion asks by default and inserts the chosen Markdown image without a card title",
+            "node:scripts/testing/codeBlockInsertion.source.test.mjs::remembering either format serializes the preference and avoids the next prompt",
+            "node:scripts/testing/codeBlockInsertion.source.test.mjs::unremembered choices keep asking and closing the dialog makes no changes",
+            "node:scripts/testing/codeBlockInsertion.source.test.mjs::configured formats bypass the chooser and preserve language, unique card title and initial-fit history",
+            "node:scripts/testing/codeBlockInsertion.source.test.mjs::missing and unfamiliar preferences safely ask without deleting persisted keys",
+            "node:scripts/testing/codeBlockInsertion.source.test.mjs::a file switch, API replacement or migration during a dialog cancels insertion and remembering",
+            "node:scripts/testing/codeBlockInsertion.source.test.mjs::cancelled language and title prompts and empty clipboard content are no-ops",
+            "node:scripts/testing/codeBlockInsertion.source.test.mjs::deferred language, title, settings writes and section lookup retain the exact drawing owner"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/markdownImageInsertion.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/markdownImageInsertion.source.test.mjs::Markdown image insertion retains editable local text and commits once",
+            "node:scripts/testing/markdownImageInsertion.source.test.mjs::Markdown image render and decode cannot insert into a replaced file, API or migrating view",
+            "node:scripts/testing/markdownImageInsertion.source.test.mjs::pasted code requests adaptive width once and persists the actual flow width without changing general defaults"
+          ]
+        },
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/codeBlockFormats.mjs",
+          "cases": [
+            "native:code-block-format:main",
+            "native:code-block-format:popout"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/codeBlockMarkdownImageSizing.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/codeBlockMarkdownImageSizing.source.test.mjs::code width uses natural layout plus border, bounded to compact and maximum sizes"
+          ]
+        },
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/codeBlockImageLayout.mjs",
+          "cases": [
+            "native:code-block-image-layout:main",
+            "native:code-block-image-layout:popout"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/markdownEmbeds.test.mjs",
+          "cases": [
+            "node:scripts/testing/markdownEmbeds.test.mjs::PDF postprocessing claims drawing images before native embed discovery",
+            "node:scripts/testing/markdownEmbeds.test.mjs::synchronous embed ownership preserves native text and hybrid Markdown",
+            "node:scripts/testing/markdownEmbeds.test.mjs::plugin unload releases Reading controls and context cleanup removes owners from its registry",
+            "node:scripts/testing/markdownEmbeds.test.mjs::Reading export finishing after plugin unload is discarded without mounting controls"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/embedDimensions.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/embedDimensions.source.test.mjs::the established alias/style and percentage grammar remains intact"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/embedSource.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/embedSource.source.test.mjs::only the bound repeated occurrence changes, with one undo and redo step"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/embedPreview.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/embedPreview.source.test.mjs::closing during fullscreen export cancels ownership and discards only the late private payload",
+            "node:scripts/testing/embedPreview.source.test.mjs::preview pencil and modifier clicks preserve modifiers and close before opening the drawing",
+            "node:scripts/testing/embedPreview.source.test.mjs::dragging a viewport preview restores movable bounds and releases its pointer ownership"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/tableEmbedSource.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/tableEmbedSource.source.test.mjs::physical table cells locate repeated escaped embeds without global occurrence matching"
+          ]
+        },
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/embedControls.mjs",
+          "cases": [
+            "native:embed-controls:main:PNG",
+            "native:embed-controls:main:SVGIMG",
+            "native:embed-controls:main:SVG",
+            "native:embed-ownership:main",
+            "native:embed-table:main",
+            "native:embed-controls:split:PNG",
+            "native:embed-controls:split:SVGIMG",
+            "native:embed-controls:split:SVG",
+            "native:embed-ownership:split",
+            "native:embed-table:split",
+            "native:embed-controls:popout:PNG",
+            "native:embed-controls:popout:SVGIMG",
+            "native:embed-controls:popout:SVG",
+            "native:embed-ownership:popout",
+            "native:embed-table:popout",
+            "native:embed-controls:phone:PNG",
+            "native:embed-controls:phone:SVGIMG",
+            "native:embed-controls:phone:SVG",
+            "native:embed-ownership:phone",
+            "native:embed-table:phone",
+            "native:embed-controls:tablet:PNG",
+            "native:embed-controls:tablet:SVGIMG",
+            "native:embed-controls:tablet:SVG",
+            "native:embed-ownership:tablet",
+            "native:embed-table:tablet",
+            "native:embed-hybrid:main",
+            "native:embed-hybrid:split",
+            "native:embed-hybrid:popout",
+            "native:embed-hybrid:phone",
+            "native:embed-hybrid:tablet"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/embedBridge.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/embedBridge.source.test.mjs::invalid render generations cannot remount controls or starve the renderer debounce",
+            "node:scripts/testing/embedBridge.source.test.mjs::drawing Markdown self-embeds retain controls and the same lifecycle guards"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/openDrawingEmbed.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/openDrawingEmbed.source.test.mjs::Open drawing preserves all modifier and complete reference semantics of existing gestures",
+            "node:scripts/testing/openDrawingEmbed.source.test.mjs::open tooltips follow live platform settings and omit unsupported mobile popouts"
+          ]
+        },
+        {
+          "layer": "source",
+          "path": "scripts/testing/embedControls.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/embedControls.source.test.mjs::resize previews proportionally without writing, then commits once on the owned pointer release",
+        "node:scripts/testing/embedControls.source.test.mjs::toolbar compatibility events cannot activate the surrounding native table cell",
+            "node:scripts/testing/embedControls.source.test.mjs::Escape, lost capture, stale source and visual replacement cancel without stale writes"
+          ]
         }
       ],
       "fixtures": [
@@ -457,6 +718,28 @@
         }
       ],
       "tests": [
+        {
+          "layer": "source",
+          "path": "scripts/testing/settings/settingsManagerLifecycle.source.test.mjs",
+          "cases": [
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::empty startup settings restore custom preferences and unknown keys from recovery",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::empty startup settings without recovery wait for a valid file without persisting defaults",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::empty recovery snapshots cannot silently reset empty startup settings",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::empty startup settings reset to defaults only after the explicit recovery choice",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::missing first-install settings still initialize defaults without prompting",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::missing settings with recovery retain the restore-or-defaults choice",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::empty synchronized settings repair disk from live preferences even when the snapshot is unchanged",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::an empty synchronized record during a pending save preserves the latest settings",
+            "node:scripts/testing/settings/settingsManagerLifecycle.source.test.mjs::nonempty settings containing only unknown keys remain valid and preserved"
+          ]
+        },
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/lifecycle.mjs",
+          "cases": [
+            "native:lifecycle-plugin-reload"
+          ]
+        },
         {
           "layer": "source",
           "path": "scripts/testing/settings/settings.source.test.mjs",
@@ -847,6 +1130,13 @@
           "path": "scripts/testing/host/workflowFixes.mjs",
           "cases": [
             "workflow-fixes-3020"
+          ]
+        },
+        {
+          "layer": "native",
+          "path": "scripts/testing/host/workflowBundle.mjs",
+          "cases": [
+            "native:workflow-zen-controls-3000"
           ]
         },
         {

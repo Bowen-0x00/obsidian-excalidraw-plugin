@@ -16,6 +16,23 @@ declare const PLUGIN_VERSION: string;
 
 // English
 export default {
+  // Drawing embed controls (#3036)
+  EMBED_OPEN_MODIFIER: "{keys}+click: {action}",
+  EMBED_ACTIONS: "Drawing embed actions",
+  EMBED_OPEN_DRAWING: "Open drawing",
+  EMBED_EDIT_SOURCE: "Edit embed syntax",
+  EMBED_RESET_SIZE: "Reset embed size",
+  EMBED_RESIZE: "Resize drawing embed. Use arrow keys to resize, Home to reset, or Escape to cancel.",
+  EMBED_SOURCE_CHANGED: "This embed changed. Wait for its preview to refresh and try again.",
+  EMBED_PREVIEW_TITLE: "Drawing preview",
+  EMBED_PREVIEW_ZOOM_OUT: "Zoom out",
+  EMBED_PREVIEW_ZOOM_IN: "Zoom in",
+  EMBED_PREVIEW_FIT: "Fit preview",
+  EMBED_PREVIEW_CLOSE: "Close preview",
+  EMBED_PREVIEW_PAN: "Drawing preview. Drag to pan. Use + or - to zoom, 0 to fit, or Escape to close.",
+  EMBED_PREVIEW_LOADING: "Loading preview…",
+  EMBED_PREVIEW_FAILED: "Could not load this drawing preview.",
+
   // Native CLI and agent discovery
   CLI_HELP: "Show CLI and agent instructions",
   CLI_COPY_SKILL: "Copy agent instructions",
@@ -290,6 +307,18 @@ export default {
   CONVERT_CARD_TO_FILE: "Move back-of-note card to File",
   ERROR_TRY_AGAIN: "Please try again.",
   PASTE_CODEBLOCK: "Paste code block",
+  PASTE_CODEBLOCK_AS: "Paste code block as",
+  PASTE_CODEBLOCK_AS_DESC: "Choose how to insert code from the clipboard or the Paste code block menu action.",
+  PASTE_CODEBLOCK_ASK: "Always ask",
+  PASTE_CODEBLOCK_EMBEDDABLE: "Interactive embeddable",
+  PASTE_CODEBLOCK_CHOOSE: "Insert this code block as an interactive embeddable or a Markdown image?",
+  PASTE_CODEBLOCK_REMEMBER: "Remember my choice",
+  PASTE_CODEBLOCK_REMEMBER_DESC: "You can change this later in Excalidraw settings under Embed files into Excalidraw.",
+  PASTE_CODEBLOCK_LANGUAGE: "Code block language",
+  PASTE_CODEBLOCK_LANGUAGE_PLACEHOLDER: "javascript, html, python, etc.",
+  PASTE_CODEBLOCK_TITLE: "Code Block Title",
+  PASTE_CODEBLOCK_TITLE_PLACEHOLDER: "Enter title or leave empty for automatic title",
+  PASTE_CODEBLOCK_DEFAULT_TITLE: "Code Block",
   INVERT_IMAGES_IN_DARK_MODE: "Invert image(s) in dark mode",
   INSERT_LATEX: `Insert LaTeX formula (e.g. \\binom{n}{k} = \\frac{n!}{k!(n-k)!}).`,
   ENTER_LATEX: "Enter a valid LaTeX expression",

@@ -10,6 +10,7 @@ import { obsidianCliExecutable, spawnNativeSync } from "./processTools.mjs";
 import { runTextUndoScenario } from "./textUndo.mjs";
 import { runNativeCLIScenario } from "./nativeCLI.mjs";
 import { runEmbedRecoveryScenario } from "./embedRecovery.mjs";
+import { runEmbedControlsScenario } from "./embedControls.mjs";
 import { runGroupedLinkClickScenario } from "./groupedLinkClick.mjs";
 import { runLatexInputScenario } from "./latexInput.mjs";
 import { runImageGeometryScenario } from "./imageGeometry.mjs";
@@ -23,6 +24,11 @@ import { runSvgTextScenario } from "./svgText.mjs";
 import { runSVGEntryPointsScenario } from "./svgEntryPoints.mjs";
 import { runLucideScenario } from "./lucideIcons.mjs";
 import { runWorkflowFixesScenario } from "./workflowFixes.mjs";
+import { runWorkflowBundleScenario } from "./workflowBundle.mjs";
+import { runTextSaveShortcutScenario } from "./textSaveShortcut.mjs";
+import { runCodeCardScenario } from "./codeCards.mjs";
+import { runKplexOntologyScenario } from "./kplexOntology.mjs";
+import { nativeRepositoryRoot } from "../nativeRepositoryRoot.mjs";
 import { acquireHostLock } from "./hostLock.mjs";
 import { runDataIntegrityScenario } from "./dataIntegrity.mjs";
 import { runLifecycleScenario } from "./lifecycle.mjs";
@@ -82,6 +88,7 @@ const textUndo = coreScenarios || process.argv.includes("--text-undo");
 const stability = coreScenarios || profile === "soak" || process.argv.includes("--stability");
 const nativeCLI = coreScenarios || process.argv.includes("--native-cli");
 const embedRecovery = coreScenarios || process.argv.includes("--embed-recovery");
+const embedControls = coreScenarios || process.argv.includes("--embed-controls");
 const groupedLinkClick =
   coreScenarios || process.argv.includes("--grouped-link-click");
 const latexInput = coreScenarios || process.argv.includes("--latex-input");
@@ -100,6 +107,10 @@ const svgText = process.argv.includes("--svg-text");
 const svgEntryPoints = process.argv.includes("--svg-entry-points");
 const lucide = coreScenarios || process.argv.includes("--lucide");
 const workflowFixes = coreScenarios || process.argv.includes("--workflow-fixes");
+const workflowBundle = coreScenarios || process.argv.includes("--workflow-bundle");
+const textSaveShortcut = workflowBundle || process.argv.includes("--text-save-shortcut");
+const codeCards = workflowBundle || process.argv.includes("--code-cards");
+const kplexOntology = coreScenarios || profile === "devices" || process.argv.includes("--kplex-ontology");
 const behaviorMatrix =
   fullProfile || process.argv.includes("--behavior-matrix");
 const dataIntegrity = coreScenarios || process.argv.includes("--data-integrity");
@@ -142,11 +153,16 @@ const flags = [
   "--devices",
   "--data-integrity",
   "--workflow-fixes",
+  "--workflow-bundle",
+  "--text-save-shortcut",
+  "--code-cards",
+  "--kplex-ontology",
   "--lucide",
   "--text-undo",
   "--stability",
   "--native-cli",
   "--embed-recovery",
+  "--embed-controls",
   "--grouped-link-click",
   "--latex-input",
   "--latex-preview",
@@ -182,6 +198,14 @@ const extrasRoot = resolve(
 const forkRoot = resolve(
   process.env.EXCALIDRAW_FORK_ROOT || join(pluginRoot, "../excalidraw"),
 );
+const kplexRoot = kplexOntology ? resolve(process.env.EXCALIDRAW_KPLEX_ROOT || join(nativeRepositoryRoot(pluginRoot), "../kplex")) : undefined;
+if (kplexOntology) {
+  for (const [key,value] of Object.entries({KPLEX_TEST_VAULT_NAME:target.vaultName,KPLEX_TEST_VAULT_PATH:target.vaultPath,KPLEX_TEST_CONFIG_DIR:target.configDir})) {
+    const supplied=process.env[key];
+    if(supplied && (key.endsWith("NAME")?supplied!==value:resolve(supplied)!==resolve(value)))throw Error("Combined K-Plex target differs from the owned vault: "+key);
+    process.env[key]=value;
+  }
+}
 const reportDir =
   process.env.EXCALIDRAW_TEST_REPORT_DIR ||
   join(pluginRoot, ".test-work/reports/native-" + randomUUID());
@@ -235,6 +259,7 @@ try {
     pluginRoot,
     forkRoot,
     extrasRoot,
+    kplexRoot,
     output: join(pluginRoot, ".test-work/frozen/combination-" + randomUUID()),
   });
   const invokeCLI=(name,args,timeout)=>command(obsidianCliExecutable(),[`vault=${target.vaultName}`,name,...args],pluginRoot,timeout);
@@ -328,6 +353,7 @@ try {
         ...(textUndo ? [runTextUndoScenario] : []),
         ...(nativeCLI ? [runNativeCLIScenario] : []),
         ...(embedRecovery ? [runEmbedRecoveryScenario] : []),
+        ...(embedControls ? [runEmbedControlsScenario] : []),
         ...(groupedLinkClick ? [runGroupedLinkClickScenario] : []),
         ...(latexInput ? [runLatexInputScenario] : []),
         ...(latexPreview
@@ -348,6 +374,10 @@ try {
                 }),
             ]
           : []),
+        ...(workflowBundle ? [runWorkflowBundleScenario] : []),
+        ...(textSaveShortcut ? [runTextSaveShortcutScenario] : []),
+        ...(codeCards ? [runCodeCardScenario] : []),
+        ...(kplexOntology ? [runKplexOntologyScenario] : []),
         // The catalogue/picker workflow runs after independent core scenarios.
         ...(lucide ? [runLucideScenario] : []),
       ],
@@ -386,6 +416,8 @@ try {
         profiles: selectedDeviceIds ? allDeviceProfiles.filter(profile=>selectedDeviceIds.includes(profile.id)) : allDeviceProfiles,
         featureWorkflows: fullProfile || profile === "devices",
         featureCases:focusedCases,
+        kplexOntology,
+        embedControls,
       });
       deviceReport.source = combination?.manifests.plugin || source;
       deviceReport.artifacts = report.artifacts.installedHashes;

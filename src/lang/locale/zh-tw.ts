@@ -11,6 +11,23 @@ declare const PLUGIN_VERSION: string;
 
 // 繁體中文
 export default {
+  // Drawing embed controls (#3036)
+  EMBED_OPEN_MODIFIER: "{keys}+按一下：{action}",
+  EMBED_ACTIONS: "嵌入繪圖操作",
+  EMBED_OPEN_DRAWING: "開啟繪圖",
+  EMBED_EDIT_SOURCE: "編輯嵌入語法",
+  EMBED_RESET_SIZE: "重設嵌入尺寸",
+  EMBED_RESIZE: "調整繪圖尺寸。方向鍵調整大小，Home 重設，Escape 取消。",
+  EMBED_SOURCE_CHANGED: "此嵌入已變更。請等待預覽重新整理後再試。",
+  EMBED_PREVIEW_TITLE: "繪圖預覽",
+  EMBED_PREVIEW_ZOOM_OUT: "縮小",
+  EMBED_PREVIEW_ZOOM_IN: "放大",
+  EMBED_PREVIEW_FIT: "符合預覽視窗",
+  EMBED_PREVIEW_CLOSE: "關閉預覽",
+  EMBED_PREVIEW_PAN: "繪圖預覽。拖曳以平移，使用 + 或 - 縮放，0 符合視窗，Escape 關閉。",
+  EMBED_PREVIEW_LOADING: "正在載入預覽…",
+  EMBED_PREVIEW_FAILED: "無法載入此繪圖的預覽。",
+
   // Native CLI and agent discovery
   CLI_HELP: "顯示 CLI 和代理程式說明",
   CLI_COPY_SKILL: "複製代理程式說明",
@@ -260,6 +277,18 @@ export default {
   CONVERT_CARD_TO_FILE: "將“背景筆記”卡片儲存到檔案",
   ERROR_TRY_AGAIN: "請重試。",
   PASTE_CODEBLOCK: "貼上程式碼塊",
+  PASTE_CODEBLOCK_AS: "程式碼區塊貼上方式",
+  PASTE_CODEBLOCK_AS_DESC: "選擇從剪貼簿或「貼上程式碼塊」選單插入程式碼的方式。",
+  PASTE_CODEBLOCK_ASK: "一律詢問",
+  PASTE_CODEBLOCK_EMBEDDABLE: "互動式嵌入",
+  PASTE_CODEBLOCK_CHOOSE: "要將此程式碼區塊插入為互動式嵌入還是 Markdown 圖片？",
+  PASTE_CODEBLOCK_REMEMBER: "記住我的選擇",
+  PASTE_CODEBLOCK_REMEMBER_DESC: "之後可在 Excalidraw 設定的「嵌入到繪圖中的檔案」中變更。",
+  PASTE_CODEBLOCK_LANGUAGE: "程式碼區塊語言",
+  PASTE_CODEBLOCK_LANGUAGE_PLACEHOLDER: "javascript、html、python 等",
+  PASTE_CODEBLOCK_TITLE: "程式碼區塊標題",
+  PASTE_CODEBLOCK_TITLE_PLACEHOLDER: "輸入標題，或留空以自動命名",
+  PASTE_CODEBLOCK_DEFAULT_TITLE: "程式碼區塊",
   INVERT_IMAGES_IN_DARK_MODE: "深色主題下反轉顏色",
   INSERT_LATEX: `插入 LaTeX 公式到當前繪圖中`,
   ENTER_LATEX: "輸入 LaTeX 公式",
